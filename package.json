@@ -1,0 +1,18 @@
+{
+    "name": "gym",
+    "private": true,
+    "version": "1.0.0",
+    "scripts": {
+      "server": "nodemon server/app.js",
+      "client": "npm --prefix client run dev",
+      "start": "concurrently \"npm run server\" \"npm run client\"",
+      "build": "npm --prefix client run build"
+    },
+    "devDependencies": {
+      "concurrently": "^9.2.0"
+    },
+    "dependencies": {
+      "dotenv": "^17.0.0"
+    }
+  }
+  
