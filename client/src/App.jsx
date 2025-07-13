@@ -6,7 +6,9 @@ function App() {
 
   useEffect(() => {
     axios.get('/')
-      .then(res => setMessage(res.data.message))
+      .then(res => {setMessage(res.data.message)
+        console.log("hello")
+      })
       .catch(err => console.error(err));
   }, []);
 
