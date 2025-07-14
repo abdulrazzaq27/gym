@@ -22,7 +22,7 @@ app.use(express.json()); // to parse JSON body
 
 // *****************  INSERTING DUMMY DATA **********************
 // const Member = require('./models/Member'); // Your Mongoose model
-// const members = require('./data/createFakeData');
+// const members = require('./data/dummy.js');
 
 
 // Member.insertMany(members)

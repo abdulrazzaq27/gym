@@ -14,16 +14,16 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-    try {
-        const { name, email, phone, plan } = req.body;
-        const newMember = new Member({name, email, phone, plan});
-        const saved = await newMember.save();
-        res.json('saved').status(201);
-    }
-    catch (err) {
-        console.log(err);
-    }
-})
+  try {
+    const member = new Member(req.body);
+    await member.save();
+    res.status(201).json(member);
+  } catch (err) {
+    console.error("Error creating member:", err);
+    res.status(500).json({ message: "Failed to create member" });
+  }
+});
+
 
 // router.post('/seed', async (req, res) => {
 //   await Member.insertMany(dummyData);
