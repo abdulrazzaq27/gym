@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import axios from '../api/axios';
 import { useNavigate } from 'react-router-dom';
@@ -6,13 +7,13 @@ function CreateMember() {
   const navigate = useNavigate();
 
   function formatDate(isoDate) {
+    if (!isoDate) return '';
     const date = new Date(isoDate);
-    const day = String(date.getDate()).padStart(2, '0');     // dd
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // mm
-    const year = date.getFullYear();                          // yyyy
-    return `${day}/${month}/${year}`;
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${year}-${month}-${day}`;
   }
-
 
   const [formData, setFormData] = useState({
     name: '',
@@ -29,6 +30,7 @@ function CreateMember() {
   const [expiryDate, setExpiryDate] = useState('');
 
   const planDurations = {
+    '': 0,
     Monthly: 1,
     Quarterly: 3,
     'Half-Yearly': 6,
@@ -59,201 +61,169 @@ function CreateMember() {
         renewalDate: formData.joinDate,
         expiryDate,
       });
-      navigate('/members');
+      navigate('/');
     } catch (err) {
       console.error("Create member failed", err);
     }
   };
 
-
   return (
-    <div className="max-w-full mx-auto mt-8 p-8 bg-white rounded-lg shadow-lg mb-8">
-      <h1 className="text-3xl font-bold mb-8 text-gray-800 text-center">Add New Member</h1>
+    <div className="w-full max-w-none flex flex-col items-start">
+      <div className="w-full flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-white">Add New Member</h1>
+      </div>
 
-      <div className="space-y-6">
-        {/* Personal Information Section */}
-        <div className="border-b border-gray-200 pb-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-700">Personal Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="name" className="block mb-2 font-medium text-gray-700">
-                Full Name *
-              </label>
-              <input 
-                id="name"
-                name="name" 
-                value={formData.name} 
-                onChange={handleChange} 
-                placeholder="Enter full name" 
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                required 
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block mb-2 font-medium text-gray-700">
-                Email Address
-              </label>
-              <input 
-                id="email"
-                name="email" 
-                type="email"
-                value={formData.email} 
-                onChange={handleChange} 
-                placeholder="Enter email address" 
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-              />
-            </div>
-
-            <div>
-              <label htmlFor="phone" className="block mb-2 font-medium text-gray-700">
-                Phone Number *
-              </label>
-              <input 
-                id="phone"
-                name="phone" 
-                type="tel"
-                value={formData.phone} 
-                onChange={handleChange} 
-                placeholder="Enter phone number" 
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                required 
-              />
-            </div>
-
-            <div>
-              <label htmlFor="gender" className="block mb-2 font-medium text-gray-700">
-                Gender *
-              </label>
-              <select 
-                id="gender"
-                name="gender" 
-                value={formData.gender} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                required
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="dob" className="block mb-2 font-medium text-gray-700">
-                Date of Birth
-              </label>
-              <input 
-                id="dob"
-                type="date" 
-                name="dob" 
-                value={formData.dob} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Membership Information Section */}
-        <div className="border-b border-gray-200 pb-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-700">Membership Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="joinDate" className="block mb-2 font-medium text-gray-700">
-                Join Date *
-              </label>
-              <input 
-                id="joinDate"
-                type="date" 
-                name="joinDate" 
-                value={formData.joinDate} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                required 
-              />
-            </div>
-
-            <div>
-              <label htmlFor="plan" className="block mb-2 font-medium text-gray-700">
-                Membership Plan *
-              </label>
-              <select 
-                id="plan"
-                name="plan" 
-                value={formData.plan} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                required
-              >
-                <option value="">Select Plan</option>
-                <option value="Monthly">Monthly</option>
-                <option value="Quarterly">Quarterly (3 months)</option>
-                <option value="Half-Yearly">Half-Yearly (6 months)</option>
-                <option value="Yearly">Yearly (12 months)</option>
-              </select>
-            </div>
-
-            {/* <div>
-              <label htmlFor="status" className="block mb-2 font-medium text-gray-700">
-                Status
-              </label>
-              <select 
-                id="status"
-                name="status" 
-                value={formData.status} 
-                onChange={handleChange} 
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                required
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-            </div> */}
-
-            {expiryDate && (
-              <div className="bg-blue-50 p-4 rounded-md border border-gray-200">
-                <p className="text-red-800 font-medium">
-                  📅 Plan Expires On: {formatDate(expiryDate)}
-                </p>
-                <p className="text-sm text-black-600 mt-1">
-                  Duration: {planDurations[formData.plan]} month{planDurations[formData.plan] > 1 ? 's' : ''}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Additional Information Section */}
-        {/* <div>
-          <h2 className="text-xl font-semibold mb-4 text-gray-700">Additional Information</h2>
+      {/* Light-themed form card */}
+      <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          
+          {/* Personal Information Section */}
           <div>
-            <label htmlFor="notes" className="block mb-2 font-medium text-gray-700">
-              Notes
-            </label>
-            <textarea 
-              id="notes"
-              name="notes" 
-              value={formData.notes} 
-              onChange={handleChange} 
-              placeholder="Enter any additional notes or comments..." 
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors h-24 resize-none" 
-            />
-          </div>
-        </div> */}
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-6">Personal Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Full Name *
+                </label>
+                <input 
+                  id="name"
+                  name="name" 
+                  value={formData.name} 
+                  onChange={handleChange} 
+                  placeholder="Enter full name" 
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
+                  required 
+                />
+              </div>
 
-        {/* Submit Button */}
-        <div className="pt-6">
-          <button 
-            type="button" 
-            onClick={handleSubmit}
-            style={{ backgroundColor: '#ed5728' }}
-            className="w-full text-white py-3 px-6 rounded-md focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium text-lg hover:cursor-pointer"
-          >
-            Add Member
-          </button>
-        </div>
+              <div>
+                <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Email Address
+                </label>
+                <input 
+                  id="email"
+                  name="email" 
+                  type="email"
+                  value={formData.email} 
+                  onChange={handleChange} 
+                  placeholder="Enter email address" 
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
+                />
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Phone Number *
+                </label>
+                <input 
+                  id="phone"
+                  name="phone" 
+                  type="tel"
+                  value={formData.phone} 
+                  onChange={handleChange} 
+                  placeholder="Enter phone number" 
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
+                  required 
+                />
+              </div>
+
+              <div>
+                <label htmlFor="gender" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Gender *
+                </label>
+                <select 
+                  id="gender"
+                  name="gender" 
+                  value={formData.gender} 
+                  onChange={handleChange} 
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
+                  required
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="dob" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Date of Birth
+                </label>
+                <input 
+                  id="dob"
+                  type="date" 
+                  name="dob" 
+                  value={formData.dob} 
+                  onChange={handleChange} 
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Membership Information Section */}
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-6">Membership Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <label htmlFor="joinDate" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Join Date *
+                </label>
+                <input 
+                  id="joinDate"
+                  type="date" 
+                  name="joinDate" 
+                  value={formData.joinDate} 
+                  onChange={handleChange} 
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
+                  required 
+                />
+              </div>
+
+              <div>
+                <label htmlFor="plan" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Membership Plan *
+                </label>
+                <select 
+                  id="plan"
+                  name="plan" 
+                  value={formData.plan} 
+                  onChange={handleChange} 
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
+                  required
+                >
+                  <option value="">Select Plan</option>
+                  <option value="Monthly">Monthly</option>
+                  <option value="Quarterly">Quarterly (3 months)</option>
+                  <option value="Half-Yearly">Half-Yearly (6 months)</option>
+                  <option value="Yearly">Yearly (12 months)</option>
+                </select>
+              </div>
+
+              {expiryDate && (
+                <div className="bg-blue-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <p className="text-blue-800 dark:text-blue-300 font-medium">
+                    📅 Plan Expires On: {formatDate(expiryDate)}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Duration: {planDurations[formData.plan]} month{planDurations[formData.plan] > 1 ? 's' : ''}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-6 flex justify-end">
+            <button 
+              type="submit" 
+              className="bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all font-semibold text-lg"
+            >
+              Add Member
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
