@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from '../api/axios';
+import { Link } from 'react-router-dom';
 
 function Members() {
   const [members, setMembers] = useState([]);
@@ -12,14 +13,25 @@ function Members() {
 
   function formatDate(isoDate) {
     const date = new Date(isoDate);
-    const day = String(date.getDate()).padStart(2, '0');     // dd
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // mm
-    const year = date.getFullYear();                          // yyyy
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   }
 
   return (
     <div className="w-full max-w-none flex flex-col items-start">
+      {/* Add Member Button */}
+      <div className="self-end mb-4">
+        <Link
+          to="/create-member"
+          style={{ backgroundColor: '#ed5728' }}
+          className="text-white px-4 py-2 rounded hover:bg-orange-700 transition-colors"
+        >
+          Add New Member
+        </Link>
+      </div>
+
       <h1 className="text-3xl font-bold mb-6 text-white text-left">Members</h1>
 
       {members.length === 0 ? (

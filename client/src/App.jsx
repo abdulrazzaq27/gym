@@ -7,6 +7,7 @@ import './App.css';
 import Navbar from './components/common/Navbar.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Members from './pages/Members.jsx';
+import CreateMember from './pages/CreateMember.jsx';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -27,13 +28,12 @@ function App() {
       </div>
 
       {/* Main Content with proper spacing */}
-      <main className="pt-16">
-        <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/members" element={<Members />} />
-          </Routes>
-        </div>
+      <main className="pt-20 px-6 bg-gray-200">
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/members" element={<Members />} />
+          <Route path="/create-member" element={<CreateMember />} />
+        </Routes>
       </main>
     </div>
   );
