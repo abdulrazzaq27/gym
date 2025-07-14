@@ -28,7 +28,7 @@ function App() {
       </div>
 
       {/* Main Content with proper spacing */}
-      <main className="pt-20 px-6 bg-gray-200">
+      <main className="pt-20 px-6 ">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/members" element={<Members />} />
