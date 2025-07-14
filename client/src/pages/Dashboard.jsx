@@ -20,13 +20,14 @@ function Dashboard() {
       axios.get('/api/dashboard/expiring-members')
     ])
     .then(([statsRes, recentRes, expiringRes]) => {
-      setDashboardData({
-        ...statsRes.data,
-        recentMembers: recentRes.data,
-        expiringMembers: expiringRes.data
-      });
-      setLoading(false);
-    })
+  setDashboardData({
+    ...statsRes.data,
+    recentMembers: recentRes.data.recentMembers,
+    expiringMembers: expiringRes.data.expiringMembers
+  });
+  setLoading(false);
+})
+
     .catch((err) => {
       console.error("Error fetching dashboard data:", err);
       setLoading(false);
