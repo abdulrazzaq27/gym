@@ -6,6 +6,14 @@ import { useNavigate } from 'react-router-dom';
 function CreateMember() {
   const navigate = useNavigate();
 
+  const planPrices = {
+  Monthly: 1000,
+  Quarterly: 2700,
+  'Half-Yearly': 5100,
+  Yearly: 9600,
+};
+
+
   function formatDate(isoDate) {
     if (!isoDate) return '';
     const date = new Date(isoDate);
@@ -51,9 +59,21 @@ function CreateMember() {
   }, [formData.plan, formData.joinDate]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  const { name, value } = e.target;
+
+  setFormData((prev) => {
+    if (name === 'plan') {
+      return {
+        ...prev,
+        plan: value,
+        amount: planPrices[value] || '', // auto-update amount
+      };
+    }
+
+    return { ...prev, [name]: value };
+  });
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,7 +83,7 @@ function CreateMember() {
         renewalDate: formData.joinDate,
         expiryDate,
       });
-      navigate('/');
+      navigate('/members');
     } catch (err) {
       console.error("Create member failed", err);
     }
@@ -78,7 +98,7 @@ function CreateMember() {
       {/* Light-themed form card */}
       <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
         <form onSubmit={handleSubmit} className="space-y-8">
-          
+
           {/* Personal Information Section */}
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-6">Personal Information</h2>
@@ -87,14 +107,14 @@ function CreateMember() {
                 <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Full Name *
                 </label>
-                <input 
+                <input
                   id="name"
-                  name="name" 
-                  value={formData.name} 
-                  onChange={handleChange} 
-                  placeholder="Enter full name" 
-                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
-                  required 
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Enter full name"
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  required
                 />
               </div>
 
@@ -102,14 +122,14 @@ function CreateMember() {
                 <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Email Address
                 </label>
-                <input 
+                <input
                   id="email"
-                  name="email" 
+                  name="email"
                   type="email"
-                  value={formData.email} 
-                  onChange={handleChange} 
-                  placeholder="Enter email address" 
-                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Enter email address"
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                 />
               </div>
 
@@ -117,15 +137,15 @@ function CreateMember() {
                 <label htmlFor="phone" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Phone Number *
                 </label>
-                <input 
+                <input
                   id="phone"
-                  name="phone" 
+                  name="phone"
                   type="tel"
-                  value={formData.phone} 
-                  onChange={handleChange} 
-                  placeholder="Enter phone number" 
-                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
-                  required 
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="Enter phone number"
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  required
                 />
               </div>
 
@@ -133,12 +153,12 @@ function CreateMember() {
                 <label htmlFor="gender" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Gender *
                 </label>
-                <select 
+                <select
                   id="gender"
-                  name="gender" 
-                  value={formData.gender} 
-                  onChange={handleChange} 
-                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                   required
                 >
                   <option value="">Select Gender</option>
@@ -152,13 +172,13 @@ function CreateMember() {
                 <label htmlFor="dob" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Date of Birth
                 </label>
-                <input 
+                <input
                   id="dob"
-                  type="date" 
-                  name="dob" 
-                  value={formData.dob} 
-                  onChange={handleChange} 
-                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
+                  type="date"
+                  name="dob"
+                  value={formData.dob}
+                  onChange={handleChange}
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                 />
               </div>
             </div>
@@ -172,14 +192,14 @@ function CreateMember() {
                 <label htmlFor="joinDate" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Join Date *
                 </label>
-                <input 
+                <input
                   id="joinDate"
-                  type="date" 
-                  name="joinDate" 
-                  value={formData.joinDate} 
-                  onChange={handleChange} 
-                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
-                  required 
+                  type="date"
+                  name="joinDate"
+                  value={formData.joinDate}
+                  onChange={handleChange}
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  required
                 />
               </div>
 
@@ -187,12 +207,12 @@ function CreateMember() {
                 <label htmlFor="plan" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Membership Plan *
                 </label>
-                <select 
+                <select
                   id="plan"
-                  name="plan" 
-                  value={formData.plan} 
-                  onChange={handleChange} 
-                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
+                  name="plan"
+                  value={formData.plan}
+                  onChange={handleChange}
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                   required
                 >
                   <option value="">Select Plan</option>
@@ -203,57 +223,61 @@ function CreateMember() {
                 </select>
               </div>
 
-              {expiryDate && (
-                <div className="bg-blue-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
-                  <p className="text-blue-800 dark:text-blue-300 font-medium">
-                    📅 Plan Expires On: {formatDate(expiryDate)}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Duration: {planDurations[formData.plan]} month{planDurations[formData.plan] > 1 ? 's' : ''}
-                  </p>
-                </div>
-              )}
               <div>
-  <label htmlFor="amount" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-    Amount Paid (₹) *
-  </label>
-  <input 
-    id="amount"
-    name="amount"
-    type="number"
-    value={formData.amount}
-    onChange={handleChange}
-    placeholder="Enter payment amount"
-    className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-    required
-  />
-</div>
+                <label htmlFor="expiryDate" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Plan Expiry Date
+                </label>
+                <input
+                  id="expiryDate"
+                  name="expiryDate"
+                  type="date"
+                  value={expiryDate}
+                  disabled
+                  className="w-full p-3 bg-gray-200 dark:bg-gray-700 border border-gray-300 rounded-lg text-gray-700 dark:text-white cursor-not-allowed"
+                />
+              </div>
 
-<div>
-  <label htmlFor="paymentMethod" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-    Payment Method *
-  </label>
-  <select 
-    id="paymentMethod"
-    name="paymentMethod"
-    value={formData.paymentMethod}
-    onChange={handleChange}
-    className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-    required
-  >
-    <option value="">Select Method</option>
-    <option value="Cash">Cash</option>
-    <option value="UPI">UPI</option>
-    <option value="Card">Card</option>
-  </select>
-</div>
+              <div>
+                <label htmlFor="amount" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Amount Paid (₹) *
+                </label>
+                <input
+                  id="amount"
+                  name="amount"
+                  type="number"
+                  value={formData.amount}
+                  onChange={handleChange}
+                  placeholder="Enter payment amount"
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="paymentMethod" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Payment Method *
+                </label>
+                <select
+                  id="paymentMethod"
+                  name="paymentMethod"
+                  value={formData.paymentMethod}
+                  onChange={handleChange}
+                  className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  required
+                >
+                  <option value="">Select Method</option>
+                  <option value="Cash">Cash</option>
+                  <option value="UPI">UPI</option>
+                  <option value="Card">Card</option>
+                </select>
+              </div>
             </div>
           </div>
 
           {/* Submit Button */}
           <div className="pt-6 flex justify-end">
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all font-semibold text-lg"
             >
               Add Member

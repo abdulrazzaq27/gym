@@ -17,7 +17,7 @@ function Navbar() {
           {/* Left: Logo and Nav Links */}
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center space-x-3 rtl:space-x-reverse">
-              <img src="./icon.png" className="h-8 w-8 rounded-lg" alt="FitZone Logo" />
+              <img src="/icon.png" className="h-8 w-8 rounded-lg" alt="FitZone Logo" />
               <span className="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">FitZone Admin</span>
               <span className="text-xl font-bold text-gray-900 dark:text-white sm:hidden">FitZone</span>
             </Link>

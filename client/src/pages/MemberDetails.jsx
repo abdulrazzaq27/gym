@@ -43,7 +43,7 @@ function MemberDetails() {
   function getStatusColor(status) {
     switch(status?.toLowerCase()) {
       case 'active': return 'text-green-400 bg-green-900/20';
-      case 'expired': return 'text-red-400 bg-red-900/20';
+      case 'inactive': return 'text-red-400 bg-red-900/20';
       case 'suspended': return 'text-yellow-400 bg-yellow-900/20';
       default: return 'text-gray-400 bg-gray-900/20';
     }
@@ -188,17 +188,17 @@ function MemberDetails() {
           </div>
 
           {/* Quick Stats Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-6 w-100">
             <div className="bg-gradient-to-br from-blue-600/20 to-purple-600/20 backdrop-blur-sm rounded-2xl p-6 border border-blue-500/20">
               <h3 className="text-lg font-semibold text-white mb-4">Quick Stats</h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300">Member ID</span>
-                  <span className="text-white font-mono">#{member.id}</span>
+                  <span className="text-white font-mono">#{member._id}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300">Status</span>
-                  <span className={`font-medium ${member.status === 'active' ? 'text-green-400' : member.status === 'expired' ? 'text-red-400' : 'text-yellow-400'}`}>
+                  <span className={`font-medium ${member.status === 'active' ? 'text-green-400' : member.status.toLowerCase() === 'inactive' ? 'text-red-400' : 'text-yellow-400'}`}>
                     {member.status || 'Unknown'}
                   </span>
                 </div>

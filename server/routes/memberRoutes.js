@@ -27,29 +27,47 @@ router.get('/:id', async (req, res) => {
 
 
 router.post('/', async (req, res) => {
-  const { name, plan, joinDate, expiryDate, status,
+  const {
+    name, email, phone, plan, joinDate, expiryDate, status,
     gender, dob, notes,
-    amount, paymentMethod } = req.body;
-  try {
-    const newMember = new Member(name, plan, joinDate, expiryDate, status,
-    gender, dob, notes,
-    amount, paymentMethod);
-    const savedMember = await newMember.save();
-    res.status(201).json(newMember);
+    amount, paymentMethod
+  } = req.body;
 
+  try {
+    // Create and save the member
+    const newMember = new Member({
+      name,
+      email,
+      phone,
+      plan,
+      joinDate,
+      expiryDate,
+      renewalDate: joinDate, // You missed this earlier
+      status,
+      gender,
+      dob,
+      notes,
+    });
+
+    const savedMember = await newMember.save();
+
+    // Create and save payment
     const payment = new Payment({
       memberId: savedMember._id,
       amount,
-      method: paymentMethod
-    })
+      method: paymentMethod,
+    });
 
     await payment.save();
-   res.status(201).json({ message: 'Member created with payment' });
+
+    // Respond once
+    res.status(201).json({ message: 'Member created with payment' });
   } catch (err) {
     console.error("Create member error:", err);
-    res.status(500).json({ message: 'Failed to create member' });
+    res.status(500).json({ message: err.message || 'Failed to create member' });
   }
 });
+
 
 
 // router.post('/seed', async (req, res) => {
