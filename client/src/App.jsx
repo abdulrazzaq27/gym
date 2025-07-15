@@ -32,7 +32,7 @@ function App() {
       </div>
 
       {/* Main Content with proper spacing */}
-      <main className="pt-20 ">
+      <main className="pt-20 ml-4 mr-4 mb-4">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/members" element={<Members />} />
