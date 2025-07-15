@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import axios from '../api/axios';
+import { Link } from 'react-router-dom';
 
 function Dashboard() {
   const [dashboardData, setDashboardData] = useState({
     totalMembers: 0,
     activeMembers: 0,
-    expiredMembers: 0,
+    inactiveMembers: 0, // Changed from expiredMembers
     totalRevenue: 0,
     recentMembers: [],
     expiringMembers: []
@@ -17,17 +18,38 @@ function Dashboard() {
     Promise.all([
       axios.get('/api/dashboard/stats'),
       axios.get('/api/dashboard/recent-members'),
-      axios.get('/api/dashboard/expiring-members')
+      axios.get('/api/dashboard/expiring-members'),
+      axios.get('/api/dashboard/revenue') // Added revenue endpoint
     ])
-    .then(([statsRes, recentRes, expiringRes]) => {
-  setDashboardData({
-    ...statsRes.data,
-    recentMembers: recentRes.data.recentMembers,
-    expiringMembers: expiringRes.data.expiringMembers
-  });
-  setLoading(false);
-})
+    .then(([statsRes, recentRes, expiringRes, revenueRes]) => {
+      // Handle the new API response structure
+      const stats = statsRes.data;
+      const recentMembers = recentRes.data.recentMembers || [];
+      const expiringMembers = expiringRes.data.expiringMembers || [];
+      const revenue = revenueRes.data;
+      
+      // Calculate current month's revenue or use total revenue
+      let currentRevenue = 0;
+      if (revenue.monthlyRevenue && revenue.monthlyRevenue.length > 0) {
+        const currentMonth = new Date().getMonth() + 1;
+        const currentMonthData = revenue.monthlyRevenue.find(
+          item => item._id.month === currentMonth
+        );
+        currentRevenue = currentMonthData ? currentMonthData.total : 0;
+      } else if (revenue.totalRevenue) {
+        currentRevenue = revenue.totalRevenue.total;
+      }
 
+      setDashboardData({
+        totalMembers: stats.totalMembers || 0,
+        activeMembers: stats.activeMembers || 0,
+        inactiveMembers: stats.inactiveMembers || 0,
+        totalRevenue: currentRevenue,
+        recentMembers: recentMembers,
+        expiringMembers: expiringMembers
+      });
+      setLoading(false);
+    })
     .catch((err) => {
       console.error("Error fetching dashboard data:", err);
       setLoading(false);
@@ -46,7 +68,7 @@ function Dashboard() {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR'
-    }).format(amount);
+    }).format(amount || 0);
   }
 
   if (loading) {
@@ -97,8 +119,8 @@ function Dashboard() {
         <div className="bg-gray-800 border border-gray-600 rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-400 text-sm font-medium">Expired Members</p>
-              <p className="text-2xl font-bold text-red-400">{dashboardData.expiredMembers}</p>
+              <p className="text-gray-400 text-sm font-medium">Inactive Members</p>
+              <p className="text-2xl font-bold text-red-400">{dashboardData.inactiveMembers}</p>
             </div>
             <div className="bg-red-900 p-3 rounded-full">
               <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,10 +130,10 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-gray-800 border border-gray-600 rounded-lg p-6">
+        <Link to="/revenue" className="bg-gray-800 border border-gray-600 rounded-lg p-6 block hover:bg-gray-700 transition-colors">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-400 text-sm font-medium">Total Revenue</p>
+              <p className="text-gray-400 text-sm font-medium">Monthly Revenue</p>
               <p className="text-2xl font-bold text-yellow-400">{formatCurrency(dashboardData.totalRevenue)}</p>
             </div>
             <div className="bg-yellow-900 p-3 rounded-full">
@@ -120,7 +142,7 @@ function Dashboard() {
               </svg>
             </div>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Recent Members and Expiring Members */}
@@ -136,7 +158,7 @@ function Dashboard() {
                 <thead className="bg-gray-700">
                   <tr>
                     <th className="px-4 py-3 text-gray-200 font-semibold">Name</th>
-                    <th className="px-4 py-3 text-gray-200 font-semibold">Plan</th>
+                    <th className="px-4 py-3 text-gray-200 font-semibold">Email</th>
                     <th className="px-4 py-3 text-gray-200 font-semibold">Join Date</th>
                     <th className="px-4 py-3 text-gray-200 font-semibold">Status</th>
                   </tr>
@@ -145,13 +167,13 @@ function Dashboard() {
                   {dashboardData.recentMembers.map((member) => (
                     <tr key={member._id} className="border-b border-gray-600 hover:bg-gray-750 transition-colors">
                       <td className="px-4 py-3 text-white font-medium">{member.name}</td>
-                      <td className="px-4 py-3 text-blue-400 font-medium">{member.plan}</td>
-                      <td className="px-4 py-3 text-gray-300">{formatDate(member.joinDate)}</td>
+                      <td className="px-4 py-3 text-blue-400 font-medium">{member.email}</td>
+                      <td className="px-4 py-3 text-gray-300">{formatDate(member.createdAt)}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           member.status === 'Active' 
                             ? 'bg-green-900 text-green-300' 
-                            : member.status === 'Expired'
+                            : member.status === 'Inactive'
                             ? 'bg-red-900 text-red-300'
                             : 'bg-yellow-900 text-yellow-300'
                         }`}>
@@ -177,7 +199,7 @@ function Dashboard() {
                 <thead className="bg-gray-700">
                   <tr>
                     <th className="px-4 py-3 text-gray-200 font-semibold">Name</th>
-                    <th className="px-4 py-3 text-gray-200 font-semibold">Plan</th>
+                    <th className="px-4 py-3 text-gray-200 font-semibold">Email</th>
                     <th className="px-4 py-3 text-gray-200 font-semibold">Expiry Date</th>
                     <th className="px-4 py-3 text-gray-200 font-semibold">Days Left</th>
                   </tr>
@@ -188,7 +210,7 @@ function Dashboard() {
                     return (
                       <tr key={member._id} className="border-b border-gray-600 hover:bg-gray-750 transition-colors">
                         <td className="px-4 py-3 text-white font-medium">{member.name}</td>
-                        <td className="px-4 py-3 text-blue-400 font-medium">{member.plan}</td>
+                        <td className="px-4 py-3 text-blue-400 font-medium">{member.email}</td>
                         <td className="px-4 py-3 text-gray-300">{formatDate(member.expiryDate)}</td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${

@@ -11,6 +11,7 @@ import Navbar from './components/common/Navbar.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Members from './pages/Members.jsx';
 import CreateMember from './pages/CreateMember.jsx';
+import Revenue from './pages/Revenue.jsx';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -31,12 +32,13 @@ function App() {
       </div>
 
       {/* Main Content with proper spacing */}
-      <main className="pt-20 px-6 ">
+      <main className="pt-20 ">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/members" element={<Members />} />
           <Route path="/create-member" element={<CreateMember />} />
           <Route path="/members/:id" element={<MemberDetails />} />
+          <Route path="/revenue" element={<Revenue />} />
         </Routes>
       </main>
     </div>
