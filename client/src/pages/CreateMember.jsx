@@ -283,7 +283,7 @@ function CreateMember() {
           <div className="pt-6 flex justify-end">
             <button
               type="submit"
-              className="bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all font-semibold text-lg"
+              className="bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 hover:cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all font-semibold text-lg"
             >
               Add Member
             </button>
