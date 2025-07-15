@@ -9,6 +9,7 @@ function Revenue() {
     totalRevenue: { total: 0, count: 0 } 
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     axios.get('/api/dashboard/revenue')
@@ -18,6 +19,7 @@ function Revenue() {
       })
       .catch(err => {
         console.error("Error fetching revenue data:", err);
+        setError("Failed to load revenue data. Please try again later.");
         setLoading(false);
       });
   }, []);
@@ -25,7 +27,9 @@ function Revenue() {
   function formatCurrency(amount) {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'INR'
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(amount || 0);
   }
 
@@ -65,31 +69,50 @@ function Revenue() {
     return currentYearData ? currentYearData.total : 0;
   }
 
-  // Prepare data for charts
+  // Prepare data for charts - FIXED to generate 12 months of data
   function prepareMonthlyChartData() {
-    return revenueData.monthlyRevenue
-      .map(item => ({
-        month: getShortMonthName(item._id.month),
-        year: item._id.year,
-        revenue: item.total,
-        transactions: item.count || 0,
-        label: `${getShortMonthName(item._id.month)} ${item._id.year}`,
-        fullDate: `${item._id.year}-${item._id.month.toString().padStart(2, '0')}`
-      }))
-      .sort((a, b) => {
-        if (a.year !== b.year) return a.year - b.year;
-        return a.month - b.month;
+    // Create a map of all available data for quick lookup
+    const dataMap = new Map();
+    revenueData.monthlyRevenue.forEach(item => {
+      const key = `${item._id.year}-${item._id.month}`;
+      dataMap.set(key, item);
+    });
+
+    // Generate 12 months of data including the current month
+    const currentDate = new Date();
+    const months = [];
+    
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(currentDate.getMonth() - i);
+      
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const key = `${year}-${month}`;
+      
+      const existing = dataMap.get(key);
+      
+      months.push({
+        month: getShortMonthName(month),
+        year,
+        revenue: existing ? existing.total : 0,
+        transactions: existing ? existing.count || 0 : 0,
+        label: `${getShortMonthName(month)} ${year}`,
+        fullDate: `${year}-${month.toString().padStart(2, '0')}`
       });
+    }
+
+    return months;
   }
 
   function prepareAnnualChartData() {
-    return revenueData.annualRevenue
+    return [...revenueData.annualRevenue]
+      .sort((a, b) => a._id - b._id)
       .map(item => ({
         year: item._id.toString(),
         revenue: item.total,
         transactions: item.count || 0
-      }))
-      .sort((a, b) => parseInt(a.year) - parseInt(b.year));
+      }));
   }
 
   // Prepare data for pie chart (last 6 months)
@@ -102,16 +125,16 @@ function Revenue() {
     }));
   }
 
-  // Custom tooltip formatter
+  // Custom tooltip formatter - FIXED text visibility
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-xl backdrop-blur-sm">
           <p className="text-white font-semibold">{label}</p>
           {payload.map((entry, index) => (
-            <p key={index} className="text-sm flex items-center mt-1" style={{ color: entry.color }}>
+            <p key={index} className="text-sm flex items-center mt-1 text-gray-100">
               <span className="inline-block w-3 h-3 rounded-full mr-2" style={{ backgroundColor: entry.color }}></span>
-              {entry.name}: {entry.name === 'revenue' ? formatCurrency(entry.value) : entry.value}
+              {entry.name}: {entry.dataKey === 'revenue' ? formatCurrency(entry.value) : entry.value}
             </p>
           ))}
         </div>
@@ -153,6 +176,30 @@ function Revenue() {
       </div>
     );
   }
+
+  if (error) {
+    return (
+      <div className="w-full max-w-none flex flex-col items-center justify-center py-20">
+        <div className="bg-red-900/30 border border-red-700 rounded-xl p-8 max-w-md text-center">
+          <svg className="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <h2 className="text-2xl font-bold text-white mb-2">Data Loading Error</h2>
+          <p className="text-gray-300 mb-6">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const monthlyChartData = prepareMonthlyChartData();
+  const annualChartData = prepareAnnualChartData();
+  const monthlyPieData = prepareMonthlyPieData();
 
   return (
     <div className="w-full max-w-none flex flex-col items-start">
@@ -242,9 +289,9 @@ function Revenue() {
               Last 12 months
             </div>
           </div>
-          {prepareMonthlyChartData().length > 0 ? (
+          {monthlyChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={prepareMonthlyChartData()}>
+              <AreaChart data={monthlyChartData}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
@@ -252,8 +299,8 @@ function Revenue() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.5} />
-                <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-                <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}K`} />
+                <XAxis dataKey="label" stroke="#D1D5DB" fontSize={12} />
+                <YAxis stroke="#D1D5DB" fontSize={12} tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}K`} />
                 <Tooltip content={<CustomTooltip />} />
                 <Area
                   type="monotone"
@@ -285,12 +332,12 @@ function Revenue() {
               Last 5 years
             </div>
           </div>
-          {prepareAnnualChartData().length > 0 ? (
+          {annualChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={prepareAnnualChartData()}>
+              <BarChart data={annualChartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.5} />
-                <XAxis dataKey="year" stroke="#9CA3AF" fontSize={12} />
-                <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}K`} />
+                <XAxis dataKey="year" stroke="#D1D5DB" fontSize={12} />
+                <YAxis stroke="#D1D5DB" fontSize={12} tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}K`} />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="revenue" fill="#10B981" radius={[6, 6, 0, 0]} />
               </BarChart>
@@ -324,18 +371,31 @@ function Revenue() {
               </div>
             </div>
           </div>
-          {prepareMonthlyChartData().length > 0 ? (
+          {monthlyChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={prepareMonthlyChartData()}>
+              <LineChart data={monthlyChartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.5} />
-                <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-                <YAxis yAxisId="left" stroke="#9CA3AF" fontSize={12} tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}K`} />
-                <YAxis yAxisId="right" orientation="right" stroke="#9CA3AF" fontSize={12} />
+                <XAxis dataKey="label" stroke="#D1D5DB" fontSize={12} />
+                <YAxis 
+                  yAxisId="left" 
+                  stroke="#D1D5DB" 
+                  fontSize={12} 
+                  tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}K`} 
+                  domain={['auto', 'auto']}
+                />
+                <YAxis 
+                  yAxisId="right" 
+                  orientation="right" 
+                  stroke="#D1D5DB" 
+                  fontSize={12} 
+                  domain={[0, 'dataMax + 5']}
+                />
                 <Tooltip content={<CustomTooltip />} />
                 <Line 
                   yAxisId="left" 
                   type="monotone" 
                   dataKey="revenue" 
+                  name="Revenue"
                   stroke="#3B82F6" 
                   strokeWidth={3} 
                   dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }} 
@@ -345,6 +405,7 @@ function Revenue() {
                   yAxisId="right" 
                   type="monotone" 
                   dataKey="transactions" 
+                  name="Transactions"
                   stroke="#F59E0B" 
                   strokeWidth={2} 
                   strokeDasharray="3 3"
@@ -371,23 +432,34 @@ function Revenue() {
               Last 6 months
             </div>
           </div>
-          {prepareMonthlyPieData().length > 0 ? (
+          {monthlyPieData.length > 0 ? (
             <div className="flex">
               <ResponsiveContainer width="50%" height={300}>
                 <PieChart>
                   <Pie
-                    data={prepareMonthlyPieData()}
+                    data={monthlyPieData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => (
+                      <text 
+                        fill="#fff" 
+                        fontSize={12}
+                        fontWeight="bold"
+                        x={0} 
+                        y={0}
+                        textAnchor="middle"
+                      >
+                        {`${(percent * 100).toFixed(0)}%`}
+                      </text>
+                    )}
                     outerRadius={80}
                     innerRadius={50}
                     fill="#8884d8"
                     dataKey="value"
                     paddingAngle={2}
                   >
-                    {prepareMonthlyPieData().map((entry, index) => (
+                    {monthlyPieData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="#1f2937" strokeWidth={1} />
                     ))}
                   </Pie>
@@ -396,7 +468,7 @@ function Revenue() {
               </ResponsiveContainer>
               <div className="w-1/2 pl-4 flex flex-col justify-center">
                 <div className="space-y-3">
-                  {prepareMonthlyPieData().map((item, index) => (
+                  {monthlyPieData.map((item, index) => (
                     <div key={index} className="flex items-center">
                       <span className="w-3 h-3 rounded-sm mr-2" style={{ backgroundColor: COLORS[index] }}></span>
                       <span className="text-gray-300 text-sm">{item.name}</span>
@@ -450,14 +522,19 @@ function Revenue() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
-                    {revenueData.monthlyRevenue.map((item, index) => (
-                      <tr key={`${item._id.year}-${item._id.month}`} className="hover:bg-gray-750/50 transition-colors">
-                        <td className="px-6 py-4 text-white font-medium">{getMonthName(item._id.month)}</td>
-                        <td className="px-6 py-4 text-gray-300">{item._id.year}</td>
-                        <td className="px-6 py-4 text-green-400 font-semibold text-right">{formatCurrency(item.total)}</td>
-                        <td className="px-6 py-4 text-gray-300 text-right">{item.count || 0}</td>
-                      </tr>
-                    ))}
+                    {revenueData.monthlyRevenue
+                      .sort((a, b) => {
+                        if (a._id.year !== b._id.year) return b._id.year - a._id.year;
+                        return b._id.month - a._id.month;
+                      })
+                      .map((item, index) => (
+                        <tr key={`${item._id.year}-${item._id.month}`} className="hover:bg-gray-750/50 transition-colors">
+                          <td className="px-6 py-4 text-white font-medium">{getMonthName(item._id.month)}</td>
+                          <td className="px-6 py-4 text-gray-300">{item._id.year}</td>
+                          <td className="px-6 py-4 text-green-400 font-semibold text-right">{formatCurrency(item.total)}</td>
+                          <td className="px-6 py-4 text-gray-300 text-right">{item.count || 0}</td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
@@ -494,14 +571,16 @@ function Revenue() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
-                    {revenueData.annualRevenue.map((item, index) => (
-                      <tr key={item._id} className="hover:bg-gray-750/50 transition-colors">
-                        <td className="px-6 py-4 text-white font-medium">{item._id}</td>
-                        <td className="px-6 py-4 text-blue-400 font-semibold text-right">{formatCurrency(item.total)}</td>
-                        <td className="px-6 py-4 text-gray-300 text-right">{item.count || 0}</td>
-                        <td className="px-6 py-4 text-gray-300 text-right">{formatCurrency(item.total / 12)}</td>
-                      </tr>
-                    ))}
+                    {revenueData.annualRevenue
+                      .sort((a, b) => b._id - a._id)
+                      .map((item, index) => (
+                        <tr key={item._id} className="hover:bg-gray-750/50 transition-colors">
+                          <td className="px-6 py-4 text-white font-medium">{item._id}</td>
+                          <td className="px-6 py-4 text-blue-400 font-semibold text-right">{formatCurrency(item.total)}</td>
+                          <td className="px-6 py-4 text-gray-300 text-right">{item.count || 0}</td>
+                          <td className="px-6 py-4 text-gray-300 text-right">{formatCurrency(item.total / 12)}</td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
