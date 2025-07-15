@@ -24,6 +24,8 @@ function CreateMember() {
     plan: '',
     joinDate: new Date().toISOString().split('T')[0],
     status: 'Active',
+    amount: '',
+    paymentMethod: '',
     notes: '',
   });
 
@@ -211,6 +213,40 @@ function CreateMember() {
                   </p>
                 </div>
               )}
+              <div>
+  <label htmlFor="amount" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+    Amount Paid (₹) *
+  </label>
+  <input 
+    id="amount"
+    name="amount"
+    type="number"
+    value={formData.amount}
+    onChange={handleChange}
+    placeholder="Enter payment amount"
+    className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+    required
+  />
+</div>
+
+<div>
+  <label htmlFor="paymentMethod" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+    Payment Method *
+  </label>
+  <select 
+    id="paymentMethod"
+    name="paymentMethod"
+    value={formData.paymentMethod}
+    onChange={handleChange}
+    className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+    required
+  >
+    <option value="">Select Method</option>
+    <option value="Cash">Cash</option>
+    <option value="UPI">UPI</option>
+    <option value="Card">Card</option>
+  </select>
+</div>
             </div>
           </div>
 

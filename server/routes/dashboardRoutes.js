@@ -1,16 +1,26 @@
 const express = require('express');
 const router = express.Router();
+const Member = require('../models/Member')
 
 // Example: dummy stats response
-router.get('/stats', (req, res) => {
-  res.json({
-    totalMembers: 25,
-    activeMembers: 20,
-    expiredMembers: 5,
-  });
+router.get('/stats', async (req, res) => {
+  try {
+    const totalMembers = await Member.countDocuments(); // counts all
+    const activeMembers = await Member.countDocuments({ status: 'Active' });
+    const expiredMembers = await Member.countDocuments({ status: 'Inactive' });
+
+    res.json({
+      totalMembers,
+      activeMembers,
+      expiredMembers
+    });
+  } catch (err) {
+    console.error("Error fetching stats:", err);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
-const Member = require('../models/Member');
+
 
 router.get('/recent-members', async (req, res) => {
   try {

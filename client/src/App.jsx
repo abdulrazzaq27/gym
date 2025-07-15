@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import axios from './api/axios';
+import MemberDetails from './pages/MemberDetails'; // adjust path as needed
+
+
 
 import './App.css';
 
@@ -33,6 +36,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/members" element={<Members />} />
           <Route path="/create-member" element={<CreateMember />} />
+          <Route path="/members/:id" element={<MemberDetails />} />
         </Routes>
       </main>
     </div>

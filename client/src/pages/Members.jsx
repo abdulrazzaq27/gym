@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import axios from '../api/axios';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
+
 
 function Members() {
+  const navigate = useNavigate();
   const [members, setMembers] = useState([]);
 
   useEffect(() => {
@@ -55,7 +59,9 @@ function Members() {
               </thead>
               <tbody className="bg-gray-800">
                 {members.map((member, index) => (
-                  <tr key={member._id} className="border-b border-gray-600 hover:bg-gray-750 transition-colors">
+                  <tr
+                    onClick={() => navigate(`/members/${member._id}`)}
+                    key={member._id} className="border-b border-gray-600 hover:bg-gray-750 hover:cursor-pointer transition-colors">
                     <td className="px-6 py-4 text-gray-300">{index + 1}</td>
                     <td className="px-6 py-4 text-white font-medium">{member.name}</td>
                     <td className="px-6 py-4 text-gray-300">{member.email}</td>
@@ -65,13 +71,12 @@ function Members() {
                     <td className="px-6 py-4 text-gray-300">{formatDate(member.renewalDate)}</td>
                     <td className="px-6 py-4 text-gray-300">{formatDate(member.expiryDate)}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        member.status === 'Active' 
-                          ? 'bg-green-900 text-green-300' 
-                          : member.status === 'Expired'
-                          ? 'bg-red-900 text-red-300'
-                          : 'bg-yellow-900 text-yellow-300'
-                      }`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${member.status === 'Active'
+                          ? 'bg-green-900 text-green-300'
+                          : member.status === 'Inactive'
+                            ? 'bg-red-900 text-red-300'
+                            : 'bg-yellow-900 text-yellow-300'
+                        }`}>
                         {member.status}
                       </span>
                     </td>

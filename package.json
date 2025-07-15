@@ -12,6 +12,7 @@
         "concurrently": "^9.2.0"
     },
     "dependencies": {
-        "dotenv": "^17.0.0"
+        "dotenv": "^17.0.0",
+        "lucide-react": "^0.525.0"
     }
 }
