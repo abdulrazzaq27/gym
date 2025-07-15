@@ -30,7 +30,7 @@ function Members() {
         <Link
           to="/create-member"
           style={{ backgroundColor: '#ed5728' }}
-          className="text-white px-4 py-2 rounded hover:bg-orange-700 transition-colors"
+          className="text-white px-4 py-2 rounded transition-colors"
         >
           Add New Member
         </Link>
@@ -44,7 +44,7 @@ function Members() {
         <div className="w-full self-start">
           <div className="overflow-x-auto w-full">
             <table className="w-full text-sm text-left border border-gray-600 rounded-lg overflow-hidden table-auto">
-              <thead className="bg-gray-700">
+              <thead className="bg-black">
                 <tr>
                   <th className="px-6 py-3 text-gray-200 font-semibold">#</th>
                   <th className="px-6 py-3 text-gray-200 font-semibold">Name</th>
@@ -61,7 +61,7 @@ function Members() {
                 {members.map((member, index) => (
                   <tr
                     onClick={() => navigate(`/members/${member._id}`)}
-                    key={member._id} className="border-b border-gray-600 hover:bg-gray-750 hover:cursor-pointer transition-colors">
+                    key={member._id} className="border-b border border-gray-600 hover:bg-gray-700 hover:border-green hover:cursor-pointer transition-colors">
                     <td className="px-6 py-4 text-gray-300">{index + 1}</td>
                     <td className="px-6 py-4 text-white font-medium">{member.name}</td>
                     <td className="px-6 py-4 text-gray-300">{member.email}</td>

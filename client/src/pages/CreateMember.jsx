@@ -7,11 +7,11 @@ function CreateMember() {
   const navigate = useNavigate();
 
   const planPrices = {
-  Monthly: 1000,
-  Quarterly: 2700,
-  'Half-Yearly': 5100,
-  Yearly: 9600,
-};
+    Monthly: 1000,
+    Quarterly: 2700,
+    'Half-Yearly': 5100,
+    Yearly: 9600,
+  };
 
 
   function formatDate(isoDate) {
@@ -59,20 +59,20 @@ function CreateMember() {
   }, [formData.plan, formData.joinDate]);
 
   const handleChange = (e) => {
-  const { name, value } = e.target;
+    const { name, value } = e.target;
 
-  setFormData((prev) => {
-    if (name === 'plan') {
-      return {
-        ...prev,
-        plan: value,
-        amount: planPrices[value] || '', // auto-update amount
-      };
-    }
+    setFormData((prev) => {
+      if (name === 'plan') {
+        return {
+          ...prev,
+          plan: value,
+          amount: planPrices[value] || '', // auto-update amount
+        };
+      }
 
-    return { ...prev, [name]: value };
-  });
-};
+      return { ...prev, [name]: value };
+    });
+  };
 
 
   const handleSubmit = async (e) => {
@@ -91,7 +91,7 @@ function CreateMember() {
 
   return (
     <div className="w-full max-w-none flex flex-col items-start">
-      <div className="w-full flex justify-between items-center mb-6">
+      <div className="w-full flex justify-center mb-6">
         <h1 className="text-3xl font-bold text-white">Add New Member</h1>
       </div>
 
@@ -239,7 +239,7 @@ function CreateMember() {
 
               <div>
                 <label htmlFor="amount" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Amount Paid (₹) *
+                  Amount (₹) *
                 </label>
                 <input
                   id="amount"
@@ -274,11 +274,16 @@ function CreateMember() {
             </div>
           </div>
 
+          {/* Amount Description */}
+
+          {!formData.amount ? ('') :
+            (<h1 className='text-4xl flex font-bold justify-center text-green-500'>Total Amount to be Paid: {formData.amount}</h1>)}
+
           {/* Submit Button */}
           <div className="pt-6 flex justify-end">
             <button
               type="submit"
-              className="bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all font-semibold text-lg"
+              className="bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 hover:cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all font-semibold text-lg"
             >
               Add Member
             </button>
