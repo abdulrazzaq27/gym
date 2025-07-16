@@ -12,6 +12,7 @@ import Dashboard from './pages/Dashboard.jsx';
 import Members from './pages/Members.jsx';
 import CreateMember from './pages/CreateMember.jsx';
 import Revenue from './pages/Revenue.jsx';
+import RenewMember from './pages/RenewMember.jsx';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -38,6 +39,7 @@ function App() {
           <Route path="/members" element={<Members />} />
           <Route path="/create-member" element={<CreateMember />} />
           <Route path="/members/:id" element={<MemberDetails />} />
+          <Route path="/members/:id/RenewMember" element={<RenewMember />} />
           <Route path="/revenue" element={<Revenue />} />
         </Routes>
       </main>

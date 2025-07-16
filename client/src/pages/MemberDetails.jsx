@@ -2,33 +2,27 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from '../api/axios'; // ✅ Adjust path if needed
 import { User, Mail, Phone, Calendar, CreditCard, Shield, FileText, ArrowLeft, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 
 function MemberDetails() {
-    // Mock data for demonstration
-    //   const member = {
-    //     id: '123',
-    //     name: 'John Anderson',
-    //     email: 'john.anderson@email.com',
-    //     phone: '+1 (555) 123-4567',
-    //     gender: 'Male',
-    //     dob: '1990-05-15',
-    //     plan: 'Premium',
-    //     status: 'active',
-    //     joinDate: '2023-01-15',
-    //     expiryDate: '2024-01-15',
-    //     notes: 'Regular member, prefers morning workouts. Has specific dietary requirements for training program.'
-    //   };
-
+    
     const { id } = useParams();
     const [member, setMember] = useState(null);
-
+    
     useEffect(() => {
         axios.get(`/api/members/${id}`)
-            .then(res => setMember(res.data))
-            .catch(err => console.error("Error fetching member:", err));
+        .then(res => setMember(res.data))
+        .catch(err => console.error("Error fetching member:", err));
     }, [id]);
-
+    
     const [loading, setLoading] = useState(false);
+    
+    const navigate = useNavigate();
+
+    function handleSubmit() {
+        navigate('./RenewMember');
+    }
 
     function formatDate(isoDate) {
         if (!isoDate) return 'N/A';
@@ -76,16 +70,17 @@ function MemberDetails() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-            <div className="w-full py-8">
+            <div className="w-full py-4">
                 {/* Header */}
                 <div className="mb-8">
                     <button
                         onClick={() => window.history.back()}
-                        className="inline-flex items-center gap-2 hover:cursor-pointer text-blue-400 hover:text-blue-300 transition-colors duration-200 mb-6 group"
+                        className="inline-flex items-center gap-2 hover:cursor-pointer text-gray-300 hover:text-blue-300 transition-colors duration-200 mb-6 group"
                     >
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
                         Back to Members
                     </button>
+
 
                     <div className="flex justify-center gap-4 mb-2">
                         <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
@@ -98,8 +93,11 @@ function MemberDetails() {
                                 {member.status || 'Unknown'}
                             </div>
                         </div>
+                    {/*******************  Renew button *****************/}
                         {member.status.toLowerCase() === 'inactive' ?
-                            (<button className="fixed top-42 right-50 bg-green-600 z-10 text-white py-3 px-6 hover:cursor-pointer rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all font-semibold text-lg">
+                            (<button
+                            onClick={handleSubmit}
+                            className="bg-green-600 z-10 mt-3 ml-16 text-white py-3 h-12 px-6 hover:cursor-pointer rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all font-semibold text-lg">
                                 Renew
                             </button>
                             ) : ('')
