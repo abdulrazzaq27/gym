@@ -1,6 +1,8 @@
 require('dotenv').config(); 
 const express = require('express');
 
+require('./cron/updateMemberStatus');
+
 const connectDB = require('./config/db');
 const cors = require('cors');
 
