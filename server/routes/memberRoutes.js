@@ -68,6 +68,36 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.put('/renew/:id', async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const { joinDate, expiryDate, status, plan, amount, paymentMethod } = req.body;
+
+    const updatedMember = await Member.findByIdAndUpdate(
+      id,
+      {
+        joinDate,
+        expiryDate,
+        status: 'Active',
+        plan,
+        amount,
+        paymentMethod
+      },
+      { new: true } // returns the updated document
+    );
+
+    if (!updatedMember) {
+      return res.status(404).json({ error: 'Member not found' });
+    }
+
+    return res.status(200).json({ message: 'Membership renewed successfully', member: updatedMember });
+  } catch (e) {
+    console.error("Error Renewing Member:", e);
+    return res.status(500).json({ message: 'Internal server error', error: e.message });
+  }
+});
+ 
 
 
 // router.post('/seed', async (req, res) => {
