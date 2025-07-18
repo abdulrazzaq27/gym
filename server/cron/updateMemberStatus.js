@@ -14,3 +14,17 @@ cron.schedule('0 0 * * *', async () => {
         console.log("Error updating members status: ", err);
     }
 })
+
+cron.schedule('0 0 * * 0', async () => {
+    const today = new Date();
+    const next7Days = new Date();
+    next7Days.setDate(today.getDate() + 7);
+
+    const expiringMembers = await Member.find( {
+        expiryDate : {
+            $gte : today,
+            $lt : next7Days,
+        },
+        status: 'Active',
+    })
+})

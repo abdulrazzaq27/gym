@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from '../api/axios'; // ✅ Adjust path if needed
+import axios from '../api/axios';
+
 import { User, Mail, Phone, Calendar, CreditCard, Shield, FileText, ArrowLeft, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const RenewMember = () => {
+
+    const navigate = useNavigate();
 
     const { id } = useParams();
 
@@ -74,8 +77,25 @@ const RenewMember = () => {
         Yearly: 9600,
     };
 
-    function handleSubmit() {
-        navigate('./RenewMember');
+    async function handleSubmit(e) {
+        e.preventDefault();
+        try {
+            await axios.put(`/api/members/renew/${id}`, {
+            joinDate: formData.joinDate,
+            expiryDate,
+            status: 'Active',
+            plan: formData.plan,
+            amount: formData.amount,
+            paymentMethod: formData.paymentMethod,
+        });
+
+        navigate(`/members/${id}`)
+        }
+        catch(e) {
+            console.log("Error renewing member ", e);
+            alert('Error Renewing Member...');
+        }
+
     }
 
     function formatDate(isoDate) {
@@ -188,7 +208,7 @@ const RenewMember = () => {
                     </div>
                 </div>
             </div>
-
+            {/* Renewal Form */}
             <div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-6">Membership Information</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -237,6 +257,7 @@ const RenewMember = () => {
                             type="date"
                             value={expiryDate}
                             disabled
+                            required
                             className="w-full p-3 bg-gray-200 dark:bg-gray-700 border border-gray-300 rounded-lg text-gray-700 dark:text-white cursor-not-allowed"
                         />
                     </div>
@@ -280,12 +301,13 @@ const RenewMember = () => {
             </div>
 
             {!formData.amount ? ('') :
-                (<h1 className='text-4xl flex font-bold justify-center text-green-500'>Total Amount to be Paid: {formData.amount}</h1>)}
+                (<h1 className='text-4xl flex mt-8 mb-4 font-bold justify-center text-green-500'>Total Amount to be Paid: {formData.amount}</h1>)}
 
             {/* Submit Button */}
             <div className="pt-6 flex justify-center">
                 <button
                     type="submit"
+                    onClick={handleSubmit}
                     style={{ backgroundColor: '#5a6eff' }}
                     className="w-3/4 bg-green-600 text-black py-3 px-8 rounded-lg hover:bg-green-700 hover:cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all font-semibold text-lg"
                 >
