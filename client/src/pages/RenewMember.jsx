@@ -21,7 +21,7 @@ const RenewMember = () => {
         gender: '',
         dob: '',
         plan: '',
-        joinDate: new Date().toISOString().split('T')[0],
+        renewalDate: new Date().toISOString().split('T')[0],
         status: 'Active',
         amount: '',
         paymentMethod: '',
@@ -45,9 +45,30 @@ const RenewMember = () => {
     };
     const [expiryDate, setExpiryDate] = useState('');
 
+    // make sure no direct access to renew member by manual entering url
     useEffect(() => {
-        if (formData.plan && formData.joinDate) {
-            const renewal = new Date(formData.joinDate);
+    async function checkMemberStatus(e) {
+      try {
+        const res = await axios.get(`/api/members/${id}`);
+        const member = res.data;
+
+        if (member.status === 'Active') {
+          // redirect to details page if already active
+          navigate(`/members/${id}`, { replace: true });
+        }
+      } catch (err) {
+        console.error("Error fetching member:", err);
+        // Optional: navigate to 404 or error page
+        navigate('/members', { replace: true });
+      }
+    }
+
+    checkMemberStatus();
+  }, [id, navigate]);
+
+    useEffect(() => {
+        if (formData.plan && formData.renewalDate) {
+            const renewal = new Date(formData.renewalDate);
             const expiry = new Date(renewal);
             expiry.setMonth(expiry.getMonth() + planDurations[formData.plan]);
             setExpiryDate(expiry.toISOString().split('T')[0]);
@@ -81,7 +102,7 @@ const RenewMember = () => {
         e.preventDefault();
         try {
             await axios.put(`/api/members/renew/${id}`, {
-            joinDate: formData.joinDate,
+            renewalDate: formData.renewalDate,
             expiryDate,
             status: 'Active',
             plan: formData.plan,
@@ -89,7 +110,7 @@ const RenewMember = () => {
             paymentMethod: formData.paymentMethod,
         });
 
-        navigate(`/members/${id}`)
+        navigate(`/members/${id}`, {replace: true})
         }
         catch(e) {
             console.log("Error renewing member ", e);

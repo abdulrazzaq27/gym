@@ -6,18 +6,18 @@ import { useNavigate } from 'react-router-dom';
 
 
 function MemberDetails() {
-    
+
     const { id } = useParams();
     const [member, setMember] = useState(null);
-    
+
     useEffect(() => {
         axios.get(`/api/members/${id}`)
-        .then(res => setMember(res.data))
-        .catch(err => console.error("Error fetching member:", err));
+            .then(res => setMember(res.data))
+            .catch(err => console.error("Error fetching member:", err));
     }, [id]);
-    
+
     const [loading, setLoading] = useState(false);
-    
+
     const navigate = useNavigate();
 
     function handleSubmit() {
@@ -46,7 +46,7 @@ function MemberDetails() {
     function getStatusIcon(status) {
         switch (status?.toLowerCase()) {
             case 'active': return <CheckCircle className="w-4 h-4" />;
-            case 'expired': return <XCircle className="w-4 h-4" />;
+            case 'inactive': return <XCircle className="w-4 h-4" />;
             case 'suspended': return <Clock className="w-4 h-4" />;
             default: return <Shield className="w-4 h-4" />;
         }
@@ -74,12 +74,13 @@ function MemberDetails() {
                 {/* Header */}
                 <div className="mb-8">
                     <button
-                        onClick={() => window.history.back()}
+                        onClick={() => navigate('/members')}
                         className="inline-flex items-center gap-2 hover:cursor-pointer text-gray-300 hover:text-blue-300 transition-colors duration-200 mb-6 group"
                     >
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
                         Back to Members
                     </button>
+
 
 
                     <div className="flex justify-center gap-4 mb-2">
@@ -93,11 +94,11 @@ function MemberDetails() {
                                 {member.status || 'Unknown'}
                             </div>
                         </div>
-                    {/*******************  Renew button *****************/}
+                        {/*******************  Renew button *****************/}
                         {member.status.toLowerCase() === 'inactive' ?
                             (<button
-                            onClick={handleSubmit}
-                            className="bg-green-600 z-10 mt-3 ml-16 text-white py-3 h-12 px-6 hover:cursor-pointer rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all font-semibold text-lg">
+                                onClick={handleSubmit}
+                                className="bg-green-600 z-10 mt-3 ml-16 text-white py-3 h-12 px-6 hover:cursor-pointer rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all font-semibold text-lg">
                                 Renew
                             </button>
                             ) : ('')

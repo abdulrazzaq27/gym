@@ -72,12 +72,12 @@ router.put('/renew/:id', async (req, res) => {
   const id = req.params.id;
 
   try {
-    const { joinDate, expiryDate, status, plan, amount, paymentMethod } = req.body;
+    const { renewalDate, expiryDate, status, plan, amount, paymentMethod } = req.body;
 
     const updatedMember = await Member.findByIdAndUpdate(
       id,
       {
-        joinDate,
+        renewalDate,
         expiryDate,
         status: 'Active',
         plan,
