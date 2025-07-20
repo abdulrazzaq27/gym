@@ -3,7 +3,6 @@ const Member = require('../models/Member');
 
 cron.schedule('0 0 * * *', async () => {
     const today = new Date();
-    console.log("Member Status Update Running...")
     
     try {
         await Member.updateMany({expiryDate : {$lt: today}, status: 'Active'}, {status: 'Inactive'});

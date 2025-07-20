@@ -11,6 +11,7 @@ const app = express();
 
 const memberRoutes = require('./routes/memberRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const paymentRoutes = require('./routes/paymentRoutes')
 
 app.use(cors({
   origin: 'http://localhost:5173',
@@ -40,6 +41,9 @@ app.get('/', (req, res) => {
 
 app.use('/api/members', memberRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+
+app.use('/api/payments', paymentRoutes);
+
 
 
 const PORT = process.env.PORT || 3000;

@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import axios from './api/axios';
-import MemberDetails from './pages/MemberDetails'; // adjust path as needed
+import MemberDetails from './pages/MemberDetails';
 
 
 
 import './App.css';
 
 import Navbar from './components/common/Navbar.jsx';
+import ScrollToTop from "./components/common/ScrollToTop";
 import Dashboard from './pages/Dashboard.jsx';
 import Members from './pages/Members.jsx';
 import CreateMember from './pages/CreateMember.jsx';
@@ -32,6 +33,7 @@ function App() {
         <Navbar />
       </div>
 
+      <ScrollToTop/>
       {/* Main Content with proper spacing */}
       <main className="pt-20 ml-4 mr-4 mb-4">
         <Routes>
