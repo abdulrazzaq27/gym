@@ -47,24 +47,24 @@ const RenewMember = () => {
 
     // make sure no direct access to renew member by manual entering url
     useEffect(() => {
-    async function checkMemberStatus(e) {
-      try {
-        const res = await axios.get(`/api/members/${id}`);
-        const member = res.data;
+        async function checkMemberStatus(e) {
+            try {
+                const res = await axios.get(`/api/members/${id}`);
+                const member = res.data;
 
-        if (member.status === 'Active') {
-          // redirect to details page if already active
-          navigate(`/members/${id}`, { replace: true });
+                if (member.status === 'Active') {
+                    // redirect to details page if already active
+                    navigate(`/members/${id}`, { replace: true });
+                }
+            } catch (err) {
+                console.error("Error fetching member:", err);
+                // Optional: navigate to 404 or error page
+                navigate('/members', { replace: true });
+            }
         }
-      } catch (err) {
-        console.error("Error fetching member:", err);
-        // Optional: navigate to 404 or error page
-        navigate('/members', { replace: true });
-      }
-    }
 
-    checkMemberStatus();
-  }, [id, navigate]);
+        checkMemberStatus();
+    }, [id, navigate]);
 
     useEffect(() => {
         if (formData.plan && formData.renewalDate) {
@@ -102,17 +102,17 @@ const RenewMember = () => {
         e.preventDefault();
         try {
             await axios.put(`/api/members/renew/${id}`, {
-            renewalDate: formData.renewalDate,
-            expiryDate,
-            status: 'Active',
-            plan: formData.plan,
-            amount: formData.amount,
-            paymentMethod: formData.paymentMethod,
-        });
+                renewalDate: formData.renewalDate,
+                expiryDate,
+                status: 'Active',
+                plan: formData.plan,
+                amount: formData.amount,
+                paymentMethod: formData.paymentMethod,
+            });
 
-        navigate(`/members/${id}`, {replace: true})
+            navigate(`/members/${id}`, { replace: true })
         }
-        catch(e) {
+        catch (e) {
             console.log("Error renewing member ", e);
             alert('Error Renewing Member...');
         }
@@ -230,111 +230,112 @@ const RenewMember = () => {
                 </div>
             </div>
             {/* Renewal Form */}
-            <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-6">Membership Information</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div>
-                        <label htmlFor="joinDate" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Renewal Date*
-                        </label>
-                        <input
-                            id="joinDate"
-                            type="date"
-                            name="joinDate"
-                            value={formData.joinDate}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            required
-                        />
-                    </div>
+            <form onSubmit={handleSubmit}>
+                <div>
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 mb-6">Membership Information</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div>
+                            <label htmlFor="joinDate" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Renewal Date*
+                            </label>
+                            <input
+                                id="joinDate"
+                                type="date"
+                                name="joinDate"
+                                value={formData.joinDate}
+                                onChange={handleChange}
+                                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                required
+                            />
+                        </div>
 
-                    <div>
-                        <label htmlFor="plan" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Membership Plan *
-                        </label>
-                        <select
-                            id="plan"
-                            name="plan"
-                            value={formData.plan}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            required
-                        >
-                            <option value="">Select Plan</option>
-                            <option value="Monthly">Monthly</option>
-                            <option value="Quarterly">Quarterly (3 months)</option>
-                            <option value="Half-Yearly">Half-Yearly (6 months)</option>
-                            <option value="Yearly">Yearly (12 months)</option>
-                        </select>
-                    </div>
+                        <div>
+                            <label htmlFor="plan" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Membership Plan *
+                            </label>
+                            <select
+                                id="plan"
+                                name="plan"
+                                value={formData.plan}
+                                onChange={handleChange}
+                                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                required
+                            >
+                                <option value="">Select Plan</option>
+                                <option value="Monthly">Monthly</option>
+                                <option value="Quarterly">Quarterly (3 months)</option>
+                                <option value="Half-Yearly">Half-Yearly (6 months)</option>
+                                <option value="Yearly">Yearly (12 months)</option>
+                            </select>
+                        </div>
 
-                    <div>
-                        <label htmlFor="expiryDate" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Plan Expiry Date
-                        </label>
-                        <input
-                            id="expiryDate"
-                            name="expiryDate"
-                            type="date"
-                            value={expiryDate}
-                            disabled
-                            required
-                            className="w-full p-3 bg-gray-200 dark:bg-gray-700 border border-gray-300 rounded-lg text-gray-700 dark:text-white cursor-not-allowed"
-                        />
-                    </div>
+                        <div>
+                            <label htmlFor="expiryDate" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Plan Expiry Date
+                            </label>
+                            <input
+                                id="expiryDate"
+                                name="expiryDate"
+                                type="date"
+                                value={expiryDate}
+                                disabled
+                                required
+                                className="w-full p-3 bg-gray-200 dark:bg-gray-700 border border-gray-300 rounded-lg text-gray-700 dark:text-white cursor-not-allowed"
+                            />
+                        </div>
 
-                    <div>
-                        <label htmlFor="amount" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Amount (₹) *
-                        </label>
-                        <input
-                            id="amount"
-                            name="amount"
-                            type="number"
-                            value={formData.amount}
-                            onChange={handleChange}
-                            disabled
-                            placeholder="Amount"
-                            className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white cursor-not-allowed"
-                            required
-                        />
-                    </div>
+                        <div>
+                            <label htmlFor="amount" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Amount (₹) *
+                            </label>
+                            <input
+                                id="amount"
+                                name="amount"
+                                type="number"
+                                value={formData.amount}
+                                onChange={handleChange}
+                                disabled
+                                placeholder="Amount"
+                                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white cursor-not-allowed"
+                                required
+                            />
+                        </div>
 
-                    <div>
-                        <label htmlFor="paymentMethod" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Payment Method *
-                        </label>
-                        <select
-                            id="paymentMethod"
-                            name="paymentMethod"
-                            value={formData.paymentMethod}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            required
-                        >
-                            <option value="">Select Method</option>
-                            <option value="Cash">Cash</option>
-                            <option value="UPI">UPI</option>
-                            <option value="Card">Card</option>
-                        </select>
+                        <div>
+                            <label htmlFor="paymentMethod" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Payment Method *
+                            </label>
+                            <select
+                                id="paymentMethod"
+                                name="paymentMethod"
+                                value={formData.paymentMethod}
+                                onChange={handleChange}
+                                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                required
+                            >
+                                <option value="">Select Method</option>
+                                <option value="Cash">Cash</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Card">Card</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {!formData.amount ? ('') :
-                (<h1 className='text-4xl flex mt-8 mb-4 font-bold justify-center text-green-500'>Total Amount to be Paid: {formData.amount}</h1>)}
+                {!formData.amount ? ('') :
+                    (<h1 className='text-4xl flex mt-8 mb-4 font-bold justify-center text-green-500'>Total Amount to be Paid: {formData.amount}</h1>)}
 
-            {/* Submit Button */}
-            <div className="pt-6 flex justify-center">
-                <button
-                    type="submit"
-                    onClick={handleSubmit}
-                    style={{ backgroundColor: '#5a6eff' }}
-                    className="w-3/4 bg-green-600 text-black py-3 px-8 rounded-lg hover:bg-green-700 hover:cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all font-semibold text-lg"
-                >
-                    Renew
-                </button>
-            </div>
+                {/* Submit Button */}
+                <div className="pt-6 flex justify-center">
+                    <button
+                        type="submit"
+                        style={{ backgroundColor: '#5a6eff' }}
+                        className="w-3/4 bg-green-600 text-black py-3 px-8 rounded-lg hover:bg-green-700 hover:cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all font-semibold text-lg"
+                    >
+                        Renew
+                    </button>
+                </div>
+            </form>
 
         </>
     )
