@@ -12,6 +12,7 @@ const app = express();
 const memberRoutes = require('./routes/memberRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const paymentRoutes = require('./routes/paymentRoutes')
+const attendanceRoutes = require('./routes/attendanceRoutes')
 
 app.use(cors({
   origin: 'http://localhost:5173',
@@ -43,6 +44,7 @@ app.use('/api/members', memberRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
 app.use('/api/payments', paymentRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 
 

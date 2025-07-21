@@ -8,12 +8,19 @@ import { useNavigate } from 'react-router-dom';
 function Members() {
   const navigate = useNavigate();
   const [members, setMembers] = useState([]);
+  const [attendance, setAttendance] = useState(false);
 
   useEffect(() => {
     axios.get('/api/members')
       .then((res) => setMembers(res.data))
       .catch((err) => console.error("Error fetching members:", err));
   }, []);
+
+  function markAttendance(e, id) {
+    e.stopPropagation()
+    // setAttendance(true);
+    console.log("marked: ", id);
+  }
 
   function formatDate(isoDate) {
     const date = new Date(isoDate);
@@ -48,13 +55,14 @@ function Members() {
                 <tr>
                   <th className="px-6 py-3 text-gray-200 font-semibold">#</th>
                   <th className="px-6 py-3 text-gray-200 font-semibold">Name</th>
-                  <th className="px-6 py-3 text-gray-200 font-semibold">Email</th>
+                  {/* <th className="px-6 py-3 text-gray-200 font-semibold">Email</th> */}
                   <th className="px-6 py-3 text-gray-200 font-semibold">Phone</th>
                   <th className="px-6 py-3 text-gray-200 font-semibold">Plan</th>
                   <th className="px-6 py-3 text-gray-200 font-semibold">Gender</th>
                   <th className="px-6 py-3 text-gray-200 font-semibold">Renewal Date</th>
                   <th className="px-6 py-3 text-gray-200 font-semibold">Expiry Date</th>
                   <th className="px-6 py-3 text-gray-200 font-semibold">Status</th>
+                  <th className="px-6 py-3 text-gray-200 font-semibold">Attendance</th>
                 </tr>
               </thead>
               <tbody className="bg-gray-800">
@@ -64,7 +72,7 @@ function Members() {
                     key={member._id} className="border-b border border-gray-600 hover:bg-gray-700 hover:border-green hover:cursor-pointer transition-colors">
                     <td className="px-6 py-4 text-gray-300">{index + 1}</td>
                     <td className="px-6 py-4 text-white font-medium">{member.name}</td>
-                    <td className="px-6 py-4 text-gray-300">{member.email}</td>
+                    {/* <td className="px-6 py-4 text-gray-300">{member.email}</td> */}
                     <td className="px-6 py-4 text-gray-300">{member.phone}</td>
                     <td className="px-6 py-4 text-blue-400 font-medium">{member.plan}</td>
                     <td className="px-6 py-4 text-gray-300">{member.gender}</td>
@@ -80,6 +88,9 @@ function Members() {
                         {member.status}
                       </span>
                     </td>
+                    <td className="px-6 py-4 text-gray-300">{<button className='text-white px-4 py-2 rounded transition-colors bg-black hover:cursor-pointer'
+                    onClick={(e) => markAttendance(e, member._id)}
+                    >Mark</button>}</td>
                   </tr>
                 ))}
               </tbody>
