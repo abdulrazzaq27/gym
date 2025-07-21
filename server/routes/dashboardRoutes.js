@@ -88,31 +88,24 @@ router.get('/expiring-members', async (req, res) => {
 // Get revenue data
 router.get('/revenue', async (req, res) => {
   try {
-    const currentYear = new Date().getFullYear();
-    
     const [monthlyRevenue, annualRevenue, totalRevenue] = await Promise.all([
-      // Monthly revenue for current year
+      // Monthly revenue for all years and months
       Payment.aggregate([
         {
-          $match: {
-            date: {
-              $gte: new Date(currentYear, 0, 1),
-              $lt: new Date(currentYear + 1, 0, 1)
-            }
-          }
-        },
-        {
           $group: {
-            _id: { 
-              month: { $month: "$date" },
-              year: { $year: "$date" }
+            _id: {
+              year: { $year: "$date" },
+              month: { $month: "$date" }
             },
             total: { $sum: "$amount" },
             count: { $sum: 1 }
           }
         },
         {
-          $sort: { "_id.month": 1 }
+          $sort: {
+            "_id.year": 1,
+            "_id.month": 1
+          }
         }
       ]),
       
