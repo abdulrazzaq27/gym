@@ -235,8 +235,8 @@ function MemberDetails() {
                                 <div className="relative">
                                     <div className="absolute left-2 top-2 w-2 h-2 bg-blue-400 rounded-full"></div>
                                     <div className="pl-6">
-                                        <div className="text-sm text-gray-400">Joined</div>
-                                        <div className="text-white font-medium">{formatDate(member.joinDate)}</div>
+                                        <div className="text-sm text-gray-400">Last Renewal</div>
+                                        <div className="text-white font-medium">{formatDate(member.renewalDate)}</div>
                                     </div>
                                 </div>
                                 <div className="relative">
