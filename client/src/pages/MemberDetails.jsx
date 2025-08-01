@@ -252,26 +252,7 @@ function MemberDetails() {
                 </div>
             </div>
 
-            <h2 className="text-xl text-white font-bold mt-6 mb-2">Payment History</h2>
-            <table className="w-full text-sm text-left border border-gray-600 rounded-lg overflow-hidden table-auto">
-              <thead className="bg-black">
-                <tr>
-                  <th className="px-6 py-3 text-gray-200 font-semibold">Date</th>
-                  <th className="px-6 py-3 text-gray-200 font-semibold">Amount</th>
-                  <th className="px-6 py-3 text-gray-200 font-semibold">Method</th>
-                </tr>
-              </thead>
-              <tbody className="bg-gray-800">
-                {paymentHistory.map((payment) => (
-                  <tr
-                    key={member._id} className="border-b border border-gray-600  transition-colors">
-                    <td className="px-6 py-4 text-white font-medium">{formatDate2(payment.date)}</td>
-                    <td className="px-6 py-4 text-white font-medium">{payment.amount}</td>
-                    <td className="px-6 py-4 text-white font-medium">{payment.method}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            
 
         </div>
     );
