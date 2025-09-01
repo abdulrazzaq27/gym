@@ -1,107 +1,113 @@
-import { useEffect, useState } from 'react';
-import axios from '../api/axios';
-import { format } from 'date-fns';
+import { useEffect, useState } from "react";
+import axios from "../api/axios";
 
-function Attendance() {
+function AttendanceOverview() {
+  const [days, setDays] = useState([]);
   const [members, setMembers] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [attendanceMap, setAttendanceMap] = useState({}); // { memberId: true/false }
+  const [month, setMonth] = useState(() => {
+    const today = new Date();
+    return today.toISOString().slice(0, 7);
+  });
 
   useEffect(() => {
-    axios.get('/api/attendance')
-      .then((res) => setMembers(res.data))
-      .catch((err) => console.error("Error fetching members:", err));
+    const fetchData = async () => {
+      try {
+        // 1. fetch all members
+        const membersRes = await axios.get("/api/members");
+        const allMembers = membersRes.data;
 
-    fetchAttendanceForDate(new Date());
-  }, []);
+        // 2. fetch attendance for the month
+        const attendanceRes = await axios.get(`/api/attendance?month=${month}`);
+        const attendance = attendanceRes.data.result; // days mapped to 0/1
 
-  const fetchAttendanceForDate = async (date) => {
-    try {
-      const formattedDate = format(date, 'yyyy-MM-dd');
-      const res = await axios.get(`/api/attendance?date=${formattedDate}`);
-      const map = {};
-      res.data.forEach(entry => {
-        map[entry.memberId] = true;
-      });
-      setAttendanceMap(map);
-    } catch (err) {
-      console.error("Failed to fetch attendance:", err);
-    }
-  };
+        // 3. days in month
+        const totalDays = attendanceRes.data.days.length
+          ? attendanceRes.data.days
+          : [...Array(new Date(month.split("-")[0], month.split("-")[1], 0).getDate()).keys()].map(d => d + 1);
+        setDays(totalDays);
 
-  const handleDateChange = (e) => {
-    const newDate = new Date(e.target.value);
-    setSelectedDate(newDate);
-    fetchAttendanceForDate(newDate);
-  };
+        // 4. map attendance to all members
+        const overview = allMembers.map((member) => {
+          const dayMap = {};
+          totalDays.forEach((day) => {
+            dayMap[day] = 0; // default absent
+          });
 
-  const markAttendance = async (memberId) => {
-    try {
-      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      await axios.post('/api/attendance/mark', { memberId, date: formattedDate });
-      setAttendanceMap(prev => ({ ...prev, [memberId]: true }));
-    } catch (err) {
-      console.error("Error marking attendance:", err);
-    }
-  };
+          // fill attendance if exists
+          const record = attendance.find((r) => r.memberId === member._id);
+          if (record) {
+            totalDays.forEach((day) => {
+              if (record[day] === 1) dayMap[day] = 1;
+            });
+          }
+
+          return { ...dayMap, memberId: member._id, name: member.name };
+        });
+
+        setMembers(overview);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchData();
+  }, [month]);
 
   return (
-    <div className="p-6 text-white">
-      <h1 className="text-3xl font-bold mb-6">Attendance</h1>
+    <div className="p-4">
+      <h2 className="text-xl font-bold text-white mb-4">
+        Attendance Overview ({month})
+      </h2>
 
-      <div className="mb-4">
-        <label className="mr-2 text-lg font-semibold">Select Date:</label>
-        <input
-          type="date"
-          value={format(selectedDate, 'yyyy-MM-dd')}
-          onChange={handleDateChange}
-          className="text-black px-3 py-1 rounded"
-        />
-      </div>
+      <input
+        type="month"
+        value={month}
+        onChange={(e) => setMonth(e.target.value)}
+        className="mb-4 p-2 rounded bg-gray-800 text-white"
+      />
 
-      <table className="w-full text-sm text-left border border-gray-600 rounded-lg overflow-hidden table-auto">
-        <thead className="bg-black">
-          <tr>
-            <th className="px-6 py-3 text-gray-200 font-semibold">#</th>
-            <th className="px-6 py-3 text-gray-200 font-semibold">Name</th>
-            <th className="px-6 py-3 text-gray-200 font-semibold">Plan</th>
-            <th className="px-6 py-3 text-gray-200 font-semibold">Status</th>
-            <th className="px-6 py-3 text-gray-200 font-semibold">Attendance</th>
-          </tr>
-        </thead>
-        <tbody className="bg-gray-800">
-          {members.map((member, index) => (
-            <tr key={member._id} className="border-b border border-gray-600 hover:bg-gray-700">
-              <td className="px-6 py-4 text-gray-300">{index + 1}</td>
-              <td className="px-6 py-4 text-white font-medium">{member.name}</td>
-              <td className="px-6 py-4 text-blue-400">{member.plan}</td>
-              <td className="px-6 py-4">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  member.status === 'Active'
-                    ? 'bg-green-900 text-green-300'
-                    : 'bg-red-900 text-red-300'
-                }`}>
-                  {member.status}
-                </span>
-              </td>
-              <td className="px-6 py-4">
-                {attendanceMap[member._id] ? (
-                  <span className="text-green-300">Present</span>
-                ) : (
-                  <button
-                    onClick={() => markAttendance(member._id)}
-                    className="text-white px-4 py-1 rounded bg-black hover:bg-gray-900"
-                  >
-                    Mark Present
-                  </button>
-                )}
-              </td>
+      <div className="overflow-x-auto">
+        <table className="table-auto border border-gray-600 w-full text-sm text-white">
+          <thead>
+            <tr className="bg-gray-800">
+              <th className="border border-gray-600 px-2 py-1">Member</th>
+              {days.map((day) => (
+                <th key={day} className="border border-gray-600 px-1 py-1">{day}</th>
+              ))}
+              <th className="border border-gray-600 px-2 py-1">Total</th>
+              <th className="border border-gray-600 px-2 py-1">%</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {members.map((member) => {
+              const totalPresent = days.reduce(
+                (sum, day) => sum + (member[day] || 0),
+                0
+              );
+              const percentage = ((totalPresent / days.length) * 100).toFixed(0);
+
+              return (
+                <tr key={member.memberId} className="hover:bg-gray-700">
+                  <td className="border border-gray-600 px-2 py-1 font-medium">{member.name}</td>
+                  {days.map((day) => (
+                    <td
+                      key={day}
+                      className="border border-gray-600 text-center font-bold"
+                      style={{ color: member[day] ? "green" : "red" }}
+                    >
+                      {member[day] ? "✔" : "✖"}
+                    </td>
+                  ))}
+                  <td className="border border-gray-600 text-center text-white">{totalPresent}</td>
+                  <td className="border border-gray-600 text-center">{percentage}%</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
-export default Attendance;
+export default AttendanceOverview;

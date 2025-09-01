@@ -2,6 +2,65 @@ const express = require("express");
 const router = express.Router();
 const Attendance = require("../models/Attendance");
 
+
+// GET /attendance?month=2025-09
+router.get("/", async (req, res) => {
+  try {
+    let { month } = req.query; // YYYY-MM format
+
+    if (!month) {
+      const today = new Date();
+      month = today.toISOString().slice(0, 7); // "YYYY-MM"
+    }
+
+    const [year, m] = month.split("-");
+    const start = new Date(year, m - 1, 1);
+    const end = new Date(year, m, 0, 23, 59, 59);
+
+    // Fetch records
+    const records = await Attendance.find({
+      date: { $gte: start, $lte: end }
+    }).populate("memberId", "name");
+
+    // Get all days in month
+    const daysInMonth = new Date(year, m, 0).getDate();
+    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+    // Group by member
+    const overview = {};
+    records.forEach(r => {
+      const day = new Date(r.date).getDate();
+      const id = r.memberId._id.toString();
+      if (!overview[id]) {
+        overview[id] = {
+          memberId: id,
+          name: r.memberId.name,
+          days: {}
+        };
+      }
+      overview[id].days[day] = 1; // present
+    });
+
+    // Normalize into grid (fill absents with 0)
+    const result = Object.values(overview).map(member => {
+      const row = { memberId: member.memberId, name: member.name };
+      days.forEach(d => {
+        row[d] = member.days[d] ? 1 : 0;
+      });
+      return row;
+    });
+
+    res.json({ days, result });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+
+
 // ✅ Mark attendance
 router.post("/mark/:memberId", async (req, res) => {
   const { memberId } = req.params;
