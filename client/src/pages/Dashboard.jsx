@@ -31,9 +31,11 @@ function Dashboard() {
       // Calculate current month's revenue or use total revenue
       let currentRevenue = 0;
       if (revenue.monthlyRevenue && revenue.monthlyRevenue.length > 0) {
-        const currentMonth = new Date().getMonth() + 1;
+        const today = new Date();
+        const currentMonth = today.getMonth() + 1;
+        const currentYear = today.getFullYear();
         const currentMonthData = revenue.monthlyRevenue.find(
-          item => item._id.month === currentMonth
+          item => item._id.month === currentMonth && item._id.year === currentYear
         );
         currentRevenue = currentMonthData ? currentMonthData.total : 0;
       } else if (revenue.totalRevenue) {
@@ -132,8 +134,9 @@ function Dashboard() {
 
         <Link to="/revenue" className="bg-gray-800 border border-gray-600 rounded-lg p-6 block hover:bg-gray-700 transition-colors">
           <div className="flex items-center justify-between">
+            
             <div>
-              <p className="text-gray-400 text-sm font-medium">Monthly Revenue</p>
+              <p className="text-gray-400 text-sm font-medium">Current Month Revenue</p>
               <p className="text-2xl font-bold text-yellow-400">{formatCurrency(dashboardData.totalRevenue)}</p>
             </div>
             <div className="bg-yellow-900 p-3 rounded-full">
