@@ -15,7 +15,7 @@ function MemberDetails() {
         axios.get(`/api/members/${id}`)
             .then(res => setMember(res.data))
             .catch(err => console.error("Error fetching member:", err));
-    }, [id]);
+    }, []);
 
     useEffect(() => {
         axios.get(`/api/payments/history/${id}`)

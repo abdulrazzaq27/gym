@@ -8,7 +8,7 @@ function Attendance() {
   const [attendanceMap, setAttendanceMap] = useState({}); // { memberId: true/false }
 
   useEffect(() => {
-    axios.get('/api/members')
+    axios.get('/api/attendance')
       .then((res) => setMembers(res.data))
       .catch((err) => console.error("Error fetching members:", err));
 
