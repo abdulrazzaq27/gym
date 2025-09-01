@@ -6,8 +6,14 @@ const attendanceSchema = new mongoose.Schema({
     ref: "Member",
     required: true
   },
-  date: { type: Date, required: true },
-  checkInTime: { type: String, required: true }
+  date: {
+    type: Date,
+    required: true
+  },
+  checkInTime: {
+    type: String,
+    required: true
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Attendance", attendanceSchema);
