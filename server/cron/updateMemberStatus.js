@@ -1,7 +1,7 @@
 const cron = require('node-cron');
 const Member = require('../models/Member');
 
-cron.schedule('0 0 * * *', async () => {
+cron.schedule('*/5 * * * *', async () => {
     const today = new Date();
     
     try {
