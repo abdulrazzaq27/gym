@@ -23,7 +23,9 @@ function AttendanceOverview() {
         // 3. days in month
         const totalDays = attendanceRes.data.days.length
           ? attendanceRes.data.days
-          : [...Array(new Date(month.split("-")[0], month.split("-")[1], 0).getDate()).keys()].map(d => d + 1);
+          : [...Array(new Date(month.split("-")[0], month.split("-")[1], 0).getDate()).keys()].map(
+              (d) => d + 1
+            );
         setDays(totalDays);
 
         // 4. map attendance to all members
@@ -72,7 +74,9 @@ function AttendanceOverview() {
             <tr className="bg-gray-800">
               <th className="border border-gray-600 px-2 py-1">Member</th>
               {days.map((day) => (
-                <th key={day} className="border border-gray-600 px-1 py-1">{day}</th>
+                <th key={day} className="border border-gray-600 px-1 py-1">
+                  {day}
+                </th>
               ))}
               <th className="border border-gray-600 px-2 py-1">Total</th>
               <th className="border border-gray-600 px-2 py-1">%</th>
@@ -80,26 +84,54 @@ function AttendanceOverview() {
           </thead>
           <tbody>
             {members.map((member) => {
-              const totalPresent = days.reduce(
+              const today = new Date();
+              const [year, monthNum] = month.split("-");
+
+              // filter only past/current days
+              const validDays = days.filter((day) => {
+                const cellDate = new Date(year, monthNum - 1, day);
+                return cellDate <= today;
+              });
+
+              const totalPresent = validDays.reduce(
                 (sum, day) => sum + (member[day] || 0),
                 0
               );
-              const percentage = ((totalPresent / days.length) * 100).toFixed(0);
+              const percentage =
+                validDays.length > 0
+                  ? ((totalPresent / validDays.length) * 100).toFixed(0)
+                  : 0;
 
               return (
                 <tr key={member.memberId} className="hover:bg-gray-700">
-                  <td className="border border-gray-600 px-2 py-1 font-medium">{member.name}</td>
-                  {days.map((day) => (
-                    <td
-                      key={day}
-                      className="border border-gray-600 text-center font-bold"
-                      style={{ color: member[day] ? "green" : "red" }}
-                    >
-                      {member[day] ? "✔" : "✖"}
-                    </td>
-                  ))}
-                  <td className="border border-gray-600 text-center text-white">{totalPresent}</td>
-                  <td className="border border-gray-600 text-center">{percentage}%</td>
+                  <td className="border border-gray-600 px-2 py-1 font-medium">
+                    {member.name}
+                  </td>
+                  {days.map((day) => {
+                    const cellDate = new Date(year, monthNum - 1, day);
+                    const isFuture = cellDate > today;
+                    return (
+                      <td
+                        key={day}
+                        className="border border-gray-600 text-center font-bold"
+                        style={{
+                          color: isFuture
+                            ? "gray"
+                            : member[day]
+                            ? "green"
+                            : "red",
+                        }}
+                      >
+                        {isFuture ? "-" : member[day] ? "✅" : "❌"}
+                      </td>
+                    );
+                  })}
+                  <td className="border border-gray-600 text-center text-white">
+                    {totalPresent}
+                  </td>
+                  <td className="border border-gray-600 text-center">
+                    {percentage}%
+                  </td>
                 </tr>
               );
             })}
