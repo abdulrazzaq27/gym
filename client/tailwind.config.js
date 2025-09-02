@@ -8,14 +8,26 @@ export default {
     extend: {
       colors: {
         gym: {
-          dark: "#191C1F",
-          dark2: "#232528",
+          dark: "#000000",
+          dark2: "#000000",
           primary: "#22C55E",
           danger: "#EF4444",
           secondaryBlue: "#3B82F6",
           secondaryOrange: "#F97316",
           text: "#FFFFFF",
           subtext: "#D1D5DB"
+        },
+        gray: {
+          50: '#000000',
+          100: '#000000',
+          200: '#000000',
+          300: '#000000',
+          400: '#000000',
+          500: '#000000',
+          600: '#000000',
+          700: '#000000',
+          800: '#000000',
+          900: '#000000',
         }
       },
       fontFamily: {

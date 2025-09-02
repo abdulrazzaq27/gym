@@ -15,6 +15,7 @@ import CreateMember from './pages/CreateMember.jsx';
 import Revenue from './pages/Revenue.jsx';
 import RenewMember from './pages/RenewMember.jsx';
 import Attendance from './pages/Attendance.jsx';
+import AttendanceTrend from './pages/AttendanceTrend.jsx';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -28,7 +29,7 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-black dark:bg-gray-900">
       {/* Fixed Navbar */}
       <div className="fixed top-0 left-0 right-0 z-50">
         <Navbar />
@@ -45,6 +46,7 @@ function App() {
           <Route path="/members/:id/RenewMember" element={<RenewMember />} />
           <Route path="/revenue" element={<Revenue />} />
           <Route path="/attendance" element={<Attendance />} />
+          <Route path="/attendance/trend" element={<AttendanceTrend />} />
         </Routes>
       </main>
     </div>
