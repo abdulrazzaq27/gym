@@ -151,7 +151,7 @@ function Dashboard() {
           <div className="flex items-center justify-between">
             
             <div>
-              <p className="text-gray-400 text-sm font-medium">Attendance till Date</p>
+              <p className="text-gray-300 text-m font-medium">Attendance till Date</p>
               {/* <p className="text-2xl font-bold text-yellow-400">{formatCurrency(dashboardData.totalRevenue)}</p> */}
             </div>
             <div className="bg-blue-900 p-3 rounded-full">

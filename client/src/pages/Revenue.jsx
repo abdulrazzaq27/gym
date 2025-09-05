@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from '../api/axios';
+import { useNavigate } from 'react-router-dom';
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -20,17 +21,6 @@ import {
   Brush,
   ReferenceLine
 } from 'recharts';
-
-/*
-  RevenueRevamp (fixed)
-  - Polished revenue dashboard using Tailwind + Recharts
-  - Fixed syntax/template-literal errors and minor typos
-  - Added inline comments throughout for clarity
-  - Preserved original component structure and logic
-
-  NOTE: I only fixed syntax/JSX/template mistakes and added comments —
-  I did not change the high-level data flow or visual design.
-*/
 
 const PALETTE = {
   revenue: '#3B82F6', // blue
@@ -62,6 +52,7 @@ function buildCSV(rows) {
 
 export default function RevenueRevamp() {
   // State
+  const navigate = useNavigate();
   const [dataRaw, setDataRaw] = useState({ monthlyRevenue: [], annualRevenue: [], totalRevenue: { total:0, count:0 } });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -236,9 +227,19 @@ export default function RevenueRevamp() {
     <div className="w-full p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Revenue Dashboard</h1>
-          <p className="text-gray-400">Clean, modern visuals with actionable KPIs.</p>
+      <div className="flex items-center gap-4 mb-4">
+          <button
+            onClick={() => navigate('/')}
+            className="p-2 rounded bg-gray-700 hover:bg-gray-600 text-white transition-colors shadow-md"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <h2 className="text-2xl font-bold text-white">
+            Revenue DashBoard
+          </h2>
         </div>
         <div className="flex items-center space-x-3">
           <div className="text-sm text-gray-300">Timeframe</div>

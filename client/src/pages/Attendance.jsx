@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "../api/axios";
+import { useNavigate } from "react-router-dom";
 
 function AttendanceOverview() {
   const [days, setDays] = useState([]);
   const [members, setMembers] = useState([]);
+  const navigate = useNavigate();
   const [month, setMonth] = useState(() => {
     const today = new Date();
     return today.toISOString().slice(0, 7);
@@ -24,8 +26,8 @@ function AttendanceOverview() {
         const totalDays = attendanceRes.data.days.length
           ? attendanceRes.data.days
           : [...Array(new Date(month.split("-")[0], month.split("-")[1], 0).getDate()).keys()].map(
-              (d) => d + 1
-            );
+            (d) => d + 1
+          );
         setDays(totalDays);
 
         // 4. map attendance to all members
@@ -106,97 +108,120 @@ function AttendanceOverview() {
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold text-white mb-4">
-        Attendance Overview ({month})
-      </h2>
+    <>
 
-      <div className="flex items-center gap-4 mb-4">
-        <input
-          type="month"
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
-          className="p-2 rounded bg-gray-800 text-white [color-scheme:dark]"
-        />
+
+      <div className="p-4">
+        <div className="flex items-center gap-4 mb-4">
         <button
-          onClick={exportCSV}
-          className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-medium"
-        >
-          Export CSV
-        </button>
+    onClick={() => navigate(-1)}
+    className="p-2 rounded bg-gray-700 hover:bg-gray-600 text-white transition-colors shadow-md"
+  >
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+    </svg>
+  </button>
+
+          <h2 className="text-2xl font-bold text-white">
+            Attendance Overview ({month})
+          </h2>
+        </div>
+
+        <div className="flex items-center gap-4 mb-4">
+          <input
+            type="month"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="p-2 rounded bg-gray-800 text-white [color-scheme:dark]"
+          />
+          <button
+            onClick={exportCSV}
+            className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-medium"
+          >
+            Export CSV
+          </button>
+
+          <div>
+            <button
+              onClick={() => navigate("/attendance/trend")}
+              className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium"
+            >
+              Attendance Trends
+            </button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="table-auto border border-gray-600 w-full text-sm text-white">
+            <thead>
+              <tr className="bg-gray-800">
+                <th className="border border-gray-600 px-2 py-1">Member</th>
+                {days.map((day) => (
+                  <th key={day} className="border border-gray-600 px-1 py-1">
+                    {day}
+                  </th>
+                ))}
+                <th className="border border-gray-600 px-2 py-1">Total</th>
+                <th className="border border-gray-600 px-2 py-1">%</th>
+              </tr>
+            </thead>
+            <tbody>
+              {members.map((member) => {
+                const today = new Date();
+                const [year, monthNum] = month.split("-");
+
+                const validDays = days.filter((day) => {
+                  const cellDate = new Date(year, monthNum - 1, day);
+                  return cellDate <= today;
+                });
+
+                const totalPresent = validDays.reduce(
+                  (sum, day) => sum + (member[day] || 0),
+                  0
+                );
+                const percentage =
+                  validDays.length > 0
+                    ? ((totalPresent / validDays.length) * 100).toFixed(0)
+                    : 0;
+
+                return (
+                  <tr key={member.memberId} className="hover:bg-gray-700">
+                    <td className="border border-gray-600 px-2 py-1 font-medium">
+                      {member.name}
+                    </td>
+                    {days.map((day) => {
+                      const cellDate = new Date(year, monthNum - 1, day);
+                      const isFuture = cellDate > today;
+                      return (
+                        <td
+                          key={day}
+                          className="border border-gray-600 text-center font-bold"
+                          style={{
+                            color: isFuture
+                              ? "gray"
+                              : member[day]
+                                ? "green"
+                                : "red",
+                          }}
+                        >
+                          {isFuture ? "-" : member[day] ? "✅" : "❌"}
+                        </td>
+                      );
+                    })}
+                    <td className="border border-gray-600 text-center text-white">
+                      {totalPresent}
+                    </td>
+                    <td className="border border-gray-600 text-center">
+                      {percentage}%
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
-
-      <div className="overflow-x-auto">
-        <table className="table-auto border border-gray-600 w-full text-sm text-white">
-          <thead>
-            <tr className="bg-gray-800">
-              <th className="border border-gray-600 px-2 py-1">Member</th>
-              {days.map((day) => (
-                <th key={day} className="border border-gray-600 px-1 py-1">
-                  {day}
-                </th>
-              ))}
-              <th className="border border-gray-600 px-2 py-1">Total</th>
-              <th className="border border-gray-600 px-2 py-1">%</th>
-            </tr>
-          </thead>
-          <tbody>
-            {members.map((member) => {
-              const today = new Date();
-              const [year, monthNum] = month.split("-");
-
-              const validDays = days.filter((day) => {
-                const cellDate = new Date(year, monthNum - 1, day);
-                return cellDate <= today;
-              });
-
-              const totalPresent = validDays.reduce(
-                (sum, day) => sum + (member[day] || 0),
-                0
-              );
-              const percentage =
-                validDays.length > 0
-                  ? ((totalPresent / validDays.length) * 100).toFixed(0)
-                  : 0;
-
-              return (
-                <tr key={member.memberId} className="hover:bg-gray-700">
-                  <td className="border border-gray-600 px-2 py-1 font-medium">
-                    {member.name}
-                  </td>
-                  {days.map((day) => {
-                    const cellDate = new Date(year, monthNum - 1, day);
-                    const isFuture = cellDate > today;
-                    return (
-                      <td
-                        key={day}
-                        className="border border-gray-600 text-center font-bold"
-                        style={{
-                          color: isFuture
-                            ? "gray"
-                            : member[day]
-                            ? "green"
-                            : "red",
-                        }}
-                      >
-                        {isFuture ? "-" : member[day] ? "✅" : "❌"}
-                      </td>
-                    );
-                  })}
-                  <td className="border border-gray-600 text-center text-white">
-                    {totalPresent}
-                  </td>
-                  <td className="border border-gray-600 text-center">
-                    {percentage}%
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    </>
   );
 }
-
 export default AttendanceOverview;
