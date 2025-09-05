@@ -1,253 +1,396 @@
 import { useEffect, useState } from 'react';
 import axios from '../api/axios';
 import { Link } from 'react-router-dom';
+import {
+  ResponsiveContainer,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 function Dashboard() {
   const [dashboardData, setDashboardData] = useState({
     totalMembers: 0,
     activeMembers: 0,
-    inactiveMembers: 0, // Changed from expiredMembers
+    inactiveMembers: 0,
     totalRevenue: 0,
     recentMembers: [],
-    expiringMembers: []
+    expiringMembers: [],
+    attendanceData: { days: [], members: [] },
+    attendanceTrend: [],
   });
+
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const today = new Date();
+    return today.toISOString().slice(0, 7);
+  });
 
   useEffect(() => {
-    // Fetch dashboard data
-    Promise.all([
-      axios.get('/api/dashboard/stats'),
-      axios.get('/api/dashboard/recent-members'),
-      axios.get('/api/dashboard/expiring-members'),
-      axios.get('/api/dashboard/revenue') // Added revenue endpoint
-    ])
-    .then(([statsRes, recentRes, expiringRes, revenueRes]) => {
-      // Handle the new API response structure
-      const stats = statsRes.data;
-      const recentMembers = recentRes.data.recentMembers || [];
-      const expiringMembers = expiringRes.data.expiringMembers || [];
-      const revenue = revenueRes.data;
-      
-      // Calculate current month's revenue or use total revenue
-      let currentRevenue = 0;
-      if (revenue.monthlyRevenue && revenue.monthlyRevenue.length > 0) {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // --- Members ---
+        let members = [];
+        try {
+          const membersRes = await axios.get('/api/members');
+          members = membersRes?.data || [];
+        } catch {
+          throw new Error('Failed to fetch member data');
+        }
+
+        const totalMembers = members.length;
+        const activeMembers = members.filter(m => m.status?.toLowerCase() === 'active').length;
+        const inactiveMembers = members.filter(m => m.status?.toLowerCase() === 'inactive').length;
+
+        const recentMembers = members
+          .sort((a, b) => new Date(b.joinDate) - new Date(a.joinDate))
+          .slice(0, 5);
+
         const today = new Date();
-        const currentMonth = today.getMonth() + 1;
-        const currentYear = today.getFullYear();
-        const currentMonthData = revenue.monthlyRevenue.find(
-          item => item._id.month === currentMonth && item._id.year === currentYear
+        const expiringMembers = members.filter(m => {
+          const expiryDate = new Date(m.expiryDate);
+          const diffDays = (expiryDate - today) / (1000 * 60 * 60 * 24);
+          return diffDays >= 0 && diffDays <= 30;
+        });
+
+        // --- Revenue (currentMonth only) ---
+        let currentRevenue = 0;
+        try {
+          const [year, month] = currentMonth.split('-');
+          const paymentPromises = members.map(member =>
+            axios.get(`/api/payments/history/${member._id}`).catch(() => ({ data: [] }))
+          );
+
+          const paymentResponses = await Promise.all(paymentPromises);
+          const allPayments = paymentResponses
+            .flatMap(res => res.data)
+            .filter(p => {
+              const paymentDate = new Date(p.date);
+              return (
+                paymentDate.getFullYear() === parseInt(year) &&
+                paymentDate.getMonth() + 1 === parseInt(month)
+              );
+            });
+
+          currentRevenue = allPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+        } catch {
+          currentRevenue = 0;
+        }
+
+        // --- Attendance (selected month) ---
+        let attendanceData = { days: [], result: [] };
+        try {
+          const attendanceRes = await axios.get(`/api/attendance?month=${currentMonth}`);
+          attendanceData = attendanceRes?.data || { days: [], result: [] };
+        } catch {
+          throw new Error('Failed to fetch attendance data');
+        }
+
+        const attendanceMembers = members.map(member => {
+          const record = attendanceData.result.find(r => r.memberId === member._id) || {};
+          const dayMap = {};
+          (attendanceData.days || []).forEach(day => {
+            dayMap[day] = record[day] === 1 ? 1 : 0;
+          });
+          return { ...dayMap, memberId: member._id, name: member.name };
+        });
+
+        // --- Attendance Trend (last 6 months) ---
+        const months = Array.from({ length: 6 }, (_, i) => {
+          const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+          return date.toISOString().slice(0, 7);
+        }).reverse();
+
+        const trendPromises = months.map(m =>
+          axios.get(`/api/attendance?month=${m}`).catch(() => ({ data: { days: [], result: [] } }))
         );
-        currentRevenue = currentMonthData ? currentMonthData.total : 0;
-      } else if (revenue.totalRevenue) {
-        currentRevenue = revenue.totalRevenue.total;
+
+        const trendResponses = await Promise.all(trendPromises);
+
+        const attendanceTrend = trendResponses.map((res, index) => {
+          const data = res?.data || { days: [], result: [] };
+
+          const validDays = data.days.filter(day => {
+            const cellDate = new Date(
+              months[index].split('-')[0],
+              months[index].split('-')[1] - 1,
+              day
+            );
+            return cellDate <= today;
+          });
+
+          const totalPossible = validDays.length * members.length;
+          const totalPresent = validDays.reduce((sum, day) => {
+            return (
+              sum +
+              data.result.reduce((count, member) => (member[day] === 1 ? count + 1 : count), 0)
+            );
+          }, 0);
+
+          const attendanceRate =
+            totalPossible > 0 ? Math.round((totalPresent / totalPossible) * 100) : 0;
+
+          return {
+            _id: {
+              year: parseInt(months[index].split('-')[0]),
+              month: parseInt(months[index].split('-')[1]),
+            },
+            attendanceRate,
+          };
+        });
+
+        setDashboardData({
+          totalMembers,
+          activeMembers,
+          inactiveMembers,
+          totalRevenue: currentRevenue,
+          recentMembers,
+          expiringMembers,
+          attendanceData: { days: attendanceData.days, members: attendanceMembers },
+          attendanceTrend,
+        });
+
+        setLoading(false);
+      } catch (err) {
+        setError(`Failed to load dashboard data: ${err.message}`);
+        setLoading(false);
       }
+    };
 
-      setDashboardData({
-        totalMembers: stats.totalMembers || 0,
-        activeMembers: stats.activeMembers || 0,
-        inactiveMembers: stats.inactiveMembers || 0,
-        totalRevenue: currentRevenue,
-        recentMembers: recentMembers,
-        expiringMembers: expiringMembers
-      });
-      setLoading(false);
-    })
-    .catch((err) => {
-      console.error("Error fetching dashboard data:", err);
-      setLoading(false);
-    });
-  }, []);
+    fetchData();
+  }, [currentMonth]);
 
-  function formatDate(isoDate) {
-    const date = new Date(isoDate);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  }
-
+  // --- Helpers ---
   function formatCurrency(amount) {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'INR'
+      currency: 'INR',
     }).format(amount || 0);
   }
 
+  const prepareAttendanceChartData = () => {
+    const { days = [], members = [] } = dashboardData.attendanceData;
+    const today = new Date();
+    const [year, month] = currentMonth.split('-');
+
+    return days
+      .filter(day => new Date(year, month - 1, day) <= today)
+      .map(day => {
+        const presentCount = members.reduce((count, member) => {
+          return member[day] === 1 ? count + 1 : count;
+        }, 0);
+
+        return {
+          day: `Day ${day}`,
+          present: presentCount,
+          absent: members.length - presentCount,
+        };
+      });
+  };
+
+  const prepareTrendChartData = () => {
+    if (!Array.isArray(dashboardData.attendanceTrend)) return [];
+    return dashboardData.attendanceTrend.map(item => ({
+      month:
+        item?._id?.year && item?._id?.month
+          ? `${item._id.year}-${String(item._id.month).padStart(2, '0')}`
+          : 'Unknown',
+      attendance: item?.attendanceRate || 0,
+    }));
+  };
+
+  const calculateAttendancePercentage = () => {
+    const { days = [], members = [] } = dashboardData.attendanceData;
+    if (days.length === 0 || members.length === 0) return 0;
+
+    const today = new Date();
+    const [year, month] = currentMonth.split('-');
+    const validDays = days.filter(day => new Date(year, month - 1, day) <= today);
+
+    if (validDays.length === 0) return 0;
+
+    const totalPossible = validDays.length * members.length;
+    const totalPresent = validDays.reduce((sum, day) => {
+      return sum + members.reduce((count, member) => (member[day] === 1 ? count + 1 : count), 0);
+    }, 0);
+
+    return Math.round((totalPresent / totalPossible) * 100);
+  };
+
+  // --- UI ---
   if (loading) {
     return (
-      <div className="w-full max-w-none flex flex-col items-start">
-        <h1 className="text-3xl font-bold mb-6 text-white text-left">Dashboard</h1>
-        <div className="w-full flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
-        </div>
+      <div className="w-full min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
+  if (error) {
+    return (
+      <div className="w-full min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
+        <p className="text-red-500">{error}</p>
+        <button
+          onClick={() => setCurrentMonth(currentMonth)}
+          className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  const attendanceChartData = prepareAttendanceChartData();
+  const trendChartData = prepareTrendChartData();
+  const attendancePercentage = calculateAttendancePercentage();
+
   return (
-    <div className="w-full max-w-none flex flex-col items-start">
-      <h1 className="text-3xl font-bold mb-6 text-white text-left">Dashboard</h1>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full mb-8 ">
-        {/* <div className="bg-gray-800 border border-gray-600 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-400 text-sm font-medium">Total Members</p>
-              <p className="text-2xl font-bold text-white">{dashboardData.totalMembers}</p>
-            </div>
-            <div className="bg-blue-900 p-3 rounded-full">
-              <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-          </div>
+    <div className="w-full max-w-none flex flex-col items-start p-6 bg-gray-900">
+      {/* Header */}
+      <div className="flex justify-between items-center w-full mb-8">
+        <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+        <div className="flex space-x-3">
+          <Link
+            to="/create-member"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
+          >
+            + New Member
+          </Link>
+          <Link
+            to="/members"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center"
+          >
+            Mark Attendance
+          </Link>
         </div>
+      </div>
 
-        <div className="bg-gray-800 border border-gray-600 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-400 text-sm font-medium">Active Members</p>
-              <p className="text-2xl font-bold text-green-400">{dashboardData.activeMembers}</p>
-            </div>
-            <div className="bg-green-900 p-3 rounded-full">
-              <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gray-800 border border-gray-600 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-400 text-sm font-medium">Inactive Members</p>
-              <p className="text-2xl font-bold text-red-400">{dashboardData.inactiveMembers}</p>
-            </div>
-            <div className="bg-red-900 p-3 rounded-full">
-              <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
-        </div> */}
-
-        <Link to="/revenue" className="bg-gray-800 border border-gray-600 rounded-lg p-6 block hover:bg-gray-700 transition-colors">
-          <div className="flex items-center justify-between">
-            
-            <div>
-              <p className="text-gray-400 text-sm font-medium">Current Month Revenue</p>
-              <p className="text-2xl font-bold text-yellow-400">{formatCurrency(dashboardData.totalRevenue)}</p>
-            </div>
-            <div className="bg-yellow-900 p-3 rounded-full">
-              <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-              </svg>
-            </div>
-          </div>
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full mb-8">
+        <Link to="/revenue" className="bg-gray-800 p-6 rounded-xl text-white shadow-lg block">
+          <h3 className="text-lg font-medium">Monthly Revenue</h3>
+          <p className="text-2xl font-bold text-yellow-400">
+            {formatCurrency(dashboardData.totalRevenue)}
+          </p>
         </Link>
 
-        <Link to="/attendance" className="bg-gray-800 border border-gray-600 rounded-lg p-6 block hover:bg-gray-700 transition-colors">
-          <div className="flex items-center justify-between">
-            
-            <div>
-              <p className="text-gray-300 text-m font-medium">Attendance till Date</p>
-              {/* <p className="text-2xl font-bold text-yellow-400">{formatCurrency(dashboardData.totalRevenue)}</p> */}
-            </div>
-            <div className="bg-blue-900 p-3 rounded-full">
-              <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-          </div>
+        <Link to="/members" className="bg-gray-800 p-6 rounded-xl text-white shadow-lg block">
+          <h3 className="text-lg font-medium">Total Members</h3>
+          <p className="text-2xl font-bold text-blue-400">{dashboardData.totalMembers}</p>
+          <p className="text-sm text-green-400">{dashboardData.activeMembers} active</p>
+          <p className="text-sm text-red-400">{dashboardData.inactiveMembers} inactive</p>
         </Link>
       </div>
 
-      {/* Recent Members and Expiring Members */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 w-full">
-        {/* Recent Members */}
-        <div className="w-full">
-          <h2 className="text-xl font-bold mb-4 text-white">Recent Members</h2>
-          {dashboardData.recentMembers.length === 0 ? (
-            <p className="text-gray-400 text-lg">No recent members found.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left border border-gray-600 rounded-lg overflow-hidden table-auto">
-                <thead className="bg-gray-700">
-                  <tr>
-                    <th className="px-4 py-3 text-gray-200 font-semibold">Name</th>
-                    <th className="px-4 py-3 text-gray-200 font-semibold">Email</th>
-                    <th className="px-4 py-3 text-gray-200 font-semibold">Join Date</th>
-                    <th className="px-4 py-3 text-gray-200 font-semibold">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-gray-800">
-                  {dashboardData.recentMembers.map((member) => (
-                    <tr key={member._id} className="border-b border-gray-600 hover:bg-gray-750 transition-colors">
-                      <td className="px-4 py-3 text-white font-medium">{member.name}</td>
-                      <td className="px-4 py-3 text-blue-400 font-medium">{member.email}</td>
-                      <td className="px-4 py-3 text-gray-300">{formatDate(member.createdAt)}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          member.status === 'Active' 
-                            ? 'bg-green-900 text-green-300' 
-                            : member.status === 'Inactive'
-                            ? 'bg-red-900 text-red-300'
-                            : 'bg-yellow-900 text-yellow-300'
-                        }`}>
-                          {member.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {/* Month Selector */}
+      <div className="flex items-center gap-4 mb-6">
+        <label className="text-white font-medium">Select Month:</label>
+        <input
+          type="month"
+          value={currentMonth}
+          onChange={e => setCurrentMonth(e.target.value)}
+          className="p-2 rounded bg-gray-800 text-white [color-scheme:dark]"
+        />
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full mb-8">
+        {/* Attendance Overview */}
+        <div className="bg-gray-800 rounded-xl p-6 shadow-lg">
+          <div className="flex justify-between items-center mb-4">
+            <Link to="/attendance" className="flex items-center gap-3">
+              <h2 className="text-xl font-semibold text-white hover:text-blue-400 transition-colors">
+                Attendance Overview ({currentMonth})
+              </h2>
+              <span className="bg-green-600 text-white text-sm font-medium px-2 py-1 rounded-lg">
+                {attendancePercentage}%
+              </span>
+            </Link>
+            <div className="text-sm text-gray-400">
+              {dashboardData.attendanceData.members.length} members
             </div>
-          )}
+          </div>
+
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={attendanceChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="day" tick={{ fill: '#cbd5e1', fontSize: 12 }} />
+                <YAxis tick={{ fill: '#cbd5e1', fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{
+                    background: '#0f1724',
+                    border: '1px solid #374151',
+                    color: '#f3f4f6',
+                  }}
+                />
+                <Legend wrapperStyle={{ color: '#94a3b8' }} />
+                <Line
+                  type="monotone"
+                  dataKey="present"
+                  stroke="#10B981"
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                  name="Present"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="absent"
+                  stroke="#EF4444"
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                  name="Absent"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
-        {/* Expiring Members */}
-        <div className="w-full">
-          <h2 className="text-xl font-bold mb-4 text-white">Expiring Soon</h2>
-          {dashboardData.expiringMembers.length === 0 ? (
-            <p className="text-gray-400 text-lg">No members expiring soon.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left border border-gray-600 rounded-lg overflow-hidden table-auto">
-                <thead className="bg-gray-700">
-                  <tr>
-                    <th className="px-4 py-3 text-gray-200 font-semibold">Name</th>
-                    <th className="px-4 py-3 text-gray-200 font-semibold">Email</th>
-                    <th className="px-4 py-3 text-gray-200 font-semibold">Expiry Date</th>
-                    <th className="px-4 py-3 text-gray-200 font-semibold">Days Left</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-gray-800">
-                  {dashboardData.expiringMembers.map((member) => {
-                    const daysLeft = Math.ceil((new Date(member.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
-                    return (
-                      <tr key={member._id} className="border-b border-gray-600 hover:bg-gray-750 transition-colors">
-                        <td className="px-4 py-3 text-white font-medium">{member.name}</td>
-                        <td className="px-4 py-3 text-blue-400 font-medium">{member.email}</td>
-                        <td className="px-4 py-3 text-gray-300">{formatDate(member.expiryDate)}</td>
-                        <td className="px-4 py-3">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            daysLeft <= 3 
-                              ? 'bg-red-900 text-red-300' 
-                              : daysLeft <= 7
-                              ? 'bg-yellow-900 text-yellow-300'
-                              : 'bg-orange-900 text-orange-300'
-                          }`}>
-                            {daysLeft} days
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+        {/* Attendance Trend */}
+        <div className="bg-gray-800 rounded-xl p-6 shadow-lg">
+          <div className="flex justify-between items-center mb-4">
+            <Link to="/attendance/trend">
+              <h2 className="text-xl font-semibold text-white hover:underline cursor-pointer">
+                Attendance Trend (6 months)
+              </h2>
+            </Link>
+          </div>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={trendChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="month" tick={{ fill: '#cbd5e1', fontSize: 12 }} />
+                <YAxis domain={[0, 100]} tick={{ fill: '#cbd5e1', fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{
+                    background: '#0f1724',
+                    border: '1px solid #374151',
+                    color: '#f3f4f6',
+                  }}
+                  formatter={value => [`${value}%`, 'Attendance']}
+                  labelFormatter={label => `Month: ${label}`}
+                />
+                <Legend wrapperStyle={{ color: '#94a3b8' }} />
+                <Line
+                  type="monotone"
+                  dataKey="attendance"
+                  stroke="#3B82F6"
+                  strokeWidth={2}
+                  activeDot={{ r: 6 }}
+                  name="Attendance %"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
     </div>
