@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { logout } from "../utils/auth";
+import { useNavigate } from "react-router-dom";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -7,7 +9,8 @@ function Navbar() {
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const isActive = (path) => location.pathname === path;
-
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
   return (
     <nav className="bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700 shadow-sm w-full">
       <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -23,31 +26,28 @@ function Navbar() {
             <div className="hidden md:flex items-center space-x-6">
               <Link
                 to="/"
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  isActive('/')
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
-                }`}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/')
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
+                  }`}
               >
                 Dashboard
               </Link>
               <Link
                 to="/members"
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  isActive('/members')
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
-                }`}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/members')
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
+                  }`}
               >
                 Members
               </Link>
               <Link
-                to="/create-member"
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  isActive('/create-member')
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
-                }`}
+                to="/member/new"
+                className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/create-member')
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
+                  }`}
               >
                 Add Member
               </Link>
@@ -62,6 +62,22 @@ function Navbar() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </button>
+
+            {token ? (
+              <button
+                onClick={() => logout(navigate)}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:cursor-pointer"
+              >
+                Logout
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/login")}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:cursor-pointer"
+              >
+                Login
+              </button>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -85,33 +101,30 @@ function Navbar() {
             <Link
               to="/"
               onClick={() => setIsMenuOpen(false)}
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
-                isActive('/')
-                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
-              }`}
+              className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/')
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
+                }`}
             >
               Dashboard
             </Link>
             <Link
               to="/members"
               onClick={() => setIsMenuOpen(false)}
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
-                isActive('/members')
-                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
-              }`}
+              className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/members')
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
+                }`}
             >
               Members
             </Link>
             <Link
               to="/create-member"
               onClick={() => setIsMenuOpen(false)}
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
-                isActive('/create-member')
-                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
-              }`}
+              className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/create-member')
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
+                }`}
             >
               Add Member
             </Link>

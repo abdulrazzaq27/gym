@@ -16,6 +16,8 @@ import Revenue from './pages/Revenue.jsx';
 import RenewMember from './pages/RenewMember.jsx';
 import Attendance from './pages/Attendance.jsx';
 import AttendanceTrend from './pages/AttendanceTrend.jsx';
+import Register from './pages/Register.jsx';
+import Login from './pages/Login.jsx';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -39,9 +41,11 @@ function App() {
       {/* Main Content with proper spacing */}
       <main className="pt-20 ml-4 mr-4 mb-4">
         <Routes>
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/members" element={<Members />} />
-          <Route path="/create-member" element={<CreateMember />} />
+          <Route path="/member/new" element={<CreateMember />} />
           <Route path="/members/:id" element={<MemberDetails />} />
           <Route path="/members/:id/RenewMember" element={<RenewMember />} />
           <Route path="/revenue" element={<Revenue />} />

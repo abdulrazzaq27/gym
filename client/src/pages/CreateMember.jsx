@@ -102,7 +102,7 @@ function CreateMember() {
           </button>
 
           <h2 className="text-2xl font-bold text-white">
-            Add New Members
+            Add New Member
           </h2>
         </div>
 

@@ -13,6 +13,8 @@ const memberRoutes = require('./routes/memberRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const paymentRoutes = require('./routes/paymentRoutes')
 const attendanceRoutes = require('./routes/attendanceRoutes')
+const authRoutes = require("./routes/authRoutes");
+const auth = require("./middlewares/authMiddleware");
 
 app.use(cors({
   origin: 'http://localhost:5173',
@@ -40,11 +42,13 @@ app.get('/', (req, res) => {
 });
 
 
-app.use('/api/members', memberRoutes);
+app.use('/api/members',auth, memberRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
 app.use('/api/payments', paymentRoutes);
 app.use('/api/attendance', attendanceRoutes);
+
+app.use("/api/auth", authRoutes);
 
 
 
