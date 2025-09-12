@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from '../api/axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   ResponsiveContainer,
   CartesianGrid,
@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 
 function Dashboard() {
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState({
     totalMembers: 0,
     activeMembers: 0,
@@ -33,6 +34,12 @@ function Dashboard() {
   });
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
     const fetchData = async () => {
       setLoading(true);
       setError(null);

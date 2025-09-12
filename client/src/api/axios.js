@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "http://localhost:3000", // <-- adjust to your backend prefix
+  baseURL: 'https://gym-backend-x4c5.onrender.com/', // <-- adjust to your backend prefix
 });
 
 // attach token before every request
