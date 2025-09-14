@@ -24,19 +24,6 @@ app.use(cors({
 
 app.use(express.json()); // to parse JSON body
 
-
-// app.use(cors());
-
-// *****************  INSERTING DUMMY DATA **********************
-// const Member = require('./models/Member'); // Your Mongoose model
-// const members = require('./data/dummy.js');
-
-
-// Member.insertMany(members)
-//   .then(() => console.log('Members inserted!'))
-//   .catch(err => console.error(err));
-// ----------------------------------------------------------------
-
 app.get('/', (req, res) => {
   res.json({ message: 'GYM API is running!!!' });
 });
@@ -54,6 +41,6 @@ app.use("/api/auth", authRoutes);
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+app.listen(PORT,"0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });

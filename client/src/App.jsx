@@ -19,6 +19,7 @@ import AttendanceTrend from './pages/AttendanceTrend.jsx';
 import Register from './pages/Register.jsx';
 import Login from './pages/Login.jsx';
 import SidebarLayout from './components/common/Sidebar.jsx';
+import ProtectedRoute from './components/utils/ProtectedRoute.jsx';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -46,14 +47,16 @@ function App() {
           <Route path="/side" element={<SidebarLayout />} />
 
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/members" element={<Members />} />
-          <Route path="/member/new" element={<CreateMember />} />
-          <Route path="/members/:id" element={<MemberDetails />} />
-          <Route path="/members/:id/RenewMember" element={<RenewMember />} />
-          <Route path="/revenue" element={<Revenue />} />
-          <Route path="/attendance" element={<Attendance />} />
-          <Route path="/attendance/trend" element={<AttendanceTrend />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/members" element={<Members />} />
+            <Route path="/member/new" element={<CreateMember />} />
+            <Route path="/members/:id" element={<MemberDetails />} />
+            <Route path="/members/:id/RenewMember" element={<RenewMember />} />
+            <Route path="/revenue" element={<Revenue />} />
+            <Route path="/attendance" element={<Attendance />} />
+            <Route path="/attendance/trend" element={<AttendanceTrend />} />
+          </Route>
         </Routes>
       </main>
     </div>
