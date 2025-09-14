@@ -349,14 +349,6 @@ function Dashboard() {
                   dot={{ r: 3 }}
                   name="Present"
                 />
-                <Line
-                  type="monotone"
-                  dataKey="absent"
-                  stroke="#EF4444"
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                  name="Absent"
-                />
               </LineChart>
             </ResponsiveContainer>
           </div>
