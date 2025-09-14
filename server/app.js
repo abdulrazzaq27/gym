@@ -43,9 +43,9 @@ app.get('/', (req, res) => {
 
 
 app.use('/api/members',auth, memberRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/dashboard',auth, dashboardRoutes);
 
-app.use('/api/payments', paymentRoutes);
+app.use('/api/payments',auth, paymentRoutes);
 app.use('/api/attendance', attendanceRoutes);
 
 app.use("/api/auth", authRoutes);

@@ -237,7 +237,7 @@ function Dashboard() {
 
   if (error) {
     return (
-      <div className="w-full min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
+      <div className="w-full min-h-screen flex flex-col items-center justify-center bg-white text-gray-600">
         <p className="text-red-500">{error}</p>
         <button
           onClick={() => setCurrentMonth(currentMonth)}
@@ -254,7 +254,7 @@ function Dashboard() {
   const attendancePercentage = calculateAttendancePercentage();
 
   return (
-    <div className="w-full max-w-none flex flex-col items-start p-6 bg-gray-900">
+    <div className="w-full max-w-none flex flex-col items-start p-6 bg-black">
       {/* Header */}
       <div className="flex justify-between items-center w-full mb-8">
         <h1 className="text-3xl font-bold text-white">Dashboard</h1>

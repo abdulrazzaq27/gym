@@ -12,7 +12,7 @@ function Navbar() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   return (
-    <nav className="bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700 shadow-sm w-full">
+    <nav className=" border-b border-gray-200 bg-gray-600 dark:border-gray-700 shadow-sm w-full">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 w-full">
           {/* Left: Logo and Nav Links */}

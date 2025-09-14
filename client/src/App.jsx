@@ -18,6 +18,7 @@ import Attendance from './pages/Attendance.jsx';
 import AttendanceTrend from './pages/AttendanceTrend.jsx';
 import Register from './pages/Register.jsx';
 import Login from './pages/Login.jsx';
+import SidebarLayout from './components/common/Sidebar.jsx';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -31,10 +32,10 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black dark:bg-gray-900">
+    <div className="min-h-screen ">
       {/* Fixed Navbar */}
       <div className="fixed top-0 left-0 right-0 z-50">
-        <Navbar />
+        {/* <Navbar /> */}
       </div>
 
       <ScrollToTop/>
@@ -42,6 +43,8 @@ function App() {
       <main className="pt-20 ml-4 mr-4 mb-4">
         <Routes>
           <Route path="/register" element={<Register />} />
+          <Route path="/side" element={<SidebarLayout />} />
+
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/members" element={<Members />} />
