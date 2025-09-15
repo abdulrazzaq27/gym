@@ -14,6 +14,8 @@ function Members() {
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState("asc");
 
+  const token = localStorage.getItem("token");
+
   // Fetch members + attendance
   useEffect(() => {
     const fetchMembers = async () => {
@@ -49,8 +51,11 @@ function Members() {
     setAttendanceLoading(prev => ({ ...prev, [memberId]: true }));
 
     try {
-      const res = await fetch(`/api/attendance/mark/${memberId}`, {
-        method: "POST"
+      const res = await fetch(`http://localhost:3000/api/attendance/mark/${memberId}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       const data = await res.json();
 
@@ -293,10 +298,10 @@ function Members() {
                     <td className="px-6 py-4">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${member.status === 'Active'
-                            ? 'bg-green-900 text-green-300'
-                            : member.status === 'Inactive'
-                              ? 'bg-red-900 text-red-300'
-                              : 'bg-yellow-900 text-yellow-300'
+                          ? 'bg-green-900 text-green-300'
+                          : member.status === 'Inactive'
+                            ? 'bg-red-900 text-red-300'
+                            : 'bg-yellow-900 text-yellow-300'
                           }`}
                       >
                         {member.status}
@@ -309,10 +314,10 @@ function Members() {
                         <button
                           disabled={marked[member._id] || attendanceLoading[member._id]}
                           className={`px-4 py-2 rounded transition-colors ${marked[member._id]
-                              ? "bg-green-600 text-white cursor-not-allowed"
-                              : attendanceLoading[member._id]
-                                ? "bg-gray-600 text-gray-300 cursor-not-allowed"
-                                : "bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+                            ? "bg-green-600 text-white cursor-not-allowed"
+                            : attendanceLoading[member._id]
+                              ? "bg-gray-600 text-gray-300 cursor-not-allowed"
+                              : "bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
                             }`}
                           onClick={(e) => markAttendance(member._id, e)}
                         >
@@ -335,8 +340,8 @@ function Members() {
                       ) : (
                         <span
                           className={`px-3 py-2 rounded text-xs font-medium ${member.status === "Inactive"
-                              ? "bg-red-900 text-red-300"
-                              : "bg-yellow-900 text-yellow-300"
+                            ? "bg-red-900 text-red-300"
+                            : "bg-yellow-900 text-yellow-300"
                             }`}
                         >
                           {member.status}

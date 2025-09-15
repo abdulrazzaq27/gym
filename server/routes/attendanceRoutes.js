@@ -19,6 +19,7 @@ router.get("/", async (req, res) => {
 
     // Fetch records
     const records = await Attendance.find({
+      adminId: req.user.id,
       date: { $gte: start, $lte: end }
     }).populate("memberId", "name");
 
@@ -34,6 +35,7 @@ router.get("/", async (req, res) => {
       if (!overview[id]) {
         overview[id] = {
           memberId: id,
+          adminId: req.user.id,
           name: r.memberId.name,
           days: {}
         };
@@ -73,6 +75,7 @@ router.post("/mark/:memberId", async (req, res) => {
     // check if already marked today
     const existing = await Attendance.findOne({
       memberId,
+      adminId: req.user.id,
       date: today
     });
 
@@ -82,6 +85,7 @@ router.post("/mark/:memberId", async (req, res) => {
 
     const attendance = new Attendance({
       memberId,
+      adminId: req.user.id,
       date: today, // store as proper Date
       checkInTime: new Date().toLocaleTimeString(),
       adminId: req.user.id
@@ -90,7 +94,7 @@ router.post("/mark/:memberId", async (req, res) => {
     await attendance.save();
     res.json({ message: "Attendance marked successfully" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message + 'h' });
   }
 });
 
@@ -104,6 +108,7 @@ router.get("/today", async (req, res) => {
     tomorrow.setDate(today.getDate() + 1);
 
     const records = await Attendance.find({
+      adminId: req.user.id,
       date: { $gte: today, $lt: tomorrow }
     }).select("memberId -_id"); // only return memberId
 

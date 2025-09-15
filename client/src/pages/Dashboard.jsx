@@ -261,13 +261,13 @@ function Dashboard() {
   const attendancePercentage = calculateAttendancePercentage();
 
   return (
-    <div className="w-full max-w-none flex flex-col items-start p-6 bg-black">
+    <div className="w-full max-w-none flex flex-col items-start p-6 bg-[#13131c]">
       {/* Header */}
       <div className="flex justify-between items-center w-full mb-8">
         <h1 className="text-3xl font-bold text-white">Dashboard</h1>
         <div className="flex space-x-3">
           <Link
-            to="/create-member"
+            to="/member/new"
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
           >
             + New Member

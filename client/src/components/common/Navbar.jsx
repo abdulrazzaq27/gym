@@ -44,7 +44,7 @@ function Navbar() {
               </Link>
               <Link
                 to="/member/new"
-                className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/create-member')
+                className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/member/new')
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
                   : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
                   }`}

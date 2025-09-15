@@ -42,7 +42,7 @@ app.use('/api/members',auth, memberRoutes);
 app.use('/api/dashboard',auth, dashboardRoutes);
 
 app.use('/api/payments',auth, paymentRoutes);
-app.use('/api/attendance', attendanceRoutes);
+app.use('/api/attendance',auth, attendanceRoutes);
 
 app.use("/api/auth", authRoutes);
 
