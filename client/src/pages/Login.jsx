@@ -22,7 +22,7 @@ export default function Login() {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.admin));
 
-      navigate("/"); // redirect to dashboard
+      navigate("/dashboard"); // redirect to dashboard
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     } finally {

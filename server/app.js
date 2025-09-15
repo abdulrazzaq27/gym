@@ -24,6 +24,15 @@ app.use(cors({
 
 app.use(express.json()); // to parse JSON body
 
+// app.use((req, res, next) => {
+//   if (req.user) {
+//     req.adminId = req.user.id;
+//     console.log(req.adminId);
+//   }
+//   next();
+// });
+
+
 app.get('/', (req, res) => {
   res.json({ message: 'GYM API is running!!!' });
 });

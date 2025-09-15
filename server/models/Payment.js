@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema({
+    adminId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Admin",
+        required: true
+    },
     memberId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Member',

@@ -83,7 +83,8 @@ router.post("/mark/:memberId", async (req, res) => {
     const attendance = new Attendance({
       memberId,
       date: today, // store as proper Date
-      checkInTime: new Date().toLocaleTimeString()
+      checkInTime: new Date().toLocaleTimeString(),
+      adminId: req.user.id
     });
 
     await attendance.save();

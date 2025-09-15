@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const memberSchema = new mongoose.Schema({
+  adminId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Admin",
+    required: true
+  },
   name: {
     type: String,
     required: true,

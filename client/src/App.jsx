@@ -37,18 +37,18 @@ function App() {
     <div className="min-h-screen ">
       {/* Fixed Navbar */}
       <div className="fixed top-0 left-0 right-0 z-50">
-        {/* <Navbar /> */}
+        <Navbar />
       </div>
 
       <ScrollToTop/>
       {/* Main Content with proper spacing */}
       <main className="pt-20 ml-4 mr-4 mb-4">
         <Routes>
-          <Route path="/register" element={<Register />} />
-          <Route path="/side" element={<SidebarLayout />} />
           <Route path="/" element={<LandingPage />} />
-
+          <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/side" element={<SidebarLayout />} />
+
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/members" element={<Members />} />
@@ -57,7 +57,8 @@ function App() {
             <Route path="/members/:id/RenewMember" element={<RenewMember />} />
             <Route path="/revenue" element={<Revenue />} />
             <Route path="/attendance" element={<Attendance />} />
-            <Route path="/attendance/trend" element={<AttendanceTrend />} />
+            <Route path="/attendance/trend" element={<AttendanceTrend />} 
+          />
           </Route>
         </Routes>
       </main>
