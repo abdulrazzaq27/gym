@@ -21,6 +21,9 @@ import Login from './pages/Login.jsx';
 import SidebarLayout from './components/common/Sidebar.jsx';
 import ProtectedRoute from './components/utils/ProtectedRoute.jsx';
 import LandingPage from './pages/LandingPage.jsx';
+import Drawer from './components/common/Sidebarr.jsx';
+import ProtectedLayout from './components/ProtectedLayout.jsx';
+import Dashboardd from './pages/Dashboard2.jsx';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -37,28 +40,33 @@ function App() {
     <div className="min-h-screen ">
       {/* Fixed Navbar */}
       <div className="fixed top-0 left-0 right-0 z-50">
-        <Navbar />
+        {/* <Navbar /> */}
+        {/* <Drawer /> */}
       </div>
 
-      <ScrollToTop/>
+      <ScrollToTop />
       {/* Main Content with proper spacing */}
-      <main className="pt-20 ml-4 mr-4 mb-4">
+      <main >
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/side" element={<SidebarLayout />} />
+          {/* <Route path="/side" element={<SidebarLayout />} /> */}
+          {/* <Route path="/sidee" element={<Drawer />} /> */}
 
           <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/members" element={<Members />} />
-            <Route path="/member/new" element={<CreateMember />} />
-            <Route path="/members/:id" element={<MemberDetails />} />
-            <Route path="/members/:id/RenewMember" element={<RenewMember />} />
-            <Route path="/revenue" element={<Revenue />} />
-            <Route path="/attendance" element={<Attendance />} />
-            <Route path="/attendance/trend" element={<AttendanceTrend />} 
-          />
+            <Route element={<ProtectedLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboardd" element={<Dashboardd />} />
+              <Route path="/members" element={<Members />} />
+              <Route path="/member/new" element={<CreateMember />} />
+              <Route path="/members/:id" element={<MemberDetails />} />
+              <Route path="/members/:id/RenewMember" element={<RenewMember />} />
+              <Route path="/revenue" element={<Revenue />} />
+              <Route path="/attendance" element={<Attendance />} />
+              <Route path="/attendance/trend" element={<AttendanceTrend />}
+              />
+            </Route>
           </Route>
         </Routes>
       </main>

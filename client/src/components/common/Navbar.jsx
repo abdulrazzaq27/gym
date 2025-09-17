@@ -12,7 +12,7 @@ function Navbar() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   return (
-    <nav className=" border-b border-gray-200 bg-gray-600 dark:border-gray-700 shadow-sm w-full">
+    <nav className=" border-b border-gray-200 bg-[#111827] dark:border-gray-700 shadow-sm w-full">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 w-full">
           {/* Left: Logo and Nav Links */}
@@ -25,8 +25,8 @@ function Navbar() {
 
             <div className="hidden md:flex items-center space-x-6">
               <Link
-                to="/"
-                className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/')
+                to="/dashboard"
+                className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/dashboard')
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
                   : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
                   }`}

@@ -115,24 +115,14 @@ export default function SidebarLayout() {
               </a>
             </li>
 
-              </ul>
-            <li>
-              {/* <button
-                onClick={() => logout(navigate)}
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white 
-                           hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer"
-              >
-                <div>
-                  <img src="/logout.png" className="w-5 h-5" alt="" />
-                </div>
-                <span className="ms-3">Logout</span>
-              </button> */}
+          </ul>
+          <li>
 
-                {token ? (
+            {token ? (
               <button
                 onClick={() => logout(navigate)}
                 className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white 
-                           hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer"
+               hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer"
               >
                 <div>
                   <img src="/logout.png" className="w-5 h-5" alt="" />
@@ -143,16 +133,17 @@ export default function SidebarLayout() {
               <button
                 onClick={() => navigate("/login")}
                 className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white 
-                           hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer"
+               hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer"
               >
                 <div>
                   <img src="/login.png" className="w-5 h-5" alt="" />
                 </div>
-                <span className="ms-3">Logout</span>
+                <span className="ms-3">Login</span>
               </button>
             )}
 
-            </li>
+
+          </li>
         </div>
       </aside>
 

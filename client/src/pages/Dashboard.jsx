@@ -261,7 +261,7 @@ function Dashboard() {
   const attendancePercentage = calculateAttendancePercentage();
 
   return (
-    <div className="w-full max-w-none flex flex-col items-start p-6 bg-[#13131c]">
+    <div className="w-full max-w-none flex flex-col items-start p-6 bg-[#0a0f1c]">
       {/* Header */}
       <div className="flex justify-between items-center w-full mb-8">
         <h1 className="text-3xl font-bold text-white">Dashboard</h1>
