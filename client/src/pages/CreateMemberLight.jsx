@@ -110,40 +110,36 @@ function CreateMember() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white relative">
-      {/* Clean background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/10 to-purple-900/10"></div>
-      <div className="absolute inset-0 bg-slate-900/20"></div>
-
+    <div className="min-h-screen bg-white text-gray-900 relative">
       {/* Content */}
       <div className={`relative z-10 p-6 transform transition-all duration-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="p-3 rounded-xl bg-slate-800/90 border border-slate-700/50 hover:bg-slate-700/90 text-white transition-all duration-200 shadow-sm"
+            className="p-3 rounded-xl bg-white/80 border border-gray-300/50 hover:bg-gray-100/80 text-gray-900 transition-all duration-200 shadow-sm"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
 
           <div>
-            <h1 className="text-2xl font-bold text-white">Add New Member</h1>
-            <p className="text-slate-400 mt-1">Create a new membership account</p>
+            <h1 className="text-2xl font-bold text-gray-900">Add New Member</h1>
+            <p className="text-gray-500 mt-1">Create a new membership account</p>
           </div>
         </div>
 
         {/* Form Container */}
-        <div className="bg-slate-800/70 backdrop-blur-sm rounded-2xl border border-slate-700/50 shadow-xl max-w-4xl mx-auto">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-300/50 shadow-xl max-w-4xl mx-auto">
           <div className="p-8">
             <form onSubmit={handleSubmit} className="space-y-8">
 
               {/* Personal Information Section */}
               <div>
-                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-700/50">
+                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-gray-300/50">
                   <div className="p-2 bg-cyan-500 rounded-lg">
                     <User className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-xl font-semibold text-white">Personal Information</h2>
+                  <h2 className="text-xl font-semibold text-gray-900">Personal Information</h2>
                 </div>
 
                 <div className="space-y-6">
@@ -153,19 +149,19 @@ function CreateMember() {
 
                     {/* Name Field */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Full Name *
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <User className="w-4 h-4 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-200" />
+                          <User className="w-4 h-4 text-gray-500 group-focus-within:text-cyan-600 transition-colors duration-200" />
                         </div>
                         <input
                           name="name"
                           value={formData.name}
                           onChange={handleChange}
                           placeholder="Enter full name"
-                          className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/20 transition-all duration-200"
+                          className="w-full pl-10 pr-4 py-3 bg-white/80 border border-gray-300/50 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600/20 transition-all duration-200"
                           required
                         />
                       </div>
@@ -173,12 +169,12 @@ function CreateMember() {
 
                     {/* Phone Field */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Phone Number *
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Phone className="w-4 h-4 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-200" />
+                          <Phone className="w-4 h-4 text-gray-500 group-focus-within:text-cyan-600 transition-colors duration-200" />
                         </div>
                         <input
                           name="phone"
@@ -186,7 +182,7 @@ function CreateMember() {
                           value={formData.phone}
                           onChange={handleChange}
                           placeholder="Enter phone number"
-                          className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/20 transition-all duration-200"
+                          className="w-full pl-10 pr-4 py-3 bg-white/80 border border-gray-300/50 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600/20 transition-all duration-200"
                           required
                         />
                       </div>
@@ -194,12 +190,12 @@ function CreateMember() {
 
                     {/* Email Field */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Email Address
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Mail className="w-4 h-4 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-200" />
+                          <Mail className="w-4 h-4 text-gray-500 group-focus-within:text-cyan-600 transition-colors duration-200" />
                         </div>
                         <input
                           name="email"
@@ -207,7 +203,7 @@ function CreateMember() {
                           value={formData.email}
                           onChange={handleChange}
                           placeholder="Enter email address"
-                          className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/20 transition-all duration-200"
+                          className="w-full pl-10 pr-4 py-3 bg-white/80 border border-gray-300/50 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600/20 transition-all duration-200"
                         />
                       </div>
                     </div>
@@ -218,19 +214,19 @@ function CreateMember() {
 
                     {/* Address Field */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Home Address
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <MapPin className="w-4 h-4 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-200" />
+                          <MapPin className="w-4 h-4 text-gray-500 group-focus-within:text-cyan-600 transition-colors duration-200" />
                         </div>
                         <input
                           name="address"
                           value={formData.address}
                           onChange={handleChange}
                           placeholder="Enter home address"
-                          className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/20 transition-all duration-200"
+                          className="w-full pl-10 pr-4 py-3 bg-white/80 border border-gray-300/50 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600/20 transition-all duration-200"
                         />
                       </div>
                     </div>
@@ -241,21 +237,21 @@ function CreateMember() {
 
                     {/* Gender Field */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Gender *
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Users className="w-4 h-4 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-200" />
+                          <Users className="w-4 h-4 text-gray-500 group-focus-within:text-cyan-600 transition-colors duration-200" />
                         </div>
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                          <ChevronDown className="w-4 h-4 text-slate-400" />
+                          <ChevronDown className="w-4 h-4 text-gray-500" />
                         </div>
                         <select
                           name="gender"
                           value={formData.gender}
                           onChange={handleChange}
-                          className="w-full pl-10 pr-10 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/20 transition-all duration-200 appearance-none cursor-pointer"
+                          className="w-full pl-10 pr-10 py-3 bg-white/80 border border-gray-300/50 rounded-lg text-gray-900 focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600/20 transition-all duration-200 appearance-none cursor-pointer"
                           required
                         >
                           <option value="">Select Gender</option>
@@ -268,19 +264,19 @@ function CreateMember() {
 
                     {/* DOB Field */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Date of Birth
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Calendar className="w-4 h-4 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-200" />
+                          <Calendar className="w-4 h-4 text-gray-500 group-focus-within:text-cyan-600 transition-colors duration-200" />
                         </div>
                         <input
                           type="date"
                           name="dob"
                           value={formData.dob}
                           onChange={handleChange}
-                          className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/20 transition-all duration-200"
+                          className="w-full pl-10 pr-4 py-3 bg-white/80 border border-gray-300/50 rounded-lg text-gray-900 focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600/20 transition-all duration-200"
                         />
                       </div>
                     </div>
@@ -290,11 +286,11 @@ function CreateMember() {
 
               {/* Membership Information Section */}
               <div>
-                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-700/50">
+                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-gray-300/50">
                   <div className="p-2 bg-green-500 rounded-lg">
                     <CreditCard className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-xl font-semibold text-white">Membership Information</h2>
+                  <h2 className="text-xl font-semibold text-gray-900">Membership Information</h2>
                 </div>
 
                 <div className="space-y-6">
@@ -304,19 +300,19 @@ function CreateMember() {
 
                     {/* Join Date Field */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Join Date *
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Calendar className="w-4 h-4 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-200" />
+                          <Calendar className="w-4 h-4 text-gray-500 group-focus-within:text-cyan-600 transition-colors duration-200" />
                         </div>
                         <input
                           type="date"
                           name="joinDate"
                           value={formData.joinDate}
                           onChange={handleChange}
-                          className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/20 transition-all duration-200"
+                          className="w-full pl-10 pr-4 py-3 bg-white/80 border border-gray-300/50 rounded-lg text-gray-900 focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600/20 transition-all duration-200"
                           required
                         />
                       </div>
@@ -324,21 +320,21 @@ function CreateMember() {
 
                     {/* Plan Field */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Membership Plan *
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <FileText className="w-4 h-4 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-200" />
+                          <FileText className="w-4 h-4 text-gray-500 group-focus-within:text-cyan-600 transition-colors duration-200" />
                         </div>
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                          <ChevronDown className="w-4 h-4 text-slate-400" />
+                          <ChevronDown className="w-4 h-4 text-gray-500" />
                         </div>
                         <select
                           name="plan"
                           value={formData.plan}
                           onChange={handleChange}
-                          className="w-full pl-10 pr-10 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/20 transition-all duration-200 appearance-none cursor-pointer"
+                          className="w-full pl-10 pr-10 py-3 bg-white/80 border border-gray-300/50 rounded-lg text-gray-900 focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600/20 transition-all duration-200 appearance-none cursor-pointer"
                           required
                         >
                           <option value="">Select Plan</option>
@@ -356,12 +352,12 @@ function CreateMember() {
 
                     {/* Amount Field */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Amount (₹) *
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <DollarSign className="w-4 h-4 text-slate-500" />
+                          <DollarSign className="w-4 h-4 text-gray-500" />
                         </div>
                         <input
                           name="amount"
@@ -369,28 +365,28 @@ function CreateMember() {
                           value={formData.amount}
                           disabled
                           placeholder="Amount"
-                          className="w-full pl-10 pr-4 py-3 bg-slate-600/50 border border-slate-600/50 rounded-lg text-slate-400 cursor-not-allowed"
+                          className="w-full pl-10 pr-4 py-3 bg-gray-100/50 border border-gray-300/50 rounded-lg text-gray-500 cursor-not-allowed"
                         />
                       </div>
                     </div>
 
                     {/* Payment Method Field */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Payment Method *
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <CreditCard className="w-4 h-4 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-200" />
+                          <CreditCard className="w-4 h-4 text-gray-500 group-focus-within:text-cyan-600 transition-colors duration-200" />
                         </div>
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                          <ChevronDown className="w-4 h-4 text-slate-400" />
+                          <ChevronDown className="w-4 h-4 text-gray-500" />
                         </div>
                         <select
                           name="paymentMethod"
                           value={formData.paymentMethod}
                           onChange={handleChange}
-                          className="w-full pl-10 pr-10 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/20 transition-all duration-200 appearance-none cursor-pointer"
+                          className="w-full pl-10 pr-10 py-3 bg-white/80 border border-gray-300/50 rounded-lg text-gray-900 focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600/20 transition-all duration-200 appearance-none cursor-pointer"
                           required
                         >
                           <option value="">Select Method</option>
@@ -403,18 +399,18 @@ function CreateMember() {
 
                     {/* Expiry Date Field */}
                     <div className="group">
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
                         Plan Expiry Date
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Calendar className="w-4 h-4 text-slate-500" />
+                          <Calendar className="w-4 h-4 text-gray-500" />
                         </div>
                         <input
                           type="date"
                           value={expiryDate}
                           disabled
-                          className="w-full pl-10 pr-4 py-3 bg-slate-600/50 border border-slate-600/50 rounded-lg text-slate-400 cursor-not-allowed"
+                          className="w-full pl-10 pr-4 py-3 bg-gray-100/50 border border-gray-300/50 rounded-lg text-gray-500 cursor-not-allowed"
                         />
                       </div>
                     </div>
@@ -424,14 +420,14 @@ function CreateMember() {
 
               {/* Amount Display */}
               {formData.amount && (
-                <div className="bg-green-900/30 border border-green-600/30 rounded-xl p-6 text-center">
+                <div className="bg-green-50 border border-green-300/50 rounded-xl p-6 text-center">
                   <div className="flex items-center justify-center gap-3 mb-2">
-                    <DollarSign className="w-6 h-6 text-green-400" />
-                    <span className="text-3xl font-bold text-green-400">
+                    <DollarSign className="w-6 h-6 text-green-600" />
+                    <span className="text-3xl font-bold text-green-600">
                       ₹{formData.amount}
                     </span>
                   </div>
-                  <p className="text-green-300 text-sm">Total Amount to be Paid</p>
+                  <p className="text-green-700 text-sm">Total Amount to be Paid</p>
                 </div>
               )}
 

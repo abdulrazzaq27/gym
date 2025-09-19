@@ -24,6 +24,8 @@ import LandingPage from './pages/LandingPage.jsx';
 import Drawer from './components/common/Sidebarr.jsx';
 import ProtectedLayout from './components/ProtectedLayout.jsx';
 import Dashboardd from './pages/Dashboard2.jsx';
+import Members2 from './pages/Members2.jsx';
+import CreateMemberLight from './pages/CreateMemberLight.jsx';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -64,8 +66,9 @@ function App() {
               <Route path="/members/:id/RenewMember" element={<RenewMember />} />
               <Route path="/revenue" element={<Revenue />} />
               <Route path="/attendance" element={<Attendance />} />
-              <Route path="/attendance/trend" element={<AttendanceTrend />}
-              />
+              <Route path="/attendance/trend" element={<AttendanceTrend />} />
+              <Route path='/members2' element={< Members2/>} />
+              <Route path='/member/new/light' element={<CreateMemberLight />} />
             </Route>
           </Route>
         </Routes>
