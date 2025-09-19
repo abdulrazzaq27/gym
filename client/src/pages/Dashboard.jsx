@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
-import axios from '../api/axios';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from "react-router-dom";
 import {
   ResponsiveContainer,
   CartesianGrid,
@@ -10,7 +9,33 @@ import {
   Line,
   XAxis,
   YAxis,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
 } from 'recharts';
+import {
+  Users,
+  TrendingUp,
+  Calendar,
+  IndianRupee,
+  UserPlus,
+  UserCheck,
+  AlertTriangle,
+  Activity,
+  Target,
+  Award,
+  Clock
+} from 'lucide-react';
+import axios from '../api/axios';
+import React from 'react';
+
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+  }).format(amount || 0);
+}
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -25,13 +50,14 @@ function Dashboard() {
     attendanceTrend: [],
   });
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const [currentMonth, setCurrentMonth] = useState(() => {
     const today = new Date();
     return today.toISOString().slice(0, 7);
   });
+  const [data, setData] = useState([]);
+  const [monthlySeries, setMonthlySeries] = useState([]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -45,14 +71,10 @@ function Dashboard() {
       setError(null);
 
       try {
-        // --- Members ---
-        let members = [];
-        try {
-          const membersRes = await axios.get('/api/members');
-          members = membersRes?.data || [];
-        } catch {
-          throw new Error('Failed to fetch member data');
-        }
+        const [year, month] = currentMonth.split('-');
+        
+        const membersRes = await axios.get('/api/members');
+        const members = membersRes?.data || [];
 
         const totalMembers = members.length;
         const activeMembers = members.filter(m => m.status?.toLowerCase() === 'active').length;
@@ -69,38 +91,23 @@ function Dashboard() {
           return diffDays >= 0 && diffDays <= 30;
         });
 
-        // --- Revenue (currentMonth only) ---
-        let currentRevenue = 0;
-        try {
-          const [year, month] = currentMonth.split('-');
-          const paymentPromises = members.map(member =>
-            axios.get(`/api/payments/history/${member._id}`).catch(() => ({ data: [] }))
-          );
+        const paymentPromises = members.map(member =>
+          axios.get(`/api/payments/history/${member._id}`).catch(() => ({ data: [] }))
+        );
+        const paymentResponses = await Promise.all(paymentPromises);
+        const allPayments = paymentResponses
+          .flatMap(res => res.data)
+          .filter(p => {
+            const paymentDate = new Date(p.date);
+            return (
+              paymentDate.getFullYear() === parseInt(year) &&
+              paymentDate.getMonth() + 1 === parseInt(month)
+            );
+          });
+        const currentRevenue = allPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
 
-          const paymentResponses = await Promise.all(paymentPromises);
-          const allPayments = paymentResponses
-            .flatMap(res => res.data)
-            .filter(p => {
-              const paymentDate = new Date(p.date);
-              return (
-                paymentDate.getFullYear() === parseInt(year) &&
-                paymentDate.getMonth() + 1 === parseInt(month)
-              );
-            });
-
-          currentRevenue = allPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
-        } catch {
-          currentRevenue = 0;
-        }
-
-        // --- Attendance (selected month) ---
-        let attendanceData = { days: [], result: [] };
-        try {
-          const attendanceRes = await axios.get(`/api/attendance?month=${currentMonth}`);
-          attendanceData = attendanceRes?.data || { days: [], result: [] };
-        } catch {
-          throw new Error('Failed to fetch attendance data');
-        }
+        const attendanceRes = await axios.get(`/api/attendance?month=${currentMonth}`);
+        const attendanceData = attendanceRes?.data || { days: [], result: [] };
 
         const attendanceMembers = members.map(member => {
           const record = attendanceData.result.find(r => r.memberId === member._id) || {};
@@ -110,50 +117,41 @@ function Dashboard() {
           });
           return { ...dayMap, memberId: member._id, name: member.name };
         });
-
-        // --- Attendance Trend (last 6 months) ---
-        const months = Array.from({ length: 6 }, (_, i) => {
-          const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
-          return date.toISOString().slice(0, 7);
-        }).reverse();
-
-        const trendPromises = months.map(m =>
-          axios.get(`/api/attendance?month=${m}`).catch(() => ({ data: { days: [], result: [] } }))
-        );
-
-        const trendResponses = await Promise.all(trendPromises);
-
-        const attendanceTrend = trendResponses.map((res, index) => {
-          const data = res?.data || { days: [], result: [] };
-
-          const validDays = data.days.filter(day => {
-            const cellDate = new Date(
-              months[index].split('-')[0],
-              months[index].split('-')[1] - 1,
-              day
-            );
-            return cellDate <= today;
+        
+        const dailyCount = attendanceData.days.map(day => {
+          let present = 0;
+          attendanceData.result.forEach(member => {
+            if (member[day] === 1) present++;
           });
+          return { day, present };
+        });
+        setData(dailyCount);
 
-          const totalPossible = validDays.length * members.length;
-          const totalPresent = validDays.reduce((sum, day) => {
-            return (
-              sum +
-              data.result.reduce((count, member) => (member[day] === 1 ? count + 1 : count), 0)
-            );
-          }, 0);
+        const revenueRes = await axios.get('/api/dashboard/revenue');
+        const dataRaw = revenueRes.data || { monthlyRevenue: [], annualRevenue: [], totalRevenue: { total: 0, count: 0 } };
 
-          const attendanceRate =
-            totalPossible > 0 ? Math.round((totalPresent / totalPossible) * 100) : 0;
-
+        const now = new Date();
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const last12Months = Array.from({ length: 12 }).map((_, i) => {
+          const date = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
           return {
-            _id: {
-              year: parseInt(months[index].split('-')[0]),
-              month: parseInt(months[index].split('-')[1]),
-            },
-            attendanceRate,
+            year: date.getFullYear(),
+            month: date.getMonth() + 1,
+            label: `${months[date.getMonth()]} ${String(date.getFullYear()).slice(-2)}`,
           };
         });
+
+        const monthlySeriesData = last12Months.map(m => {
+          const found = dataRaw.monthlyRevenue.find(
+            d => d._id.year === m.year && d._id.month === m.month
+          );
+          return {
+            label: m.label,
+            revenue: found ? found.total : 0,
+            transactions: found ? found.count : 0,
+          };
+        });
+        setMonthlySeries(monthlySeriesData);
 
         setDashboardData({
           totalMembers,
@@ -163,7 +161,6 @@ function Dashboard() {
           recentMembers,
           expiringMembers,
           attendanceData: { days: attendanceData.days, members: attendanceMembers },
-          attendanceTrend,
         });
 
         setLoading(false);
@@ -174,221 +171,296 @@ function Dashboard() {
     };
 
     fetchData();
-  }, [currentMonth]);
+  }, [currentMonth, navigate]);
 
-  // --- Helpers ---
-  function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-    }).format(amount || 0);
-  }
-
-  const prepareAttendanceChartData = () => {
+  const prepareWeeklyAttendanceData = () => {
     const { days = [], members = [] } = dashboardData.attendanceData;
+    const [year, month] = currentMonth.split("-");
     const today = new Date();
-    const [year, month] = currentMonth.split('-');
 
-    return days
-      .filter(day => new Date(year, month - 1, day) <= today)
-      .map(day => {
-        const presentCount = members.reduce((count, member) => {
-          return member[day] === 1 ? count + 1 : count;
-        }, 0);
+    const weekData = {};
 
-        return {
-          day: `Day ${day}`,
-          present: presentCount,
-          absent: members.length - presentCount,
-        };
-      });
-  };
+    days.filter(day => new Date(year, month - 1, day) <= today).forEach(day => {
+      const presentCount = members.reduce((count, member) => {
+        return member[day] === 1 ? count + 1 : count;
+      }, 0);
 
-  const prepareTrendChartData = () => {
-    if (!Array.isArray(dashboardData.attendanceTrend)) return [];
-    return dashboardData.attendanceTrend.map(item => ({
-      month:
-        item?._id?.year && item?._id?.month
-          ? `${item._id.year}-${String(item._id.month).padStart(2, '0')}`
-          : 'Unknown',
-      attendance: item?.attendanceRate || 0,
+      const weekNum = Math.ceil(day / 7);
+
+      if (!weekData[weekNum]) {
+        weekData[weekNum] = { week: `Week ${weekNum}`, present: 0, totalDays: 0 };
+      }
+
+      weekData[weekNum].present += presentCount;
+      weekData[weekNum].totalDays += members.length;
+    });
+
+    return Object.values(weekData).map(w => ({
+      week: w.week,
+      attendanceRate: w.totalDays > 0 ? Math.round((w.present / w.totalDays) * 100) : 0,
     }));
   };
 
-  const calculateAttendancePercentage = () => {
+  const calculateAttendanceRate = () => {
     const { days = [], members = [] } = dashboardData.attendanceData;
-    if (days.length === 0 || members.length === 0) return 0;
+    if (!days.length || !members.length) return 0;
 
-    const today = new Date();
-    const [year, month] = currentMonth.split('-');
-    const validDays = days.filter(day => new Date(year, month - 1, day) <= today);
+    let total = 0;
+    let present = 0;
 
-    if (validDays.length === 0) return 0;
+    days.forEach(day => {
+      members.forEach(member => {
+        total++;
+        if (member[day] === 1) present++;
+      });
+    });
 
-    const totalPossible = validDays.length * members.length;
-    const totalPresent = validDays.reduce((sum, day) => {
-      return sum + members.reduce((count, member) => (member[day] === 1 ? count + 1 : count), 0);
-    }, 0);
-
-    return Math.round((totalPresent / totalPossible) * 100);
+    return total > 0 ? Math.round((present / total) * 100) : 0;
   };
 
-  // --- UI ---
   if (loading) {
     return (
-      <div className="w-full min-h-screen flex items-center justify-center bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+          <p className="text-white mt-4 text-lg">Loading Dashboard...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="w-full min-h-screen flex flex-col items-center justify-center bg-white text-gray-600">
-        <p className="text-red-500">{error}</p>
-        <button
-          onClick={() => setCurrentMonth(currentMonth)}
-          className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-        >
-          Retry
-        </button>
+      <div className="w-full min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 max-w-md text-center">
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <p className="text-red-400 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
 
-  const attendanceChartData = prepareAttendanceChartData();
-  const trendChartData = prepareTrendChartData();
-  const attendancePercentage = calculateAttendancePercentage();
+  const attendanceRate = calculateAttendanceRate();
+  const growthRate = ((dashboardData.activeMembers - 180) / 180 * 100).toFixed(1);
 
   return (
-    <div className="w-full max-w-none flex flex-col items-start p-6 bg-[#0a0f1c]">
-      {/* Header */}
-      <div className="flex justify-between items-center w-full mb-8">
-        <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-        <div className="flex space-x-3">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Link
-            to="/member/new"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
+            to="/revenue"
+            className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer block"
           >
-            + New Member
+            <div className="flex items-center justify-between mb-4">
+              <div className="bg-white/20 p-3 rounded-xl">
+                <IndianRupee className="w-8 h-8" />
+              </div>
+              <div className="text-right">
+                <div className="text-green-100 text-sm font-medium">Monthly Revenue</div>
+                <div className="text-2xl font-bold">{formatCurrency(dashboardData.totalRevenue)}</div>
+              </div>
+            </div>
           </Link>
+
           <Link
             to="/members"
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center"
+            className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer block"
           >
-            Mark Attendance
+            <div className="flex items-center justify-between mb-4">
+              <div className="bg-white/20 p-3 rounded-xl">
+                <Users className="w-8 h-8" />
+              </div>
+              <div className="text-right">
+                <div className="text-blue-100 text-sm font-medium">Total Members</div>
+                <div className="text-2xl font-bold">{dashboardData.totalMembers}</div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-blue-100">{dashboardData.activeMembers} Active</span>
+              <span className="text-blue-200">{dashboardData.inactiveMembers} Inactive</span>
+            </div>
+          </Link>
+
+          <Link
+            to="/attendance"
+            className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer block"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="bg-white/20 p-3 rounded-xl">
+                <Activity className="w-8 h-8" />
+              </div>
+              <div className="text-right">
+                <div className="text-purple-100 text-sm font-medium">Attendance Rate</div>
+                <div className="text-2xl font-bold">{attendanceRate}%</div>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            to="/growth"
+            className="bg-[#ea580c] rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer block"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="bg-white/20 p-3 rounded-xl">
+                <TrendingUp className="w-8 h-8" />
+              </div>
+              <div className="text-right">
+                <div className="text-orange-100 text-sm font-medium">Member Growth</div>
+                <div className="text-2xl font-bold">{growthRate}%</div>
+              </div>
+            </div>
           </Link>
         </div>
-      </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full mb-8">
-        <Link to="/revenue" className="bg-gray-800 p-6 rounded-xl text-white shadow-lg block">
-          <h3 className="text-lg font-medium">Monthly Revenue</h3>
-          <p className="text-2xl font-bold text-yellow-400">
-            {formatCurrency(dashboardData.totalRevenue)}
-          </p>
-        </Link>
-
-        <Link to="/members" className="bg-gray-800 p-6 rounded-xl text-white shadow-lg block">
-          <h3 className="text-lg font-medium">Total Members</h3>
-          <p className="text-2xl font-bold text-blue-400">{dashboardData.totalMembers}</p>
-          <p className="text-sm text-green-400">{dashboardData.activeMembers} active</p>
-          <p className="text-sm text-red-400">{dashboardData.inactiveMembers} inactive</p>
-        </Link>
-      </div>
-
-      {/* Month Selector */}
-      <div className="flex items-center gap-4 mb-6">
-        <label className="text-white font-medium">Select Month:</label>
-        <input
-          type="month"
-          value={currentMonth}
-          onChange={e => setCurrentMonth(e.target.value)}
-          className="p-2 rounded bg-gray-800 text-white [color-scheme:dark]"
-        />
-      </div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full mb-8">
-        {/* Attendance Overview */}
-        <div className="bg-gray-800 rounded-xl p-6 shadow-lg">
-          <div className="flex justify-between items-center mb-4">
-            <Link to="/attendance" className="flex items-center gap-3">
-              <h2 className="text-xl font-semibold text-white hover:text-blue-400 transition-colors">
-                Attendance Overview ({currentMonth})
-              </h2>
-              <span className="bg-green-600 text-white text-sm font-medium px-2 py-1 rounded-lg">
-                {attendancePercentage}%
-              </span>
-            </Link>
-            <div className="text-sm text-gray-400">
-              {dashboardData.attendanceData.members.length} members
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-gray-200 backdrop-blur-sm rounded-2xl p-6 border border-white/2 shadow-xl">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Revenue Trend</h3>
+                <p className="text-gray-900 text-sm">Monthly revenue</p>
+              </div>
+              <div className="bg-green-300 p-2 rounded-xl">
+                <IndianRupee className="w-6 h-6 text-green-500" />
+              </div>
+            </div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={monthlySeries}>
+                  <defs>
+                    <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis dataKey="label" tick={{ fill: '#000000', fontSize: 12 }} />
+                  <YAxis tick={{ fill: '#000000', fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{
+                      background: 'rgba(15, 23, 42, 0.9)',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      borderRadius: '12px',
+                      color: '#f3f4f6',
+                    }}
+                    formatter={(value) => [formatCurrency(value), 'Revenue']}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#10b981"
+                    fillOpacity={1}
+                    fill="url(#revenueGradient)"
+                    strokeWidth={3}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={attendanceChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="day" tick={{ fill: '#cbd5e1', fontSize: 12 }} />
-                <YAxis tick={{ fill: '#cbd5e1', fontSize: 12 }} />
-                <Tooltip
-                  contentStyle={{
-                    background: '#0f1724',
-                    border: '1px solid #374151',
-                    color: '#f3f4f6',
-                  }}
-                />
-                <Legend wrapperStyle={{ color: '#94a3b8' }} />
-                <Line
-                  type="monotone"
-                  dataKey="present"
-                  stroke="#10B981"
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                  name="Present"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          <div className="bg-gray-200 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Attendance Trend</h3>
+                <p className="text-gray-900 text-sm">This Month attendance overview</p>
+              </div>
+              <div className="bg-blue-500/20 p-2 rounded-xl">
+                <Activity className="w-6 h-6 text-blue-400" />
+              </div>
+            </div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data}>
+                  <XAxis dataKey="day" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="present"
+                    stroke="#4f46e5"
+                    strokeWidth={3}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
 
-        {/* Attendance Trend */}
-        <div className="bg-gray-800 rounded-xl p-6 shadow-lg">
-          <div className="flex justify-between items-center mb-4">
-            <Link to="/attendance/trend">
-              <h2 className="text-xl font-semibold text-white hover:underline cursor-pointer">
-                Attendance Trend (6 months)
-              </h2>
-            </Link>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-gray-200 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Recent Members</h3>
+                <p className="text-gray-900 text-sm">Latest member registrations</p>
+              </div>
+              <div className="bg-blue-500/20 p-2 rounded-xl">
+                <UserPlus className="w-6 h-6 text-blue-400" />
+              </div>
+            </div>
+            <div className="space-y-4">
+              {dashboardData.recentMembers.slice(0, 5).map((member, index) => (
+                <div key={index} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                      {member.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-gray-900 font-medium">{member.name}</p>
+                      <p className="text-gray-700 text-sm">{member.membershipType} Plan</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-900 text-sm">
+                      {new Date(member.joinDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trendChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="month" tick={{ fill: '#cbd5e1', fontSize: 12 }} />
-                <YAxis domain={[0, 100]} tick={{ fill: '#cbd5e1', fontSize: 12 }} />
-                <Tooltip
-                  contentStyle={{
-                    background: '#0f1724',
-                    border: '1px solid #374151',
-                    color: '#f3f4f6',
-                  }}
-                  formatter={value => [`${value}%`, 'Attendance']}
-                  labelFormatter={label => `Month: ${label}`}
-                />
-                <Legend wrapperStyle={{ color: '#94a3b8' }} />
-                <Line
-                  type="monotone"
-                  dataKey="attendance"
-                  stroke="#3B82F6"
-                  strokeWidth={2}
-                  activeDot={{ r: 6 }}
-                  name="Attendance %"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+
+          <div className="bg-gray-200 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Expiring Soon</h3>
+                <p className="text-gray-900 text-sm">Memberships expiring within 30 days</p>
+              </div>
+              <div className="bg-orange-500/20 p-2 rounded-xl">
+                <Clock className="w-6 h-6 text-orange-400" />
+              </div>
+            </div>
+            <div className="space-y-4">
+              {dashboardData.expiringMembers.map((member, index) => (
+                <div key={index} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white font-semibold">
+                      {member.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-gray-900 font-medium">{member.name}</p>
+                      <p className="text-gray-900 text-sm">{member.membershipType} Plan</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-red-600 text-sm font-medium">
+                      Expires: {new Date(member.expiryDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {dashboardData.expiringMembers.length === 0 && (
+              <div className="text-center py-8">
+                <UserCheck className="w-12 h-12 text-green-400 mx-auto mb-3" />
+                <p className="text-slate-300">No memberships expiring soon!</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

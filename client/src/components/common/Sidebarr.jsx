@@ -145,7 +145,7 @@ export default function Drawer() {
                             {/* Mobile Menu Button - Only show on screens smaller than lg */}
                             <button
                                 onClick={toggleMenu}
-                                className="lg:hidden p-2.5 rounded-xl bg-gray-300 text-gray-900 cursor-pointer hover:bg-white/20 transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border border-white/20"
+                                className="lg:hidden md:hidden p-2.5 rounded-xl bg-gray-300 text-gray-900 cursor-pointer hover:bg-white/20 transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border border-white/20"
                             >
                                 {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                             </button>
@@ -154,7 +154,7 @@ export default function Drawer() {
 
                     {/* Mobile Nav Links - Only show on screens smaller than lg */}
                     {isMenuOpen && (
-                        <div className="lg:hidden border-t border-white/10 bg-white rounded backdrop-blur-sm">
+                        <div className="lg:hidden md:hidden border-t border-white/10 bg-white rounded backdrop-blur-sm">
                             <div className="px-2 pt-2 pb-3 space-y-1">
                                 {navItems.map((item) => {
                                     const Icon = item.icon;
