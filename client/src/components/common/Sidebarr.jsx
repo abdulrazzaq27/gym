@@ -1,29 +1,67 @@
 import React, { useState, useEffect, useRef } from "react";
-// import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { logout } from "../utils/auth";
-import { useNavigate } from "react-router-dom";
+import {
+    LayoutDashboard,
+    Users,
+    UserPlus,
+    CreditCard,
+    Calendar,
+    BarChart3,
+    Settings,
+    LogOut,
+    LogIn,
+    Menu,
+    X,
+    User,
+    Activity,
+    TrendingUp,
+    DollarSign
+} from 'lucide-react';
 
 export default function Drawer() {
     const [open, setOpen] = useState(false);
     const closeBtnRef = useRef(null);
-
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const location = useLocation();
+    const [currentPath, setCurrentPath] = useState('/dashboard');
+
+    // Mock auth - replace with your auth logic
+    const token = true; // localStorage.getItem("token");
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-    const isActive = (path) => location.pathname === path;
-    const navigate = useNavigate();
-    const token = localStorage.getItem("token");
+    const isActive = (path) => currentPath === path;
+
+    const logout = () => {
+        // localStorage.removeItem("token");
+        // navigate("/login");
+        console.log("Logout clicked");
+    };
+
+    const navigate = (path) => {
+        setCurrentPath(path);
+        setOpen(false);
+        setIsMenuOpen(false);
+        console.log("Navigate to:", path);
+    };
+
+    // Navigation items
+    const navItems = [
+        { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { path: '/members', label: 'Members', icon: Users },
+        { path: '/member/new', label: 'Add Member', icon: UserPlus },
+        { path: '/attendance', label: 'Attendance', icon: Calendar },
+        { path: '/payments', label: 'Payments', icon: CreditCard },
+        { path: '/reports', label: 'Reports', icon: BarChart3 },
+        { path: '/settings', label: 'Settings', icon: Settings }
+    ];
 
     // close on Escape
     useEffect(() => {
         function onKey(e) {
             if (e.key === "Escape" && open) setOpen(false);
+            if (e.key === "Escape" && isMenuOpen) setIsMenuOpen(false);
         }
         document.addEventListener("keydown", onKey);
         return () => document.removeEventListener("keydown", onKey);
-    }, [open]);
+    }, [open, isMenuOpen]);
 
     // focus close button when drawer opens
     useEffect(() => {
@@ -32,135 +70,131 @@ export default function Drawer() {
         }
     }, [open]);
 
+    // Close mobile menu when screen size changes to desktop
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 1024) { // lg breakpoint
+                setIsMenuOpen(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
         <>
             {/* NAVBAR */}
-            <nav className=" border-b border-gray-200 bg-[#111827] dark:border-gray-700 shadow-sm w-full">
-                <div className="w-full px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16 w-full">
+            <nav className="bg-white border-b border-white/50 shadow-2xl backdrop-blur-sm sticky top-0 z-40">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16">
                         {/* Left: Logo and Nav Links */}
                         <div className="flex items-center gap-8">
-                            {/* Sidebar Toggle Button */}
+                            {/* Sidebar Toggle Button - Only show on larger screens */}
                             <button
                                 onClick={() => setOpen(true)}
-                                className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="hidden md:block p-2.5 rounded-xl bg-gray-300 text-gray-900 cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border border-white/20"
                                 aria-label="Open sidebar"
                             >
-                                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                                </svg>
+                                <Menu className="h-5 w-5" />
                             </button>
-                            <Link to="/" className="flex items-center space-x-3 rtl:space-x-reverse">
-                                <img src="/icon.png" className="h-8 w-8 rounded-lg" alt="FitZone Logo" />
-                                <span className="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">FitZone Admin</span>
-                                <span className="text-xl font-bold text-gray-900 dark:text-white sm:hidden">FitZone</span>
-                            </Link>
 
-                            <div className="hidden md:flex items-center space-x-6">
-                                <Link
-                                    to="/dashboard"
-                                    className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/dashboard')
-                                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
-                                        }`}
-                                >
-                                    Dashboard
-                                </Link>
-                                <Link
-                                    to="/members"
-                                    className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/members')
-                                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
-                                        }`}
-                                >
-                                    Members
-                                </Link>
-                                <Link
-                                    to="/member/new"
-                                    className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/member/new')
-                                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
-                                        }`}
-                                >
-                                    Add Member
-                                </Link>
-                            </div>
+                            <button onClick={() => navigate('/dashboard')} className="flex items-center space-x-3 group">
+                                <div className="relative">
+                                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-200">
+                                        <Activity className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl opacity-0 group-hover:opacity-30 blur transition-all duration-200"></div>
+                                </div>
+                                <div className="hidden sm:block">
+                                    <span className="text-2xl font-bold bg-gradient-to-r from-white to-blue-300 bg-clip-text text-gray-900">
+                                        FitZone Pro
+                                    </span>
+                                    <div className="text-xs text-gray-900 font-medium">Gym Management</div>
+                                </div>
+                            </button>
                         </div>
 
-                        {/* Right: Profile + Menu */}
-                        <div className="flex items-center space-x-2">
-                            {/* Profile Icon */}
-                            <button className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
+                        {/* Right: Actions */}
+                        <div className="flex items-center space-x-3">
+                            {/* Profile Button */}
+                            <button className="relative p-2.5 rounded-xl bg-gray-300 cursor-pointer text-gray-900 hover:bg-white/20 transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border border-white/20 group">
+                                <User className="w-5 h-5" />
+                                {/* <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-900"></div> */}
                             </button>
 
+                            {/* Auth Button - Hidden on small screens */}
                             {token ? (
                                 <button
-                                    onClick={() => logout(navigate)}
-                                    className="bg-red-500 text-white px-4 py-2 rounded hover:cursor-pointer"
+                                    onClick={logout}
+                                    className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2.5 rounded-xl font-medium cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl"
                                 >
-                                    Logout
+                                    <LogOut className="w-4 h-4" />
+                                    <span>Logout</span>
                                 </button>
                             ) : (
                                 <button
                                     onClick={() => navigate("/login")}
-                                    className="bg-blue-500 text-white px-4 py-2 rounded hover:cursor-pointer"
+                                    className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-600 text-white px-4 py-2.5 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
                                 >
-                                    Login
+                                    <LogIn className="w-4 h-4" />
+                                    <span>Login</span>
                                 </button>
                             )}
 
-                            {/* Mobile Menu Button */}
+                            {/* Mobile Menu Button - Only show on screens smaller than lg */}
                             <button
                                 onClick={toggleMenu}
-                                className="md:hidden p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="lg:hidden p-2.5 rounded-xl bg-gray-300 text-gray-900 cursor-pointer hover:bg-white/20 transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border border-white/20"
                             >
-                                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    {isMenuOpen ? (
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                    ) : (
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                                    )}
-                                </svg>
+                                {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                             </button>
                         </div>
                     </div>
 
-                    {/* Mobile Nav Links */}
+                    {/* Mobile Nav Links - Only show on screens smaller than lg */}
                     {isMenuOpen && (
-                        <div className="md:hidden px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                            <Link
-                                to="/"
-                                onClick={() => setIsMenuOpen(false)}
-                                className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/')
-                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
-                                    }`}
-                            >
-                                Dashboard
-                            </Link>
-                            <Link
-                                to="/members"
-                                onClick={() => setIsMenuOpen(false)}
-                                className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/members')
-                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
-                                    }`}
-                            >
-                                Members
-                            </Link>
-                            <Link
-                                to="/create-member"
-                                onClick={() => setIsMenuOpen(false)}
-                                className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/create-member')
-                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
-                                    }`}
-                            >
-                                Add Member
-                            </Link>
+                        <div className="lg:hidden border-t border-white/10 bg-white rounded backdrop-blur-sm">
+                            <div className="px-2 pt-2 pb-3 space-y-1">
+                                {navItems.map((item) => {
+                                    const Icon = item.icon;
+                                    const active = isActive(item.path);
+                                    return (
+                                        <button
+                                            key={item.path}
+                                            onClick={() => navigate(item.path)}
+                                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${active
+                                                ? 'bg-white/20 text-white shadow-lg border border-white/20 backdrop-blur-sm'
+                                                : 'text-slate-300 hover:text-white hover:bg-white/10'
+                                                }`}
+                                        >
+                                            <Icon className="w-5 h-5" />
+                                            {item.label}
+                                        </button>
+                                    );
+                                })}
+
+                                {/* Mobile Auth Button */}
+                                <div className="pt-2 border-t border-white/10">
+                                    {token ? (
+                                        <button
+                                            onClick={logout}
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-red-300 hover:text-red-200 hover:bg-red-500/10 transition-all duration-200"
+                                        >
+                                            <LogOut className="w-5 h-5" />
+                                            Logout
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => navigate("/login")}
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-blue-300 hover:text-blue-200 hover:bg-blue-500/10 transition-all duration-200"
+                                        >
+                                            <LogIn className="w-5 h-5" />
+                                            Login
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -169,128 +203,75 @@ export default function Drawer() {
             {/* OVERLAY */}
             {open && (
                 <div
-                    className="fixed inset-0 z-40 bg-black bg-opacity-40"
+                    className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
                     onClick={() => setOpen(false)}
                     aria-hidden="true"
                 />
             )}
 
-            {/* DRAWER */}
+            {/* SIDEBAR DRAWER */}
             <aside
                 id="drawer-navigation"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="drawer-navigation-label"
-                className={`fixed top-0 left-0 z-50 h-full w-64 p-4 bg-white dark:bg-gray-800 transform transition-transform duration-300 ${open ? "translate-x-0" : "-translate-x-full"
-                    }`}
+                className={`fixed top-0 left-0 z-50 h-full w-80 bg-slate-900/95 shadow-2xl border-r border-white/20 backdrop-blur-sm transform transition-all duration-300 ${open ? "translate-x-0" : "-translate-x-full"
+                    } flex flex-col`}
             >
-                <h5
-                    id="drawer-navigation-label"
-                    className="text-base font-semibold text-gray-500 uppercase dark:text-gray-400"
-                >
-                    Menu
-                </h5>
+                {/* Header */}
+                <div className="p-6 border-b border-white/10 bg-gray-300">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                                <Activity className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900">FitZone Pro</h2>
+                                <p className="text-sm text-gray-800">Management Suite</p>
+                            </div>
+                        </div>
 
-                {/* close button */}
-                <button
-                    ref={closeBtnRef}
-                    onClick={() => setOpen(false)}
-                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 absolute top-3 right-3 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                    aria-label="Close menu"
-                >
-                    <svg
-                        aria-hidden="true"
-                        className="w-5 h-5"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                    >
-                        <path
-                            fillRule="evenodd"
-                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                            clipRule="evenodd"
-                        />
-                    </svg>
-                </button>
+                        <button
+                            ref={closeBtnRef}
+                            onClick={() => setOpen(false)}
+                            className="p-2 rounded-xl bg-gray-300 text-gray-900 cursor-pointer transition-all duration-200"
+                            aria-label="Close menu"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
 
-                {/* nav links */}
-                <div className="pt-10 overflow-y-auto">
-                    <ul className="space-y-2 font-medium">
-                        <li>
-                            <a
-                                href="#"
-                                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                            >
-                                <svg
-                                    className="w-5 h-5 text-gray-500 mr-3"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="currentColor"
-                                    viewBox="0 0 22 21"
+                {/* Navigation Links */}
+                <div className="flex-1 overflow-y-auto p-6 bg-gray-200">
+                    <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Navigation</h4>
+                    <nav className="space-y-2">
+                        {navItems.map((item) => {
+                            const Icon = item.icon;
+                            const active = isActive(item.path);
+                            return (
+                                <button
+                                    key={item.path}
+                                    onClick={() => navigate(item.path)}
+                                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${active
+                                        ? 'bg-slate-700/70 text-white shadow-lg border border-white/20'
+                                        : 'text-gray-900 hover:text-white hover:bg-slate-700/50 hover:shadow-lg'
+                                        }`}
                                 >
-                                    <path d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998 8.5 8.5 0 1 0 9.039 9.039.999.999 0 0 0-1-1.066h.002Z" />
-                                    <path d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 1-.935c.013-.188.028-.374.028-.565A8.51 8.51 0 0 0 12.5 0Z" />
-                                </svg>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
+                                    <Icon className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-gray-700'}`} />
+                                    <span>{item.label}</span>
+                                </button>
+                            );
+                        })}
+                    </nav>
+                </div>
 
-                        <li>
-                            <a
-                                href="#"
-                                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                            >
-                                <svg
-                                    className="w-5 h-5 text-gray-500 mr-3"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="currentColor"
-                                    viewBox="0 0 18 18"
-                                >
-                                    <path d="M6.143 0H1.857A1.857 1.857 0 0 0 0 1.857v4.286C0 7.169.831 8 1.857 8h4.286A1.857 1.857 0 0 0 8 6.143V1.857A1.857 1.857 0 0 0 6.143 0Zm10 0h-4.286A1.857 1.857 0 0 0 10 1.857v4.286C10 7.169 10.831 8 11.857 8h4.286A1.857 1.857 0 0 0 18 6.143V1.857A1.857 1.857 0 0 0 16.143 0Zm-10 10H1.857A1.857 1.857 0 0 0 0 11.857v4.286C0 17.169.831 18 1.857 18h4.286A1.857 1.857 0 0 0 8 16.143v-4.286A1.857 1.857 0 0 0 6.143 10Zm10 0h-4.286A1.857 1.857 0 0 0 10 11.857v4.286c0 1.026.831 1.857 1.857 1.857h4.286A1.857 1.857 0 0 0 18 16.143v-4.286A1.857 1.857 0 0 0 16.143 10Z" />
-                                </svg>
-                                <span>Members</span>
-                            </a>
-                        </li>
-
-                        <li>
-                            <a
-                                href="#"
-                                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                            >
-                                <svg
-                                    className="w-5 h-5 text-gray-500 mr-3"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 18"
-                                >
-                                    <path d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Zm1 9h-1.264A6.957 6.957 0 0 1 15 15v2a2.97 2.97 0 0 1-.184 1H19a1 1 0 0 0 1-1v-1a5.006 5.006 0 0 0-5-5ZM6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Z" />
-                                </svg>
-                                <span>Payments</span>
-                            </a>
-                        </li>
-
-                        <li>
-                            <a
-                                href="#"
-                                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                            >
-                                <svg
-                                    className="w-5 h-5 text-gray-500 mr-3"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 18 16"
-                                >
-                                    <path
-                                        stroke="currentColor"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"
-                                    />
-                                </svg>
-                                <span>Settings</span>
-                            </a>
-                        </li>
-                    </ul>
+                {/* Footer */}
+                <div className="p-6 border-t border-white/10 bg-gray-300">
+                    <div className="text-center text-xs text-gray-900">
+                        <p>FitZone Pro v2.1</p>
+                        <p className="mt-1">© 2025 Gym Management System</p>
+                    </div>
                 </div>
             </aside>
         </>

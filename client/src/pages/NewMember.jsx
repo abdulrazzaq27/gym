@@ -440,7 +440,7 @@ function CreateMember() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-8 py-3 cursor-pointer bg-gradient-to-r from-green-500 to-green-600 rounded-lg font-semibold text-white transition-all duration-200 hover:from-green-600 hover:to-green-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-w-[140px] flex items-center justify-center gap-2"
+                  className="px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 rounded-lg font-semibold text-white transition-all duration-200 hover:from-green-600 hover:to-green-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-w-[140px] flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>
