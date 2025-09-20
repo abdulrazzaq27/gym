@@ -18,7 +18,6 @@ import Login from './pages/Login.jsx';
 import ProtectedRoute from './components/utils/ProtectedRoute.jsx';
 import LandingPage from './pages/LandingPage.jsx';
 import ProtectedLayout from './components/ProtectedLayout.jsx';
-import Dashboardd from './pages/Dashboard2.jsx';
 import Members2 from './pages/Members2.jsx';
 import CreateMemberLight from './pages/CreateMemberLight.jsx';
 
