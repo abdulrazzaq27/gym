@@ -16,7 +16,6 @@ import AttendanceTrend from './pages/AttendanceTrend.jsx';
 import Register from './pages/Register.jsx';
 import Login from './pages/Login.jsx';
 import ProtectedRoute from './components/utils/ProtectedRoute.jsx';
-import LandingPageLight from './pages/LandingPageLight.jsx';
 import LandingPage from './pages/LandingPage.jsx';
 import ProtectedLayout from './components/ProtectedLayout.jsx';
 import Members2 from './pages/Members2.jsx';
@@ -38,8 +37,7 @@ function App() {
       <ScrollToTop />
       <main >
         <Routes>
-          <Route path="/" element={<LandingPageLight />} />
-          <Route path="/landingpage" element={<LandingPage />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
 
