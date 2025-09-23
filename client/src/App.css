@@ -1,3 +1,2 @@
 @import "tailwindcss";
-@import "flowbite/src/themes/default";
-@import 'flowbite';
+@config "../tailwind.config.js";
