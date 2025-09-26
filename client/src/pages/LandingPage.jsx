@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 export default function EnergeticFitZoneLanding() {
   const [scrollY, setScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -46,27 +46,6 @@ export default function EnergeticFitZoneLanding() {
       title: "Reports",
       description: "Detailed analytics and revenue insights",
       color: isDarkMode ? "from-purple-400 to-pink-500" : "from-purple-300 to-pink-400"
-    }
-  ];
-
-  const testimonials = [
-    {
-      name: "Amanda Lee",
-      role: "Gym Owner",
-      image: "https://images.unsplash.com/photo-1494790108755-2616b612b176?w=100&h=100&fit=crop&crop=face",
-      text: "FitZone transformed my gym operations. Revenue increased by 40% in just 3 months!"
-    },
-    {
-      name: "Mark Howard",
-      role: "Fitness Manager",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-      text: "Streamlined operations and member satisfaction has never been higher."
-    },
-    {
-      name: "Sarah Chen",
-      role: "Business Owner",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
-      text: "The analytics dashboard gives me insights I never had before. Game changer!"
     }
   ];
 

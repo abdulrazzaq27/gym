@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { logout } from "../utils/auth";
 import { useNavigate } from "react-router-dom";
-
+import { useTheme } from "./ThemeContext.jsx";
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
@@ -10,6 +10,7 @@ function Navbar() {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const isActive = (path) => location.pathname === path;
   const navigate = useNavigate();
+  const { isDarkMode, toggleTheme } = useTheme();
   const token = localStorage.getItem("token");
   return (
     <nav className=" border-b border-gray-200 bg-[#111827] dark:border-gray-700 shadow-sm w-full">
@@ -62,6 +63,35 @@ function Navbar() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </button>
+
+            {/* Theme Toggle Button */}
+<button
+  onClick={toggleTheme}
+  className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+>
+  {isDarkMode ? (
+    // Sun Icon for Light Mode
+    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M12 3v1m0 16v1m8.66-13.66l-.7.7M5.34 18.36l-.7.7M21 12h-1M4 12H3m16.66 5.66l-.7-.7M5.34 5.64l-.7-.7M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+      />
+    </svg>
+  ) : (
+    // Moon Icon for Dark Mode
+    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
+      />
+    </svg>
+  )}
+</button>
+
 
             {token ? (
               <button

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useTheme } from "../utils/ThemeContext.jsx";
+
 import {
     LayoutDashboard,
     Users,
@@ -14,8 +16,11 @@ import {
     User,
     Activity,
     TrendingUp,
-    DollarSign
+    DollarSign,
+    Sun,
+    Moon
 } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 
 export default function Drawer() {
     const [open, setOpen] = useState(false);
@@ -23,24 +28,29 @@ export default function Drawer() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [currentPath, setCurrentPath] = useState('/dashboard');
 
+    const token = localStorage.getItem('token');
     // Mock auth - replace with your auth logic
-    const token = true; // localStorage.getItem("token");
+    localStorage.getItem("token");
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
     const isActive = (path) => currentPath === path;
+    const { isDarkMode, toggleTheme } = useTheme();
+
 
     const logout = () => {
-        // localStorage.removeItem("token");
-        // navigate("/login");
-        console.log("Logout clicked");
+        localStorage.removeItem("token");
+        navigate("/login");
+        // console.log("Logout clicked");
     };
 
-    const navigate = (path) => {
-        setCurrentPath(path);
-        setOpen(false);
-        setIsMenuOpen(false);
-        console.log("Navigate to:", path);
-    };
+    // const navigate = (path) => {
+    //     setCurrentPath(path);
+    //     setOpen(false);
+    //     setIsMenuOpen(false);
+    //     console.log("Navigate to:", path);
+    // };
+
+    const navigate = useNavigate();
 
     // Navigation items
     const navItems = [
@@ -121,6 +131,14 @@ export default function Drawer() {
                             <button className="relative p-2.5 rounded-xl bg-gray-300 cursor-pointer text-gray-900 hover:bg-white/20 transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border border-white/20 group">
                                 <User className="w-5 h-5" />
                                 {/* <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-900"></div> */}
+                            </button>
+
+                            {/* Theme Toggle Button */}
+                            <button
+                                onClick={toggleTheme}
+                                className="p-2.5 rounded-xl bg-gray-300 text-gray-900 hover:bg-white/20 transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border border-white/20"
+                            >
+                                {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                             </button>
 
                             {/* Auth Button - Hidden on small screens */}

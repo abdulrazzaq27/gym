@@ -20,6 +20,7 @@ import LandingPage from './pages/LandingPage.jsx';
 import ProtectedLayout from './components/ProtectedLayout.jsx';
 import Members2 from './pages/Members2.jsx';
 import CreateMemberLight from './pages/CreateMemberLight.jsx';
+import { ThemeProvider } from "./components/utils/ThemeContext.jsx";
 
 function App() {
   const [message, setMessage] = useState('');
@@ -34,29 +35,31 @@ function App() {
 
   return (
     <div className="min-h-screen ">
-      <ScrollToTop />
-      <main >
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
+      <ThemeProvider>
+        <ScrollToTop />
+        <main >
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route element={<ProtectedLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/members" element={<Members />} />
-              <Route path="/member/new" element={<CreateMember />} />
-              <Route path="/members/:id" element={<MemberDetails />} />
-              <Route path="/members/:id/RenewMember" element={<RenewMember />} />
-              <Route path="/revenue" element={<Revenue />} />
-              <Route path="/attendance" element={<Attendance />} />
-              <Route path="/attendance/trend" element={<AttendanceTrend />} />
-              <Route path='/members2' element={< Members2/>} />
-              <Route path='/member/new/light' element={<CreateMemberLight />} />
+            <Route element={<ProtectedRoute />}>
+              <Route element={<ProtectedLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/members" element={<Members />} />
+                <Route path="/member/new" element={<CreateMember />} />
+                <Route path="/members/:id" element={<MemberDetails />} />
+                <Route path="/members/:id/RenewMember" element={<RenewMember />} />
+                <Route path="/revenue" element={<Revenue />} />
+                <Route path="/attendance" element={<Attendance />} />
+                <Route path="/attendance/trend" element={<AttendanceTrend />} />
+                <Route path='/members2' element={< Members2 />} />
+                <Route path='/member/new/light' element={<CreateMemberLight />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </main>
+          </Routes>
+        </main>
+      </ThemeProvider>
     </div>
   );
 }

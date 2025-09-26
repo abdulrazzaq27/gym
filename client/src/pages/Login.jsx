@@ -11,7 +11,7 @@ export default function EnergeticLogin() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const navigate = useNavigate();
 
@@ -36,8 +36,8 @@ export default function EnergeticLogin() {
 
     if (!password) {
       errors.password = "Password is required";
-    } else if (password.length < 6) {
-      errors.password = "Password must be at least 6 characters";
+    } else if (password.length < 8) {
+      errors.password = "Password must be at least 8 characters";
     }
 
     setFieldErrors(errors);
