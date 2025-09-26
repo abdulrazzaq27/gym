@@ -15,7 +15,13 @@ const memberSchema = new mongoose.Schema({
     type: String,
     lowercase: true,
     trim: true,
+    required: true,   // make required so OTP login always has email
   },
+  password: { 
+    type: String,
+    required: false ,
+  },
+
   phone: {
     type: String,
     required: true,
@@ -52,7 +58,17 @@ const memberSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
-}, { timestamps: true });
+
+  // 🔑 new fields for OTP login
+  otp: {
+    type: String,
+  },
+  otpExpiry: {
+    type: Date,
+  },
+  adminId: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", required: true },
+}, 
+{ timestamps: true });
 
 const Member = mongoose.model('Member', memberSchema);
 module.exports = Member;

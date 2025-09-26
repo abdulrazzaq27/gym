@@ -15,22 +15,16 @@ const paymentRoutes = require('./routes/paymentRoutes')
 const attendanceRoutes = require('./routes/attendanceRoutes')
 const authRoutes = require("./routes/authRoutes");
 const auth = require("./middlewares/authMiddleware");
+const memberAuthRoutes = require("./routes/memberAuthRoutes");
+
 
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
 
 app.use(express.json()); // to parse JSON body
-
-// app.use((req, res, next) => {
-//   if (req.user) {
-//     req.adminId = req.user.id;
-//     console.log(req.adminId);
-//   }
-//   next();
-// });
 
 
 app.get('/', (req, res) => {
@@ -45,6 +39,7 @@ app.use('/api/payments',auth, paymentRoutes);
 app.use('/api/attendance',auth, attendanceRoutes);
 
 app.use("/api/auth", authRoutes);
+app.use("/api/member-auth", memberAuthRoutes);
 
 
 
@@ -53,3 +48,12 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT,"0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+
+// app.use((req, res, next) => {
+//   if (req.user) {
+//     req.adminId = req.user.id;
+//     console.log(req.adminId);
+//   }
+//   next();
+// });
