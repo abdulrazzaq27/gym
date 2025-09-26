@@ -220,10 +220,10 @@ function Dashboard() {
 
   if (loading) {
     return (
-      <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="w-full min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
-          <p className="text-white mt-4 text-lg">Loading Dashboard...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-700 border-t-transparent"></div>
+          <p className="text-gray-700 mt-4 text-lg">Loading Dashboard...</p>
         </div>
       </div>
     );
@@ -231,7 +231,7 @@ function Dashboard() {
 
   if (error) {
     return (
-      <div className="w-full min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="w-full min-h-screen flex flex-col items-center justify-center">
         <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 max-w-md text-center">
           <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <p className="text-red-400 mb-4">{error}</p>
@@ -250,9 +250,9 @@ function Dashboard() {
   const growthRate = ((dashboardData.activeMembers - 180) / 180 * 100).toFixed(1);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-8">
           <Link
             to="/revenue"
             className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer block"
@@ -302,7 +302,7 @@ function Dashboard() {
             </div>
           </Link>
 
-          <Link
+          {/* <Link
             to="/growth"
             className="bg-[#ea580c] rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer block"
           >
@@ -315,7 +315,7 @@ function Dashboard() {
                 <div className="text-2xl font-bold">{growthRate}%</div>
               </div>
             </div>
-          </Link>
+          </Link> */}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
