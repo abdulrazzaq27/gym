@@ -29,28 +29,64 @@ export default function Drawer() {
     const [currentPath, setCurrentPath] = useState('/dashboard');
 
     const token = localStorage.getItem('token');
-    // Mock auth - replace with your auth logic
-    localStorage.getItem("token");
+    const { isDarkMode, toggleTheme } = useTheme();
+    const navigate = useNavigate();
+
+    // Theme-based classes
+    const themeClasses = {
+        navbar: isDarkMode 
+            ? 'bg-gray-800/95 border-gray-700/50 backdrop-blur-sm' 
+            : 'bg-white/95 border-gray-200/50 backdrop-blur-sm',
+        navbarText: isDarkMode ? 'text-white' : 'text-gray-900',
+        navbarSecondary: isDarkMode ? 'text-gray-300' : 'text-gray-600',
+        logoGradient: isDarkMode 
+            ? 'from-white to-blue-300' 
+            : 'from-gray-900 to-blue-600',
+        button: isDarkMode 
+            ? 'bg-gray-700/50 text-white hover:bg-gray-600/50 border-gray-600/30' 
+            : 'bg-gray-100/50 text-gray-900 hover:bg-gray-200/50 border-gray-300/30',
+        authButton: isDarkMode 
+            ? 'from-red-600 to-red-700 hover:from-red-700 hover:to-red-800' 
+            : 'from-red-500 to-red-600 hover:from-red-600 hover:to-red-700',
+        loginButton: isDarkMode 
+            ? 'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800' 
+            : 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
+        mobileMenu: isDarkMode 
+            ? 'bg-gray-800/95 border-gray-700/30' 
+            : 'bg-white/95 border-gray-200/30',
+        mobileNavItem: isDarkMode 
+            ? 'text-gray-300 hover:text-white hover:bg-gray-700/50' 
+            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50',
+        mobileNavActive: isDarkMode 
+            ? 'bg-gray-700/70 text-white border-gray-600/30' 
+            : 'bg-gray-200/50 text-gray-900 border-gray-300/30',
+        overlay: 'bg-black/30 backdrop-blur-sm',
+        drawer: isDarkMode 
+            ? 'bg-gray-900/95 border-gray-700/50' 
+            : 'bg-white/95 border-gray-200/50',
+        drawerHeader: isDarkMode ? 'bg-gray-800/50 border-gray-700/30' : 'bg-gray-50/50 border-gray-200/30',
+        drawerContent: isDarkMode ? 'bg-gray-800/30' : 'bg-gray-50/30',
+        drawerText: isDarkMode ? 'text-white' : 'text-gray-900',
+        drawerSecondary: isDarkMode ? 'text-gray-300' : 'text-gray-600',
+        drawerNavItem: isDarkMode 
+            ? 'text-gray-300 hover:text-white hover:bg-gray-700/50' 
+            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50',
+        drawerNavActive: isDarkMode 
+            ? 'bg-gray-700/70 text-white border-gray-600/30' 
+            : 'bg-gray-200/50 text-gray-900 border-gray-300/30',
+        drawerFooter: isDarkMode ? 'bg-gray-800/50 border-gray-700/30' : 'bg-gray-50/50 border-gray-200/30',
+        closeButton: isDarkMode 
+            ? 'bg-gray-700/50 text-white hover:bg-gray-600/50' 
+            : 'bg-gray-200/50 text-gray-900 hover:bg-gray-300/50',
+    };
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
     const isActive = (path) => currentPath === path;
-    const { isDarkMode, toggleTheme } = useTheme();
-
 
     const logout = () => {
         localStorage.removeItem("token");
         navigate("/login");
-        // console.log("Logout clicked");
     };
-
-    // const navigate = (path) => {
-    //     setCurrentPath(path);
-    //     setOpen(false);
-    //     setIsMenuOpen(false);
-    //     console.log("Navigate to:", path);
-    // };
-
-    const navigate = useNavigate();
 
     // Navigation items
     const navItems = [
@@ -83,7 +119,7 @@ export default function Drawer() {
     // Close mobile menu when screen size changes to desktop
     useEffect(() => {
         const handleResize = () => {
-            if (window.innerWidth >= 1024) { // lg breakpoint
+            if (window.innerWidth >= 1024) {
                 setIsMenuOpen(false);
             }
         };
@@ -95,7 +131,7 @@ export default function Drawer() {
     return (
         <>
             {/* NAVBAR */}
-            <nav className="bg-white border-b border-white/50 shadow-2xl backdrop-blur-sm sticky top-0 z-40">
+            <nav className={`${themeClasses.navbar} border-b shadow-2xl sticky top-0 z-40 transition-colors duration-300`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         {/* Left: Logo and Nav Links */}
@@ -103,7 +139,7 @@ export default function Drawer() {
                             {/* Sidebar Toggle Button - Only show on larger screens */}
                             <button
                                 onClick={() => setOpen(true)}
-                                className="hidden md:block p-2.5 rounded-xl bg-gray-300 text-gray-900 cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border border-white/20"
+                                className={`hidden md:block p-2.5 rounded-xl ${themeClasses.button} cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border`}
                                 aria-label="Open sidebar"
                             >
                                 <Menu className="h-5 w-5" />
@@ -117,10 +153,10 @@ export default function Drawer() {
                                     <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl opacity-0 group-hover:opacity-30 blur transition-all duration-200"></div>
                                 </div>
                                 <div className="hidden sm:block">
-                                    <span className="text-2xl font-bold bg-gradient-to-r from-white to-blue-300 bg-clip-text text-gray-900">
+                                    <span className={`text-2xl font-bold bg-gradient-to-r ${themeClasses.logoGradient} bg-clip-text text-transparent`}>
                                         FitZone Pro
                                     </span>
-                                    <div className="text-xs text-gray-900 font-medium">Gym Management</div>
+                                    <div className={`text-xs ${themeClasses.navbarSecondary} font-medium`}>Gym Management</div>
                                 </div>
                             </button>
                         </div>
@@ -128,24 +164,28 @@ export default function Drawer() {
                         {/* Right: Actions */}
                         <div className="flex items-center space-x-3">
                             {/* Profile Button */}
-                            <button className="relative p-2.5 rounded-xl bg-gray-300 cursor-pointer text-gray-900 hover:bg-white/20 transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border border-white/20 group">
+                            <button className={`relative p-2.5 rounded-xl ${themeClasses.button} cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border group`}>
                                 <User className="w-5 h-5" />
-                                {/* <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-900"></div> */}
                             </button>
 
                             {/* Theme Toggle Button */}
                             <button
                                 onClick={toggleTheme}
-                                className="p-2.5 rounded-xl bg-gray-300 text-gray-900 hover:bg-white/20 transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border border-white/20"
+                                className={`p-2.5 rounded-xl ${themeClasses.button} transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border`}
+                                aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
                             >
-                                {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                                {isDarkMode ? (
+                                    <Sun className="w-5 h-5 text-yellow-400" />
+                                ) : (
+                                    <Moon className="w-5 h-5 text-gray-600" />
+                                )}
                             </button>
 
                             {/* Auth Button - Hidden on small screens */}
                             {token ? (
                                 <button
                                     onClick={logout}
-                                    className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2.5 rounded-xl font-medium cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl"
+                                    className={`hidden sm:flex items-center gap-2 bg-gradient-to-r ${themeClasses.authButton} text-white px-4 py-2.5 rounded-xl font-medium cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl`}
                                 >
                                     <LogOut className="w-4 h-4" />
                                     <span>Logout</span>
@@ -153,7 +193,7 @@ export default function Drawer() {
                             ) : (
                                 <button
                                     onClick={() => navigate("/login")}
-                                    className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-600 text-white px-4 py-2.5 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                                    className={`hidden sm:flex items-center gap-2 bg-gradient-to-r ${themeClasses.loginButton} text-white px-4 py-2.5 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl`}
                                 >
                                     <LogIn className="w-4 h-4" />
                                     <span>Login</span>
@@ -163,7 +203,7 @@ export default function Drawer() {
                             {/* Mobile Menu Button - Only show on screens smaller than lg */}
                             <button
                                 onClick={toggleMenu}
-                                className="lg:hidden md:hidden p-2.5 rounded-xl bg-gray-300 text-gray-900 cursor-pointer hover:bg-white/20 transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border border-white/20"
+                                className={`lg:hidden md:hidden p-2.5 rounded-xl ${themeClasses.button} cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border`}
                             >
                                 {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                             </button>
@@ -172,7 +212,7 @@ export default function Drawer() {
 
                     {/* Mobile Nav Links - Only show on screens smaller than lg */}
                     {isMenuOpen && (
-                        <div className="lg:hidden md:hidden border-t border-white/10 bg-white rounded backdrop-blur-sm">
+                        <div className={`lg:hidden md:hidden border-t ${themeClasses.mobileMenu} rounded-b-xl backdrop-blur-sm transition-colors duration-300`}>
                             <div className="px-2 pt-2 pb-3 space-y-1">
                                 {navItems.map((item) => {
                                     const Icon = item.icon;
@@ -182,8 +222,8 @@ export default function Drawer() {
                                             key={item.path}
                                             onClick={() => navigate(item.path)}
                                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${active
-                                                ? 'bg-white/20 text-white shadow-lg border border-white/20 backdrop-blur-sm'
-                                                : 'text-slate-300 hover:text-white hover:bg-white/10'
+                                                ? `${themeClasses.mobileNavActive} shadow-lg border backdrop-blur-sm`
+                                                : themeClasses.mobileNavItem
                                                 }`}
                                         >
                                             <Icon className="w-5 h-5" />
@@ -193,11 +233,11 @@ export default function Drawer() {
                                 })}
 
                                 {/* Mobile Auth Button */}
-                                <div className="pt-2 border-t border-white/10">
+                                <div className={`pt-2 border-t ${isDarkMode ? 'border-gray-700/30' : 'border-gray-200/30'}`}>
                                     {token ? (
                                         <button
                                             onClick={logout}
-                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-red-300 hover:text-red-200 hover:bg-red-500/10 transition-all duration-200"
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200"
                                         >
                                             <LogOut className="w-5 h-5" />
                                             Logout
@@ -205,7 +245,7 @@ export default function Drawer() {
                                     ) : (
                                         <button
                                             onClick={() => navigate("/login")}
-                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-blue-300 hover:text-blue-200 hover:bg-blue-500/10 transition-all duration-200"
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 transition-all duration-200"
                                         >
                                             <LogIn className="w-5 h-5" />
                                             Login
@@ -221,7 +261,7 @@ export default function Drawer() {
             {/* OVERLAY */}
             {open && (
                 <div
-                    className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
+                    className={`fixed inset-0 z-40 ${themeClasses.overlay} transition-opacity duration-300`}
                     onClick={() => setOpen(false)}
                     aria-hidden="true"
                 />
@@ -233,26 +273,26 @@ export default function Drawer() {
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="drawer-navigation-label"
-                className={`fixed top-0 left-0 z-50 h-full w-80 bg-slate-900/95 shadow-2xl border-r border-white/20 backdrop-blur-sm transform transition-all duration-300 ${open ? "translate-x-0" : "-translate-x-full"
+                className={`fixed top-0 left-0 z-50 h-full w-80 ${themeClasses.drawer} shadow-2xl border-r backdrop-blur-sm transform transition-all duration-300 ${open ? "translate-x-0" : "-translate-x-full"
                     } flex flex-col`}
             >
                 {/* Header */}
-                <div className="p-6 border-b border-white/10 bg-gray-300">
+                <div className={`p-6 border-b ${themeClasses.drawerHeader}`}>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                                 <Activity className="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-gray-900">FitZone Pro</h2>
-                                <p className="text-sm text-gray-800">Management Suite</p>
+                                <h2 className={`text-xl font-bold ${themeClasses.drawerText}`}>FitZone Pro</h2>
+                                <p className={`text-sm ${themeClasses.drawerSecondary}`}>Management Suite</p>
                             </div>
                         </div>
 
                         <button
                             ref={closeBtnRef}
                             onClick={() => setOpen(false)}
-                            className="p-2 rounded-xl bg-gray-300 text-gray-900 cursor-pointer transition-all duration-200"
+                            className={`p-2 rounded-xl ${themeClasses.closeButton} cursor-pointer transition-all duration-200`}
                             aria-label="Close menu"
                         >
                             <X className="w-5 h-5" />
@@ -261,8 +301,8 @@ export default function Drawer() {
                 </div>
 
                 {/* Navigation Links */}
-                <div className="flex-1 overflow-y-auto p-6 bg-gray-200">
-                    <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">Navigation</h4>
+                <div className={`flex-1 overflow-y-auto p-6 ${themeClasses.drawerContent}`}>
+                    <h4 className={`text-sm font-semibold ${themeClasses.drawerSecondary} uppercase tracking-wide mb-4`}>Navigation</h4>
                     <nav className="space-y-2">
                         {navItems.map((item) => {
                             const Icon = item.icon;
@@ -272,11 +312,11 @@ export default function Drawer() {
                                     key={item.path}
                                     onClick={() => navigate(item.path)}
                                     className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${active
-                                        ? 'bg-slate-700/70 text-white shadow-lg border border-white/20'
-                                        : 'text-gray-900 hover:text-white hover:bg-slate-700/50 hover:shadow-lg'
+                                        ? `${themeClasses.drawerNavActive} shadow-lg border`
+                                        : `${themeClasses.drawerNavItem} hover:shadow-lg`
                                         }`}
                                 >
-                                    <Icon className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-gray-700'}`} />
+                                    <Icon className={`w-5 h-5 transition-colors ${active ? (isDarkMode ? 'text-white' : 'text-gray-900') : (isDarkMode ? 'text-gray-400' : 'text-gray-500')}`} />
                                     <span>{item.label}</span>
                                 </button>
                             );
@@ -285,8 +325,8 @@ export default function Drawer() {
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-white/10 bg-gray-300">
-                    <div className="text-center text-xs text-gray-900">
+                <div className={`p-6 border-t ${themeClasses.drawerFooter}`}>
+                    <div className={`text-center text-xs ${themeClasses.drawerSecondary}`}>
                         <p>FitZone Pro v2.1</p>
                         <p className="mt-1">© 2025 Gym Management System</p>
                     </div>

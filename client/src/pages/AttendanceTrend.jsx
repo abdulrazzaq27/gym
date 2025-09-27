@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import { Sun, Moon, TrendingUp, Calendar, Users } from 'lucide-react';
+import { useTheme } from '../components/utils/ThemeContext.jsx';
 import {
   ResponsiveContainer,
   LineChart,
@@ -20,14 +21,11 @@ import {
 export default function AttendanceTrend() {
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
   const [data, setData] = useState([]);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [chartType, setChartType] = useState('line'); // line | area | bar
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
+  const { isDarkMode } = useTheme();
 
   // Theme-based classes
   const themeClasses = {
@@ -159,7 +157,7 @@ export default function AttendanceTrend() {
   return (
     <div className={`min-h-screen ${themeClasses.background} relative`}>
       {/* Theme Toggle Button - Fixed Position */}
-      <div className="fixed top-6 right-6 z-50">
+      {/* <div className="fixed top-6 right-6 z-50">
         <button
           onClick={toggleTheme}
           className={`p-3 rounded-xl transition-all duration-300 ${themeClasses.toggleHover} shadow-lg backdrop-blur-sm border ${themeClasses.toggleButton}`}
@@ -171,7 +169,7 @@ export default function AttendanceTrend() {
             <Moon className={`w-6 h-6 ${themeClasses.moonColor}`} />
           )}
         </button>
-      </div>
+      </div> */}
 
       <div className="p-6">
         {/* Header */}

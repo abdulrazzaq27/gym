@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, User, Mail, Phone, Calendar, Users, CreditCard, DollarSign, FileText, CheckCircle2, ChevronDown, MapPin, Sun, Moon } from 'lucide-react';
 import axios from '../api/axios';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../components/utils/ThemeContext.jsx';
 
 function CreateMember() {
   const [isVisible, setIsVisible] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const navigate = useNavigate();
 
@@ -42,10 +42,7 @@ function CreateMember() {
     Yearly: 12,
   };
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
+  const { isDarkMode } = useTheme();
   // Theme-based classes
   const themeClasses = {
     background: isDarkMode ? 'bg-slate-900 text-white' : 'bg-gray-50 text-gray-900',
@@ -140,7 +137,7 @@ function CreateMember() {
   return (
     <div className={`min-h-screen ${themeClasses.background} relative`}>
       {/* Theme Toggle Button - Fixed Position */}
-      <div className="fixed top-6 right-6 z-50">
+      {/* <div className="fixed top-6 right-6 z-50">
         <button
           onClick={toggleTheme}
           className={`p-3 rounded-xl transition-all duration-300 ${themeClasses.toggleHover} shadow-lg backdrop-blur-sm border ${isDarkMode ? 'border-slate-700 bg-slate-800/80' : 'border-gray-200 bg-white/80'}`}
@@ -152,7 +149,7 @@ function CreateMember() {
             <Moon className={`w-6 h-6 ${themeClasses.moonColor}`} />
           )}
         </button>
-      </div>
+      </div> */}
 
       {/* Clean background */}
       <div className={`absolute inset-0 ${themeClasses.backgroundGradient}`}></div>
@@ -176,7 +173,7 @@ function CreateMember() {
         </div>
 
         {/* Form Container */}
-        <div className={`${themeClasses.formContainer} rounded-2xl border shadow-xl max-w-4xl mx-auto`}>
+        <div className={`${themeClasses.formContainer} rounded-2xl border shadow-xl max-w-7xl mx-auto`}>
           <div className="p-8">
             <form onSubmit={handleSubmit} className="space-y-8">
 

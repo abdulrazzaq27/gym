@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
+import { useTheme } from '../components/utils/ThemeContext.jsx';
 import {
   ResponsiveContainer,
   CartesianGrid,
@@ -41,7 +42,7 @@ function formatCurrency(amount) {
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDarkMode } = useTheme();
   const [dashboardData, setDashboardData] = useState({
     totalMembers: 0,
     activeMembers: 0,
@@ -61,10 +62,6 @@ function Dashboard() {
   });
   const [data, setData] = useState([]);
   const [monthlySeries, setMonthlySeries] = useState([]);
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
 
   // Theme-based classes
   const themeClasses = {
@@ -279,7 +276,7 @@ function Dashboard() {
   return (
     <div className={`min-h-screen ${themeClasses.background} relative`}>
       {/* Theme Toggle Button - Fixed Position */}
-      <div className="fixed top-6 right-6 z-50">
+      {/* <div className="fixed top-6 right-6 z-50">
         <button
           onClick={toggleTheme}
           className={`p-3 rounded-xl transition-all duration-300 ${themeClasses.toggleHover} shadow-lg backdrop-blur-sm border ${isDarkMode ? 'border-slate-700 bg-slate-800/80' : 'border-gray-200 bg-white/80'}`}
@@ -291,7 +288,7 @@ function Dashboard() {
             <Moon className={`w-6 h-6 ${themeClasses.moonColor}`} />
           )}
         </button>
-      </div>
+      </div> */}
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-8">

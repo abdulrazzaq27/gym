@@ -3,19 +3,18 @@ import { useParams } from 'react-router-dom';
 import axios from '../api/axios'; // ✅ Adjust path if needed
 import { User, Mail, Phone, Calendar, CreditCard, Shield, FileText, ArrowLeft, CheckCircle, XCircle, Clock, Sun, Moon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../components/utils/ThemeContext.jsx';
 
 function MemberDetails() {
     const { id } = useParams();
     const [member, setMember] = useState(null);
     const [paymentHistory, setPaymentHistory] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [isDarkMode, setIsDarkMode] = useState(false);
+    // const [isDarkMode, setIsDarkMode] = useState(false);
 
     const navigate = useNavigate();
 
-    const toggleTheme = () => {
-        setIsDarkMode(!isDarkMode);
-    };
+    const { isDarkMode } = useTheme();
 
     // Theme-based classes
     const themeClasses = {
@@ -141,7 +140,7 @@ function MemberDetails() {
     return (
         <div className={`min-h-screen ${themeClasses.background} relative`}>
             {/* Theme Toggle Button - Fixed Position */}
-            <div className="fixed top-6 right-6 z-50">
+            {/* <div className="fixed top-6 right-6 z-50">
                 <button
                     onClick={toggleTheme}
                     className={`p-3 rounded-xl transition-all duration-300 ${themeClasses.toggleHover} shadow-lg backdrop-blur-sm border ${isDarkMode ? 'border-slate-700 bg-slate-800/80' : 'border-gray-200 bg-white/80'}`}
@@ -153,7 +152,7 @@ function MemberDetails() {
                         <Moon className={`w-6 h-6 ${themeClasses.moonColor}`} />
                     )}
                 </button>
-            </div>
+            </div> */}
 
             <div className="w-full py-4 px-6">
                 {/* Header */}

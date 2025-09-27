@@ -2,20 +2,18 @@ import { useEffect, useState } from "react";
 import axios from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import { Sun, Moon } from 'lucide-react';
+import { useTheme } from '../components/utils/ThemeContext.jsx';
 
 function AttendanceOverview() {
   const [days, setDays] = useState([]);
   const [members, setMembers] = useState([]);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const navigate = useNavigate();
   const [month, setMonth] = useState(() => {
     const today = new Date();
     return today.toISOString().slice(0, 7);
   });
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
+  const { isDarkMode } = useTheme();
 
   // Theme-based classes
   const themeClasses = {
@@ -164,7 +162,7 @@ function AttendanceOverview() {
   return (
     <div className={`min-h-screen ${themeClasses.background} relative`}>
       {/* Theme Toggle Button - Fixed Position */}
-      <div className="fixed top-6 right-6 z-50">
+      {/* <div className="fixed top-6 right-6 z-50">
         <button
           onClick={toggleTheme}
           className={`p-3 rounded-xl transition-all duration-300 ${themeClasses.toggleHover} shadow-lg backdrop-blur-sm border ${themeClasses.toggleButton}`}
@@ -176,7 +174,7 @@ function AttendanceOverview() {
             <Moon className={`w-6 h-6 ${themeClasses.moonColor}`} />
           )}
         </button>
-      </div>
+      </div> */}
 
       <div className="p-6">
         {/* Header */}

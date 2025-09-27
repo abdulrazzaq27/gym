@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Search, Filter, SortAsc, SortDesc, AlertTriangle, Check, Loader2, Users, UserCheck, Sun, Moon } from 'lucide-react';
 import axios from '../api/axios';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../components/utils/ThemeContext.jsx';
 
 function Members() {
   const navigate = useNavigate();
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [members, setMembers] = useState([]);
   const [marked, setMarked] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
@@ -19,9 +19,7 @@ function Members() {
 
   const token = localStorage.getItem("token");
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
+  const { isDarkMode } = useTheme();
 
   // Theme-based classes
   const themeClasses = {
@@ -216,7 +214,7 @@ function Members() {
   return (
     <div className={`min-h-screen ${themeClasses.background} overflow-hidden relative`}>
       {/* Theme Toggle Button - Fixed Position */}
-      <div className="fixed top-6 right-6 z-50">
+      {/* <div className="fixed top-6 right-6 z-50">
         <button
           onClick={toggleTheme}
           className={`p-3 rounded-xl transition-all duration-300 ${themeClasses.toggleHover} shadow-lg backdrop-blur-sm border ${isDarkMode ? 'border-slate-700 bg-slate-800/80' : 'border-gray-200 bg-white/80'}`}
@@ -228,7 +226,7 @@ function Members() {
             <Moon className={`w-6 h-6 ${themeClasses.moonColor}`} />
           )}
         </button>
-      </div>
+      </div> */}
 
       {/* Animated Background */}
       {/* <div className="fixed inset-0 z-0">

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import axios from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { Sun, Moon } from 'lucide-react';
+import { useTheme } from '../components/utils/ThemeContext.jsx';
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -59,11 +60,8 @@ export default function RevenueRevamp() {
   const [error, setError] = useState(null);
   const [timeframe, setTimeframe] = useState('12m'); // '12m' | 'ytd' | 'all'
   const [chartMode, setChartMode] = useState('composed'); // composed | bar | area | line
-  const [isDarkMode, setIsDarkMode] = useState(false); // Start with dark mode
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
+  const { isDarkMode } = useTheme();
 
   // Theme-based classes
   const themeClasses = {
@@ -296,7 +294,7 @@ export default function RevenueRevamp() {
   return (
     <div className={`w-full p-6 ${themeClasses.background} min-h-screen relative`}>
       {/* Theme Toggle Button - Fixed Position */}
-      <div className="fixed top-6 right-6 z-50">
+      {/* <div className="fixed top-6 right-6 z-50">
         <button
           onClick={toggleTheme}
           className={`p-3 rounded-xl transition-all duration-300 ${themeClasses.toggleHover} shadow-lg backdrop-blur-sm border ${themeClasses.toggleButton}`}
@@ -308,7 +306,7 @@ export default function RevenueRevamp() {
             <Moon className={`w-6 h-6 ${themeClasses.moonColor}`} />
           )}
         </button>
-      </div>
+      </div> */}
 
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
