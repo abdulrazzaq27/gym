@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, CheckCircle, Sun, Moon } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, CheckCircle, Sun, Moon, Building, Code } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from "../api/axios";
 
@@ -8,6 +8,8 @@ export default function EnergeticRegister() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [gymName, setGymName] = useState("");
+  const [gymCode, setGymCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -35,9 +37,14 @@ export default function EnergeticRegister() {
       return;
     }
 
+    if (!gymName || !gymCode) {
+      setError("Gym name and code are required");
+      return;
+    }
+
     setLoading(true);
     try {
-      await axios.post("/api/auth/register", { name, email, password });
+      await axios.post("/api/auth/register", { name, email, password, role: "admin", gymName, gymCode });
       // After successful registration → go to login
       navigate("/login");
     } catch (err) {
@@ -218,6 +225,40 @@ export default function EnergeticRegister() {
                       className={`w-full pl-10 pr-4 py-2 ${themeClasses.inputBackground} border ${themeClasses.inputBorder} rounded-lg ${themeClasses.inputText} text-sm ${themeClasses.inputPlaceholder} focus:outline-none ${themeClasses.inputFocusBorder} focus:ring-1 ${themeClasses.inputFocusRing} transition-all duration-300 backdrop-blur-sm`}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Gym Name Field */}
+                <div className="group">
+                  <label className={`block font-medium mb-1 text-sm ${themeClasses.label}`}>Gym Name</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Building className={`w-4 h-4 ${themeClasses.inputIcon} ${themeClasses.inputIconFocus} transition-colors duration-300`} />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Enter your gym name"
+                      className={`w-full pl-10 pr-4 py-2 ${themeClasses.inputBackground} border ${themeClasses.inputBorder} rounded-lg ${themeClasses.inputText} text-sm ${themeClasses.inputPlaceholder} focus:outline-none ${themeClasses.inputFocusBorder} focus:ring-1 ${themeClasses.inputFocusRing} transition-all duration-300 backdrop-blur-sm`}
+                      value={gymName}
+                      onChange={(e) => setGymName(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Gym Code Field */}
+                <div className="group">
+                  <label className={`block font-medium mb-1 text-sm ${themeClasses.label}`}>Gym Code</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Code className={`w-4 h-4 ${themeClasses.inputIcon} ${themeClasses.inputIconFocus} transition-colors duration-300`} />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Enter your gym code (e.g., OSM001)"
+                      className={`w-full pl-10 pr-4 py-2 ${themeClasses.inputBackground} border ${themeClasses.inputBorder} rounded-lg ${themeClasses.inputText} text-sm ${themeClasses.inputPlaceholder} focus:outline-none ${themeClasses.inputFocusBorder} focus:ring-1 ${themeClasses.inputFocusRing} transition-all duration-300 backdrop-blur-sm`}
+                      value={gymCode}
+                      onChange={(e) => setGymCode(e.target.value)}
                     />
                   </div>
                 </div>
