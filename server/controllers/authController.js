@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 // REGISTER (only once for owner)
 const register = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, gymName, gymCode } = req.body;
 
         const existingAdmin = await Admin.findOne({ email });
         if (existingAdmin) return res.status(400).json({ msg: "Admin already exists" });
@@ -16,12 +16,21 @@ const register = async (req, res) => {
             name,
             email,
             password: hashedPassword,
-            role: "admin"
+            role: "admin",
+            gymName,
+            gymCode
         });
 
         await admin.save();
         res.status(201).json({ msg: "Admin created successfully" });
     } catch (err) {
+        if (err.name === 'ValidationError') {
+            const errors = Object.values(err.errors).map(e => e.message).join(', ');
+            return res.status(400).json({ msg: `Admin validation failed: ${errors}` });
+        }
+        if (err.code === 11000) {
+            return res.status(400).json({ msg: 'Duplicate value error: Email or Gym Code already in use' });
+        }
         res.status(500).json({ msg: err.message });
     }
 };
