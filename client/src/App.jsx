@@ -20,6 +20,7 @@ import LandingPage from './pages/LandingPage.jsx';
 import ProtectedLayout from './components/ProtectedLayout.jsx';
 import Members2 from './pages/Members2.jsx';
 import CreateMemberLight from './pages/CreateMemberLight.jsx';
+import PaymentsPage from './pages/Payments.jsx'
 import { ThemeProvider } from "./components/utils/ThemeContext.jsx";
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
                 <Route path="/revenue" element={<Revenue />} />
                 <Route path="/attendance" element={<Attendance />} />
                 <Route path="/attendance/trend" element={<AttendanceTrend />} />
+                <Route path="/payments" element={<PaymentsPage />} />
                 <Route path='/members2' element={< Members2 />} />
                 <Route path='/member/new/light' element={<CreateMemberLight />} />
               </Route>

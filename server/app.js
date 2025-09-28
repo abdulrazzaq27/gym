@@ -18,7 +18,7 @@ const memberAuthRoutes = require("./routes/memberAuthRoutes");
 const qrRoutes = require('./routes/qrRoutes');
 
 app.use(cors({
-  origin: '*',
+  origin: 'http://localhost:5173',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
