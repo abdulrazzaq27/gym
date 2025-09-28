@@ -17,11 +17,8 @@ exports.generateQRCode = async (req, res) => {
       expiry: timestamp + expiryTime
     });
     
-    // Encrypt for security
-    const encryptedData = crypto.createHash('sha256').update(qrData).digest('hex');
-    
     res.json({
-      qrData: encryptedData,
+      qrData: qrData,
       expiry: new Date(timestamp + expiryTime),
       message: 'QR code generated successfully'
     });
@@ -36,8 +33,22 @@ exports.scanGymQR = async (req, res) => {
     const { qrData } = req.body;
     const memberId = req.member.id; // From member auth
 
-    // For now, we'll skip QR verification and just mark attendance
-    // In production, you'd verify the QR data against the database
+    const parsedQrData = JSON.parse(qrData);
+    const { adminId: qrAdminId, expiry } = parsedQrData;
+
+    if (Date.now() > expiry) {
+      return res.status(400).json({ message: 'QR code has expired' });
+    }
+
+    const member = await Member.findById(memberId);
+    if (!member) {
+      return res.status(404).json({ message: 'Member not found' });
+    }
+
+    if (member.adminId.toString() !== qrAdminId) {
+      return res.status(403).json({ message: 'You are not a member of this gym' });
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -51,16 +62,10 @@ exports.scanGymQR = async (req, res) => {
       return res.status(400).json({ message: 'Attendance already marked for today' });
     }
     
-    // Get member to find adminId
-    const member = await Member.findById(memberId);
-    if (!member) {
-      return res.status(404).json({ message: 'Member not found' });
-    }
-
     // Create attendance record
     const attendance = new Attendance({
       memberId,
-      adminId: member.adminId, // Get adminId from member record
+      adminId: member.adminId,
       date: today,
       checkInTime: new Date().toLocaleTimeString(),
       markedBy: 'qr_self'
