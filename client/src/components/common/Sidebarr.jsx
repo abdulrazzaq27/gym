@@ -73,7 +73,7 @@ export default function Drawer() {
             : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50',
         drawerNavActive: isDarkMode 
             ? 'bg-gray-700/70 text-white border-gray-600/30' 
-            : 'bg-gray-200/50 text-gray-900 border-gray-300/30',
+            : 'bg-gray-300 text-gray-900 border-gray-300/30',
         drawerFooter: isDarkMode ? 'bg-gray-800/50 border-gray-700/30' : 'bg-gray-50/50 border-gray-200/30',
         closeButton: isDarkMode 
             ? 'bg-gray-700/50 text-white hover:bg-gray-600/50' 
@@ -311,9 +311,9 @@ export default function Drawer() {
                                 <button
                                     key={item.path}
                                     onClick={() => navigate(item.path)}
-                                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${active
+                                    className={`w-full flex items-center cursor-pointer gap-4 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${active
                                         ? `${themeClasses.drawerNavActive} shadow-lg border`
-                                        : `${themeClasses.drawerNavItem} hover:shadow-lg`
+                                        : `${themeClasses.drawerNavItem} hover:shadow-lg hover:bg-gray-200`
                                         }`}
                                 >
                                     <Icon className={`w-5 h-5 transition-colors ${active ? (isDarkMode ? 'text-white' : 'text-gray-900') : (isDarkMode ? 'text-gray-400' : 'text-gray-500')}`} />
