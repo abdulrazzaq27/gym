@@ -1,16 +1,32 @@
+// server/middlewares/authMiddleware.js
 const jwt = require("jsonwebtoken");
 
-const auth = (req, res, next) => {
-  const token = req.headers["authorization"]?.split(" ")[1]; // "Bearer token"
+// Admin authentication middleware
+const adminAuth = (req, res, next) => {
+  const token = req.headers["authorization"]?.split(" ")[1];
   if (!token) return res.status(401).json({ msg: "No token, authorization denied" });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbacksecret");
-    req.user = decoded; // { id, role }
+    req.user = decoded; // For admin routes
     next();
   } catch (err) {
     res.status(401).json({ msg: "Token is not valid" });
   }
 };
 
-module.exports = auth;
+// Member authentication middleware
+const memberAuth = (req, res, next) => {
+  const token = req.headers["authorization"]?.split(" ")[1];
+  if (!token) return res.status(401).json({ msg: "No token, authorization denied" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbacksecret");
+    req.member = decoded; // For member routes
+    next();
+  } catch (err) {
+    res.status(401).json({ msg: "Token is not valid" });
+  }
+};
+
+module.exports = { adminAuth, memberAuth };

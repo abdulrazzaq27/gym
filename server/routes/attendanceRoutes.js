@@ -1,33 +1,30 @@
+// server/routes/attendanceRoutes.js
 const express = require("express");
 const router = express.Router();
 const Attendance = require("../models/Attendance");
 
-
 // GET /attendance?month=2025-09
 router.get("/", async (req, res) => {
   try {
-    let { month } = req.query; // YYYY-MM format
+    let { month } = req.query;
 
     if (!month) {
       const today = new Date();
-      month = today.toISOString().slice(0, 7); // "YYYY-MM"
+      month = today.toISOString().slice(0, 7);
     }
 
     const [year, m] = month.split("-");
     const start = new Date(year, m - 1, 1);
     const end = new Date(year, m, 0, 23, 59, 59);
 
-    // Fetch records
     const records = await Attendance.find({
       adminId: req.user.id,
       date: { $gte: start, $lte: end }
     }).populate("memberId", "name");
 
-    // Get all days in month
     const daysInMonth = new Date(year, m, 0).getDate();
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-    // Group by member
     const overview = {};
     records.forEach(r => {
       const day = new Date(r.date).getDate();
@@ -40,10 +37,9 @@ router.get("/", async (req, res) => {
           days: {}
         };
       }
-      overview[id].days[day] = 1; // present
+      overview[id].days[day] = 1;
     });
 
-    // Normalize into grid (fill absents with 0)
     const result = Object.values(overview).map(member => {
       const row = { memberId: member.memberId, name: member.name };
       days.forEach(d => {
@@ -59,20 +55,14 @@ router.get("/", async (req, res) => {
   }
 });
 
-
-
-
-
-// ✅ Mark attendance
+// ✅ Mark attendance MANUALLY (button press)
 router.post("/mark/:memberId", async (req, res) => {
   const { memberId } = req.params;
 
-  // set date to start of today (midnight)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   try {
-    // check if already marked today
     const existing = await Attendance.findOne({
       memberId,
       adminId: req.user.id,
@@ -86,15 +76,15 @@ router.post("/mark/:memberId", async (req, res) => {
     const attendance = new Attendance({
       memberId,
       adminId: req.user.id,
-      date: today, // store as proper Date
+      date: today,
       checkInTime: new Date().toLocaleTimeString(),
-      adminId: req.user.id
+      markedBy: 'manual' // Added this field
     });
 
     await attendance.save();
     res.json({ message: "Attendance marked successfully" });
   } catch (err) {
-    res.status(500).json({ error: err.message + 'h' });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -110,9 +100,10 @@ router.get("/today", async (req, res) => {
     const records = await Attendance.find({
       adminId: req.user.id,
       date: { $gte: today, $lt: tomorrow }
-    }).select("memberId -_id"); // only return memberId
+    }).populate("memberId", "name") // Get member details
+      .select("memberId markedBy checkInTime -_id");
 
-    res.json(records); // e.g. [ { "memberId": "66d3..." }, ... ]
+    res.json(records);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
