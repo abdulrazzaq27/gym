@@ -109,4 +109,20 @@ router.get("/today", async (req, res) => {
   }
 });
 
+
+// Get individual attendance
+router.get("/:memberId", async (req, res) => {
+  try {
+    const { memberId } = req.params;
+    const records = await Attendance.find({
+      adminId: req.user.id,
+      memberId: memberId,
+    }).populate("memberId", "name");
+
+    res.json(records);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
