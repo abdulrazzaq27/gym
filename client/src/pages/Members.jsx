@@ -111,9 +111,8 @@ function Members() {
 
   const markAttendance = async (memberId, e) => {
     e.stopPropagation();
-
-    setAttendanceLoading(prev => ({ ...prev, [memberId]: true }));
-
+    setAttendanceLoading((prev) => ({ ...prev, [memberId]: true }));
+  
     try {
       const res = await fetch(`http://localhost:3000/api/attendance/mark/${memberId}`, {
         method: "POST",
@@ -121,9 +120,18 @@ function Members() {
           Authorization: `Bearer ${token}`,
         },
       });
+  
       const data = await res.json();
-
+  
       if (res.ok) {
+        // ✅ update members with fresh attendance
+        setMembers((prev) =>
+          prev.map((m) =>
+            m._id === memberId ? { ...m, ...data.updatedMember } : m
+          )
+        );
+  
+        // ✅ also update marked state
         setMarked((prev) => ({ ...prev, [memberId]: true }));
       } else {
         setError(data.message || "Failed to mark attendance");
@@ -134,9 +142,11 @@ function Members() {
       setError("Failed to mark attendance. Please try again.");
       setTimeout(() => setError(""), 3000);
     } finally {
-      setAttendanceLoading(prev => ({ ...prev, [memberId]: false }));
+      setAttendanceLoading((prev) => ({ ...prev, [memberId]: false }));
     }
   };
+  
+  
 
   // Helper to format dates
   function formatDate(isoDate) {
@@ -445,7 +455,7 @@ function Members() {
                                 Marked
                               </div>
                             ) : (
-                              "Mark"
+                              "Mark!"
                             )}
                           </button>
                         ) : (
