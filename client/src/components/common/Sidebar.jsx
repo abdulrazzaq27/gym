@@ -104,7 +104,27 @@ export default function SidebarLayout() {
 
             <li>
               <a
-                href="/revenue"
+                href="/reports"
+                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white 
+                           hover:bg-gray-100 dark:hover:bg-gray-700 group"
+              >
+                <div>
+                   <img src="/report.png" 
+                        className="w-6 h-6 grayscale" 
+                        alt="" 
+                        onError={(e) => {
+                            e.target.onerror = null; 
+                            e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWZpbGUtdGV4dCI+PHBhdGggZD0iTTE1IDJIM1YyMkgxNlYxNEwxNSAyWiI+PC9wYXRoPjxwYXRoIGQ9Ik0xNCAyVjEzSDE0SDEwaDQtNEgxNGg1VjJ6Ii8+PHBhdGggZD0iTTE2IDEzSDE1bS02IDZIMTQgbS02LWYgOEgzOCIvPjwvc3ZnPg=='; // Fallback to SVG if png missing
+                        }}
+                    />
+                </div>
+                <span className="ms-3">Reports</span>
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="/settings"
                 className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white 
                            hover:bg-gray-100 dark:hover:bg-gray-700 group"
               >

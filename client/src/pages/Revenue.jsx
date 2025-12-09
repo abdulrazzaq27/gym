@@ -312,7 +312,7 @@ export default function RevenueRevamp() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4 mb-4">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/dashboard')}
             className={`p-2 rounded ${themeClasses.backButton} transition-colors shadow-md`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

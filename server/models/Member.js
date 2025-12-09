@@ -26,11 +26,6 @@ const memberSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  plan: {
-    type: String,
-    enum: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'],
-    required: true,
-  },
   gender: {
     type: String,
     enum: ['Male', 'Female', 'Other'],
@@ -53,6 +48,9 @@ const memberSchema = new mongoose.Schema({
     type: String,
     enum: ['Active', 'Inactive'],
     default: 'Inactive',
+  },
+  plan: {
+    type: String
   },
   notes: {
     type: String,

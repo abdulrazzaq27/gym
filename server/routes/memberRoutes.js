@@ -41,7 +41,6 @@ router.post('/', async (req, res) => {
       name,
       email,
       phone,
-      plan,
       joinDate,
       expiryDate,
       renewalDate: joinDate,
@@ -49,6 +48,9 @@ router.post('/', async (req, res) => {
       gender,
       dob,
       notes,
+      dob,
+      notes,
+      plan, // Fix: Save plan to Member model
       adminId: req.user.id
     });
 
@@ -56,7 +58,9 @@ router.post('/', async (req, res) => {
 
     const payment = new Payment({
       memberId: savedMember._id,
+      
       amount,
+      plan,
       method: paymentMethod,
       adminId: req.user.id
     });
@@ -74,6 +78,7 @@ router.post('/', async (req, res) => {
 router.put('/renew/:id', async (req, res) => {
   const id = req.params.id;
 
+  console.log(req.body)
   try {
     const { renewalDate, expiryDate, status, plan, amount, paymentMethod } = req.body;
 
@@ -98,7 +103,8 @@ router.put('/renew/:id', async (req, res) => {
       amount,
       date: renewalDate,
       method: paymentMethod,
-      adminId: req.user.id
+      adminId: req.user.id,
+      plan
     });
 
     await updatedPayment.save();

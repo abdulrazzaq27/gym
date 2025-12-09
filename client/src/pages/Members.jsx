@@ -7,6 +7,7 @@ import { useTheme } from '../components/utils/ThemeContext.jsx';
 function Members() {
   const navigate = useNavigate();
   const [members, setMembers] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [marked, setMarked] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -88,6 +89,8 @@ function Members() {
         setLoading(true);
         setError("");
         const res = await axios.get("/api/members");
+        const payRes = await axios.get("/api/payments/");
+        setPayments(Array.isArray(payRes.data) ? payRes.data : payRes.data.data || []);
         setMembers(res.data);
 
         // Fetch attendance info
@@ -400,7 +403,8 @@ function Members() {
                       <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>{member.phone}</td>
                       <td className="px-6 py-4">
                         <span className={`px-3 py-1 ${isDarkMode ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border-cyan-500/30' : 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-600 border-blue-500/30'} text-xs font-medium rounded-full border`}>
-                          {member.plan}
+                         {payments.find(p => String(p.memberId._id) === String(member._id))?.plan || '-'}
+
                         </span>
                       </td>
                       <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>{member.gender}</td>

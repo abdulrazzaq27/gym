@@ -11,6 +11,11 @@ const paymentSchema = new mongoose.Schema({
         ref: 'Member',
         required: true,
     },
+    plan: {
+        type: String,
+        enum: ['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly'],
+        required: true,
+    },
     amount: {
         type: Number,
         required: true,

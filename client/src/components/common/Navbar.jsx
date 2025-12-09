@@ -13,7 +13,7 @@ function Navbar() {
   const { isDarkMode, toggleTheme } = useTheme();
   const token = localStorage.getItem("token");
   return (
-    <nav className=" border-b border-gray-200 bg-[#111827] dark:border-gray-700 shadow-sm w-full">
+    <nav className="border-b border-black bg-[#111827] dark:border-black w-full">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 w-full">
           {/* Left: Logo and Nav Links */}

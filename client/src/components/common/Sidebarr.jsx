@@ -20,17 +20,20 @@ import {
     Sun,
     Moon
 } from 'lucide-react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Drawer() {
     const [open, setOpen] = useState(false);
     const closeBtnRef = useRef(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [currentPath, setCurrentPath] = useState('/dashboard');
 
     const token = localStorage.getItem('token');
     const { isDarkMode, toggleTheme } = useTheme();
     const navigate = useNavigate();
+    const location = useLocation(); // Add this to get current location
+    
+    // Get current path from location instead of state
+    const currentPath = location.pathname;
 
     // Theme-based classes
     const themeClasses = {
@@ -73,7 +76,7 @@ export default function Drawer() {
             : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50',
         drawerNavActive: isDarkMode 
             ? 'bg-gray-700/70 text-white border-gray-600/30' 
-            : 'bg-gray-300 text-gray-900 border-gray-300/30',
+            : 'bg-gray-200/50 text-gray-900 border-gray-300/30',
         drawerFooter: isDarkMode ? 'bg-gray-800/50 border-gray-700/30' : 'bg-gray-50/50 border-gray-200/30',
         closeButton: isDarkMode 
             ? 'bg-gray-700/50 text-white hover:bg-gray-600/50' 
@@ -86,6 +89,13 @@ export default function Drawer() {
     const logout = () => {
         localStorage.removeItem("token");
         navigate("/login");
+    };
+
+    // Updated handleNavigation function to close menus
+    const handleNavigation = (path) => {
+        navigate(path);
+        setOpen(false); // Close sidebar
+        setIsMenuOpen(false); // Close mobile menu
     };
 
     // Navigation items
@@ -128,6 +138,12 @@ export default function Drawer() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Close sidebar and mobile menu when route changes
+    useEffect(() => {
+        setOpen(false);
+        setIsMenuOpen(false);
+    }, [location.pathname]);
+
     return (
         <>
             {/* NAVBAR */}
@@ -145,7 +161,7 @@ export default function Drawer() {
                                 <Menu className="h-5 w-5" />
                             </button>
 
-                            <button onClick={() => navigate('/dashboard')} className="flex items-center space-x-3 group">
+                            <button onClick={() => handleNavigation('/dashboard')} className="flex items-center space-x-3 group">
                                 <div className="relative">
                                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-200">
                                         <Activity className="w-6 h-6 text-white" />
@@ -220,7 +236,7 @@ export default function Drawer() {
                                     return (
                                         <button
                                             key={item.path}
-                                            onClick={() => navigate(item.path)}
+                                            onClick={() => handleNavigation(item.path)}
                                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${active
                                                 ? `${themeClasses.mobileNavActive} shadow-lg border backdrop-blur-sm`
                                                 : themeClasses.mobileNavItem
@@ -310,10 +326,10 @@ export default function Drawer() {
                             return (
                                 <button
                                     key={item.path}
-                                    onClick={() => navigate(item.path)}
-                                    className={`w-full flex items-center cursor-pointer gap-4 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${active
+                                    onClick={() => handleNavigation(item.path)}
+                                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${active
                                         ? `${themeClasses.drawerNavActive} shadow-lg border`
-                                        : `${themeClasses.drawerNavItem} hover:shadow-lg hover:bg-gray-200`
+                                        : `${themeClasses.drawerNavItem} hover:shadow-lg`
                                         }`}
                                 >
                                     <Icon className={`w-5 h-5 transition-colors ${active ? (isDarkMode ? 'text-white' : 'text-gray-900') : (isDarkMode ? 'text-gray-400' : 'text-gray-500')}`} />

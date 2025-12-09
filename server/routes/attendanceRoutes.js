@@ -30,6 +30,8 @@ router.get("/", async (req, res) => {
     // Group by member
     const overview = {};
     records.forEach(r => {
+      if (!r.memberId) return; // Skip orphaned records
+
       const day = new Date(r.date).getDate();
       const id = r.memberId._id.toString();
       if (!overview[id]) {

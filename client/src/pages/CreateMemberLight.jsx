@@ -8,13 +8,6 @@ function CreateMember() {
 
   const navigate = useNavigate();
 
-  const planPrices = {
-    Monthly: 1000,
-    Quarterly: 2700,
-    'Half-Yearly': 5100,
-    Yearly: 9600,
-  };
-
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -31,14 +24,14 @@ function CreateMember() {
   });
 
   const [expiryDate, setExpiryDate] = useState('');
+  const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const planDurations = {
+  const planDurations = settings?.membershipPlans?.reduce((acc, plan) => {
+    acc[plan.name] = plan.durationInMonths;
+    return acc;
+  }, {}) || {
     '': 0,
-    Monthly: 1,
-    Quarterly: 3,
-    'Half-Yearly': 6,
-    Yearly: 12,
   };
 
   useEffect(() => {
@@ -57,15 +50,30 @@ function CreateMember() {
     }
   }, [formData.plan, formData.joinDate]);
 
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const res = await axios.get('/api/settings');
+        setSettings(res.data);
+      } catch (err) {
+        console.error("Error fetching settings:", err);
+      }
+    }
+    fetchSettings();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     setFormData((prev) => {
       if (name === 'plan') {
+        const selectedPlan = settings?.membershipPlans?.find(
+          (p) => p.name === value
+        );
         return {
           ...prev,
           plan: value,
-          amount: planPrices[value] || '',
+          amount: selectedPlan ? selectedPlan.price : '',
         };
       }
 
@@ -338,10 +346,13 @@ function CreateMember() {
                           required
                         >
                           <option value="">Select Plan</option>
-                          <option value="Monthly">Monthly</option>
-                          <option value="Quarterly">Quarterly (3 months)</option>
-                          <option value="Half-Yearly">Half-Yearly (6 months)</option>
-                          <option value="Yearly">Yearly (12 months)</option>
+                          {settings?.membershipPlans
+                            ?.filter((p) => p.isActive)
+                            .map((plan) => (
+                              <option key={plan.name} value={plan.name}>
+                                {plan.name} ({plan.durationInMonths} months)
+                              </option>
+                            ))}
                         </select>
                       </div>
                     </div>
