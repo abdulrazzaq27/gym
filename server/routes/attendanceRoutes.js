@@ -1,33 +1,32 @@
 const express = require("express");
 const router = express.Router();
 const Attendance = require("../models/Attendance");
+const { adminAuth, memberAuth } = require("../middlewares/authMiddleware");
 
-
-// GET /attendance?month=2025-09
-router.get("/", async (req, res) => {
+// ---------------------------------------------
+// ADMIN: Get monthly attendance overview for all members
+// ---------------------------------------------
+router.get("/", adminAuth, async (req, res) => {
   try {
-    let { month } = req.query; // YYYY-MM format
+    let { month } = req.query;
 
     if (!month) {
       const today = new Date();
-      month = today.toISOString().slice(0, 7); // "YYYY-MM"
+      month = today.toISOString().slice(0, 7); // YYYY-MM
     }
 
     const [year, m] = month.split("-");
     const start = new Date(year, m - 1, 1);
     const end = new Date(year, m, 0, 23, 59, 59);
 
-    // Fetch records
     const records = await Attendance.find({
       adminId: req.user.id,
       date: { $gte: start, $lte: end }
     }).populate("memberId", "name");
 
-    // Get all days in month
     const daysInMonth = new Date(year, m, 0).getDate();
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-    // Group by member
     const overview = {};
     records.forEach(r => {
       if (!r.memberId) return; // Skip orphaned records
@@ -45,7 +44,6 @@ router.get("/", async (req, res) => {
       overview[id].days[day] = 1; // present
     });
 
-    // Normalize into grid (fill absents with 0)
     const result = Object.values(overview).map(member => {
       const row = { memberId: member.memberId, name: member.name };
       days.forEach(d => {
@@ -55,30 +53,27 @@ router.get("/", async (req, res) => {
     });
 
     res.json({ days, result });
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-
-
-
-
-// ✅ Mark attendance
-router.post("/mark/:memberId", async (req, res) => {
+// ---------------------------------------------
+// ADMIN: Mark attendance manually
+// ---------------------------------------------
+router.post("/mark/:memberId", adminAuth, async (req, res) => {
   const { memberId } = req.params;
 
-  // set date to start of today (midnight)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
 
   try {
-    // check if already marked today
     const existing = await Attendance.findOne({
       memberId,
       adminId: req.user.id,
-      date: today
+      date: { $gte: today, $lt: tomorrow }
     });
 
     if (existing) {
@@ -88,33 +83,100 @@ router.post("/mark/:memberId", async (req, res) => {
     const attendance = new Attendance({
       memberId,
       adminId: req.user.id,
-      date: today, // store as proper Date
+      date: new Date(),
       checkInTime: new Date().toLocaleTimeString(),
-      adminId: req.user.id
+      markedBy: "manual"
     });
 
     await attendance.save();
-    res.json({ message: "Attendance marked successfully" });
+
+    const updated = await Attendance.findById(attendance._id).populate("memberId", "name");
+
+    res.json({
+      message: "Attendance marked successfully",
+      updatedMember: {
+        _id: updated.memberId._id,
+        name: updated.memberId.name,
+        todayAttendance: true,
+        checkInTime: updated.checkInTime
+      }
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message + 'h' });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// ✅ Get all marked members for today
-router.get("/today", async (req, res) => {
+// ---------------------------------------------
+// ADMIN: Get today's marked members
+// ---------------------------------------------
+router.get("/today", adminAuth, async (req, res) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
 
     const records = await Attendance.find({
       adminId: req.user.id,
       date: { $gte: today, $lt: tomorrow }
-    }).select("memberId -_id"); // only return memberId
+    }).populate("memberId", "name");
 
-    res.json(records); // e.g. [ { "memberId": "66d3..." }, ... ]
+    const formatted = records.map(r => ({
+      memberId: r.memberId._id,
+      name: r.memberId.name,
+      checkInTime: r.checkInTime,
+      markedBy: r.markedBy,
+      todayAttendance: true
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------------------------------------------
+// MEMBER: Get personal attendance with absent days
+// ---------------------------------------------
+router.get("/:memberId", memberAuth, async (req, res) => {
+  try {
+    const { memberId } = req.params;
+    const { month, year } = req.query;
+
+    // ✅ ensure member only fetches their own data
+    if (req.member.id !== memberId) {
+      return res.status(403).json({ message: "Unauthorized access" });
+    }
+
+    const today = new Date();
+    const y = year ? parseInt(year) : today.getFullYear();
+    const m = month ? parseInt(month) - 1 : today.getMonth();
+
+    const startDate = new Date(y, m, 1);
+    const endDate = new Date(y, m + 1, 0);
+
+    const records = await Attendance.find({
+      memberId,
+      date: { $gte: startDate, $lte: endDate }
+    }).lean();
+
+    const presentDays = new Set(records.map(r => new Date(r.date).toISOString().split("T")[0]));
+
+    let calendar = [];
+    for (let d = 1; d <= endDate.getDate(); d++) {
+      const day = new Date(y, m, d);
+      const key = day.toISOString().split("T")[0];
+      calendar.push({
+        date: day,
+        present: presentDays.has(key)
+      });
+    }
+
+    const presentCount = calendar.filter(d => d.present).length;
+    const absentCount = calendar.length - presentCount;
+    const percentage = ((presentCount / calendar.length) * 100).toFixed(2);
+
+    res.json({ calendar, presentCount, absentCount, percentage });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

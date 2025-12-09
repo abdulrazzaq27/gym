@@ -45,7 +45,6 @@ const requestOtp = async (req, res) => {
     res.status(500).json({ msg: err.message });
   }
 };
-
 // STEP 2: Verify OTP (issue temp token for password setup)
 const verifyOtp = async (req, res) => {
   try {
@@ -62,15 +61,23 @@ const verifyOtp = async (req, res) => {
     if (!member.otp || !member.otpExpiry) {
       return res.status(400).json({ msg: "No OTP requested" });
     }
-    if (member.otp !== otp || Date.now() > member.otpExpiry) {
-      return res.status(400).json({ msg: "Invalid or expired OTP" });
+
+    // Normalize both to string before comparing
+    const storedOtp = member.otp.toString().trim();
+    const providedOtp = otp.toString().trim();
+
+    if (storedOtp !== providedOtp) {
+      return res.status(400).json({ msg: "Invalid OTP" });
+    }
+
+    if (Date.now() > member.otpExpiry) {
+      return res.status(400).json({ msg: "OTP expired" });
     }
 
     member.otp = undefined;
     member.otpExpiry = undefined;
     await member.save();
 
-    // issue temporary token (5 mins)
     const tempToken = jwt.sign(
       { id: member._id, role: "member" },
       process.env.JWT_SECRET,
@@ -86,6 +93,7 @@ const verifyOtp = async (req, res) => {
     res.status(500).json({ msg: err.message });
   }
 };
+
 
 // STEP 3: Set Password (requires temp token)
 const setPassword = async (req, res) => {
