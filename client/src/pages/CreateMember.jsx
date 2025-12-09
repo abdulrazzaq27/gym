@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, User, Mail, Phone, Calendar, Users, CreditCard, DollarSign, FileText, CheckCircle2, ChevronDown, MapPin, Sun, Moon } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Calendar, Users, CreditCard, DollarSign, IndianRupee, FileText, CheckCircle2, ChevronDown, MapPin, Sun, Moon } from 'lucide-react';
 import axios from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../components/utils/ThemeContext.jsx';
@@ -412,7 +412,7 @@ function CreateMember() {
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <DollarSign className={`w-4 h-4 ${themeClasses.inputDisabledIcon}`} />
+                          <IndianRupee className={`w-4 h-4 ${themeClasses.inputDisabledIcon}`} />
                         </div>
                         <input
                           name="amount"
@@ -477,7 +477,7 @@ function CreateMember() {
               {formData.amount && (
                 <div className={`${themeClasses.amountDisplayBg} border rounded-xl p-6 text-center`}>
                   <div className="flex items-center justify-center gap-3 mb-2">
-                    <DollarSign className={`w-6 h-6 ${themeClasses.amountDisplayIcon}`} />
+                    {/* <IndianRupee className={`w-6 h-6 ${themeClasses.amountDisplayIcon}`} /> */}
                     <span className={`text-3xl font-bold ${themeClasses.amountDisplayText}`}>
                       ₹{formData.amount}
                     </span>

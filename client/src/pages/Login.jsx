@@ -16,9 +16,13 @@ export default function EnergeticLogin() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      navigate('/dashboard');
+    }
     const timer = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timer);
-  }, []);
+  }, [navigate]);
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);

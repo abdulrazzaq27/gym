@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { ArrowLeft, Search, Filter, SortAsc, SortDesc, AlertTriangle, Check, Loader2, Users, UserCheck, Sun, Moon } from 'lucide-react';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { ArrowLeft, Search, Filter, SortAsc, SortDesc, AlertTriangle, Check, Loader2, Users, UserCheck } from 'lucide-react';
 import axios from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../components/utils/ThemeContext.jsx';
@@ -9,18 +9,45 @@ function Members() {
   const [members, setMembers] = useState([]);
   const [payments, setPayments] = useState([]);
   const [marked, setMarked] = useState({});
-  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [attendanceLoading, setAttendanceLoading] = useState({});
+
+  // Pagination & Filter State
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
-  const [sortBy, setSortBy] = useState("name");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [isVisible, setIsVisible] = useState(false);
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
 
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  
+  const observer = useRef();
+  
   const token = localStorage.getItem("token");
-
   const { isDarkMode } = useTheme();
+
+  // Search Debounce
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchQuery !== debouncedSearch) {
+        setDebouncedSearch(searchQuery);
+        setPage(1); // Reset to page 1 on new search
+        setMembers([]); // Clear current members
+      }
+    }, 500);
+
+    return () => clearTimeout(handler);
+  }, [searchQuery, debouncedSearch]);
+
+
+  // Reset page and clear members when filters change
+  useEffect(() => {
+    setPage(1);
+    setMembers([]);
+  }, [filterStatus, sortBy, sortOrder]);
+
 
   // Theme-based classes
   const themeClasses = {
@@ -78,29 +105,51 @@ function Members() {
     loadingText: isDarkMode ? 'text-slate-400' : 'text-gray-600',
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 300);
-    return () => clearTimeout(timer);
-  }, []);
 
+  // Fetch Members
   useEffect(() => {
     const fetchMembers = async () => {
       try {
         setLoading(true);
         setError("");
-        const res = await axios.get("/api/members");
-        const payRes = await axios.get("/api/payments/");
-        setPayments(Array.isArray(payRes.data) ? payRes.data : payRes.data.data || []);
-        setMembers(res.data);
+        
+        const params = {
+          page,
+          limit: 15,
+          search: debouncedSearch,
+          status: filterStatus,
+          sortBy,
+          sortOrder
+        };
 
-        // Fetch attendance info
-        const attendanceRes = await axios.get("/api/attendance/today");
-        const alreadyMarked = {};
-        attendanceRes.data.forEach((record) => {
-          alreadyMarked[record.memberId] = true;
+        const res = await axios.get("/api/members", { params });
+
+        // Handle both paginated and non-paginated responses (just in case)
+        const newMembers = res.data.members || res.data;
+        const totalPages = res.data.totalPages || 1;
+
+        setMembers(prev => {
+          if (page === 1) return newMembers;
+          const existingIds = new Set(prev.map(m => m._id));
+          const uniqueNew = newMembers.filter(m => !existingIds.has(m._id));
+          return [...prev, ...uniqueNew];
         });
+        setHasMore(page < totalPages);
 
-        setMarked(alreadyMarked);
+        if (page === 1) {
+            // Fetch aux data only on first load
+            const payRes = await axios.get("/api/payments/");
+            setPayments(Array.isArray(payRes.data) ? payRes.data : payRes.data.data || []);
+    
+            // Fetch attendance info
+            const attendanceRes = await axios.get("/api/attendance/today");
+            const alreadyMarked = {};
+            attendanceRes.data.forEach((record) => {
+              alreadyMarked[record.memberId] = true;
+            });
+            setMarked(alreadyMarked);
+        }
+
       } catch (err) {
         console.error("Error fetching members:", err);
         setError("Failed to load members. Please try again.");
@@ -110,7 +159,23 @@ function Members() {
     };
 
     fetchMembers();
-  }, []);
+  }, [page, debouncedSearch, filterStatus, sortBy, sortOrder]);
+
+
+  // Infinite Scroll Observer
+  const lastMemberElementRef = useCallback(node => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prevPage => prevPage + 1);
+      }
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore]);
+
 
   const markAttendance = async (memberId, e) => {
     e.stopPropagation();
@@ -149,10 +214,9 @@ function Members() {
     }
   };
   
-  
-
   // Helper to format dates
   function formatDate(isoDate) {
+    if (!isoDate) return '-';
     const date = new Date(isoDate);
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -162,6 +226,7 @@ function Members() {
 
   // Check if membership is expiring soon (within 7 days)
   const isExpiringSoon = (expiryDate) => {
+    if (!expiryDate) return false;
     const today = new Date();
     const expiry = new Date(expiryDate);
     const diffTime = expiry - today;
@@ -169,88 +234,10 @@ function Members() {
     return diffDays <= 7 && diffDays > 0;
   };
 
-  // Sort function
-  const sortMembers = (membersList) => {
-    return [...membersList].sort((a, b) => {
-      let aValue = a[sortBy];
-      let bValue = b[sortBy];
-
-      if (sortBy === 'renewalDate' || sortBy === 'expiryDate') {
-        aValue = new Date(aValue);
-        bValue = new Date(bValue);
-      } else if (typeof aValue === 'string') {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
-      }
-
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
-    });
-  };
-
-  // Filter and sort members
-  const processedMembers = (() => {
-    let filtered = members.filter((member) => {
-      const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.phone.toString().includes(searchQuery);
-      const matchesStatus = filterStatus === "All" || member.status === filterStatus;
-      return matchesSearch && matchesStatus;
-    });
-
-    return sortMembers(filtered);
-  })();
-
-  // Loading state
-  if (loading) {
-    return (
-      <div className={`h-screen ${themeClasses.background} overflow-hidden relative flex flex-col`}>
-        {/* Animated Background */}
-        <div className="fixed inset-0 z-0">
-          <div className={`absolute inset-0 ${themeClasses.backgroundGradient}`}></div>
-          <div className={`absolute top-1/4 -left-40 w-80 h-80 ${isDarkMode ? 'bg-blue-500/10' : 'bg-blue-500/20'} rounded-full blur-3xl animate-pulse`}></div>
-          <div className={`absolute bottom-1/4 -right-40 w-96 h-96 ${isDarkMode ? 'bg-green-500/10' : 'bg-green-500/20'} rounded-full blur-3xl animate-pulse delay-1000`}></div>
-        </div>
-
-        <div className="flex-1 flex items-center justify-center relative z-10">
-          <div className="text-center">
-            <div className={`animate-spin rounded-full h-12 w-12 border-2 ${themeClasses.loadingSpinner} border-t-transparent mx-auto mb-4`}></div>
-            <p className={themeClasses.loadingText}>Loading members...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={`min-h-screen ${themeClasses.background} overflow-hidden relative`}>
-      {/* Theme Toggle Button - Fixed Position */}
-      {/* <div className="fixed top-6 right-6 z-50">
-        <button
-          onClick={toggleTheme}
-          className={`p-3 rounded-xl transition-all duration-300 ${themeClasses.toggleHover} shadow-lg backdrop-blur-sm border ${isDarkMode ? 'border-slate-700 bg-slate-800/80' : 'border-gray-200 bg-white/80'}`}
-          aria-label="Toggle theme"
-        >
-          {isDarkMode ? (
-            <Sun className={`w-6 h-6 ${themeClasses.sunColor}`} />
-          ) : (
-            <Moon className={`w-6 h-6 ${themeClasses.moonColor}`} />
-          )}
-        </button>
-      </div> */}
-
-      {/* Animated Background */}
-      {/* <div className="fixed inset-0 z-0">
-        <div className={`absolute inset-0 ${themeClasses.backgroundGradient}`}></div>
-        <div className={`absolute top-1/4 -left-40 w-80 h-80 ${isDarkMode ? 'bg-blue-500/10' : 'bg-blue-500/20'} rounded-full blur-3xl animate-pulse`}></div>
-        <div className={`absolute bottom-1/4 -right-40 w-96 h-96 ${isDarkMode ? 'bg-green-500/10' : 'bg-green-500/20'} rounded-full blur-3xl animate-pulse delay-1000`}></div>
-        <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 ${isDarkMode ? 'bg-purple-500/10' : 'bg-purple-500/20'} rounded-full blur-3xl animate-pulse delay-2000`}></div>
-      </div> */}
-
       {/* Content */}
-      <div className={`relative z-10 p-6 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+      <div className={`relative z-10 p-6`}>
         {/* Header with Back + Title */}
         <div className="flex items-center gap-6 mb-8">
           <button
@@ -271,7 +258,7 @@ function Members() {
               <div className="flex items-center gap-2">
                 <Users className={`w-4 h-4 ${themeClasses.iconPrimary}`} />
                 <span className="text-sm">
-                  {processedMembers.length} of {members.length} members
+                   Showing {members.length} members
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -335,6 +322,7 @@ function Members() {
                   onChange={(e) => setSortBy(e.target.value)}
                   className={`appearance-none px-4 py-3 ${themeClasses.select} rounded-xl focus:outline-none focus:ring-2 transition-all duration-300`}
                 >
+                  <option value="createdAt">Sort by Date Joined</option>
                   <option value="name">Sort by Name</option>
                   <option value="expiryDate">Sort by Expiry</option>
                   <option value="renewalDate">Sort by Renewal</option>
@@ -358,7 +346,7 @@ function Members() {
         </div>
 
         {/* Members Table */}
-        {processedMembers.length === 0 ? (
+        {members.length === 0 && !loading ? (
           <div className="text-center py-16">
             <div className={`${themeClasses.emptyStateCard} rounded-2xl p-12 max-w-md mx-auto`}>
               <Users className={`mx-auto h-16 w-16 ${themeClasses.emptyStateIcon} mb-4`} />
@@ -371,7 +359,7 @@ function Members() {
             </div>
           </div>
         ) : (
-          <div className={`${themeClasses.tableContainer} rounded-2xl overflow-hidden shadow-2xl`}>
+          <div className={`${themeClasses.tableContainer} rounded-2xl overflow-hidden shadow-2xl pb-4`}>
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
                 <thead className={themeClasses.tableHeader}>
@@ -388,104 +376,111 @@ function Members() {
                   </tr>
                 </thead>
                 <tbody className={themeClasses.tableBody}>
-                  {processedMembers.map((member, index) => (
-                    <tr
-                      onClick={() => navigate(`/members/${member._id}`)}
-                      key={member._id}
-                      className={`border-b ${themeClasses.tableRow} cursor-pointer transition-all duration-300 group ${
-                        isExpiringSoon(member.expiryDate) ? themeClasses.tableRowExpiring : ''
-                      }`}
-                    >
-                      <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>{index + 1}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <span className={`${themeClasses.tableCellPrimary} font-medium transition-colors duration-300`}>
-                            {member.name}
-                          </span>
-                          {isExpiringSoon(member.expiryDate) && (
-                            <span className="flex items-center gap-1 px-2 py-1 bg-yellow-900/50 text-yellow-300 text-xs rounded-full backdrop-blur-sm border border-yellow-500/30" title="Expiring soon">
-                              <AlertTriangle className="w-3 h-3" />
-                              Soon
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>{member.phone}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 ${isDarkMode ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border-cyan-500/30' : 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-600 border-blue-500/30'} text-xs font-medium rounded-full border`}>
-                         {payments.find(p => String(p.memberId._id) === String(member._id))?.plan || '-'}
-
-                        </span>
-                      </td>
-                      <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>{member.gender}</td>
-                      <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>{formatDate(member.renewalDate)}</td>
-                      <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>{formatDate(member.expiryDate)}</td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                            member.status === 'Active'
-                              ? 'bg-green-900/50 text-green-300 border-green-500/30'
-                              : member.status === 'Inactive'
-                              ? 'bg-red-900/50 text-red-300 border-red-500/30'
-                              : 'bg-yellow-900/50 text-yellow-300 border-yellow-500/30'
-                          }`}
+                  {members.map((member, index) => {
+                    // Ref for the last element
+                    const isLast = members.length === index + 1;
+                    
+                    return (
+                        <tr
+                        ref={isLast ? lastMemberElementRef : null}
+                        onClick={() => navigate(`/members/${member._id}`)}
+                        key={member._id}
+                        className={`border-b ${themeClasses.tableRow} cursor-pointer transition-all duration-300 group ${
+                            isExpiringSoon(member.expiryDate) ? themeClasses.tableRowExpiring : ''
+                        }`}
                         >
-                          {member.status}
-                        </span>
-                      </td>
-
-                      {/* Attendance Button / Status */}
-                      <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                        {member.status === "Active" ? (
-                          <button
-                            disabled={marked[member._id] || attendanceLoading[member._id]}
-                            className={`group px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 transform ${
-                              marked[member._id]
-                                ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white cursor-not-allowed shadow-lg shadow-green-500/25"
-                                : attendanceLoading[member._id]
-                                ? `${isDarkMode ? 'bg-slate-600 text-slate-300' : 'bg-gray-400 text-gray-600'} cursor-not-allowed`
-                                : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white cursor-pointer hover:scale-105 shadow-lg shadow-blue-500/25"
-                            }`}
-                            onClick={(e) => markAttendance(member._id, e)}
-                          >
-                            {attendanceLoading[member._id] ? (
-                              <div className="flex items-center gap-2">
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                Marking...
-                              </div>
-                            ) : marked[member._id] ? (
-                              <div className="flex items-center gap-2">
-                                <Check className="w-4 h-4" />
-                                Marked
-                              </div>
-                            ) : (
-                              "Mark!"
+                        <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>{index + 1}</td>
+                        <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                            <span className={`${themeClasses.tableCellPrimary} font-medium transition-colors duration-300`}>
+                                {member.name}
+                            </span>
+                            {isExpiringSoon(member.expiryDate) && (
+                                <span className="flex items-center gap-1 px-2 py-1 bg-yellow-900/50 text-yellow-300 text-xs rounded-full backdrop-blur-sm border border-yellow-500/30" title="Expiring soon">
+                                <AlertTriangle className="w-3 h-3" />
+                                Soon
+                                </span>
                             )}
-                          </button>
-                        ) : (
-                          <span
-                            className={`px-3 py-2 rounded-lg text-xs font-medium border ${
-                              member.status === "Inactive"
-                                ? "bg-red-900/50 text-red-300 border-red-500/30"
-                                : "bg-yellow-900/50 text-yellow-300 border-yellow-500/30"
+                            </div>
+                        </td>
+                        <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>{member.phone}</td>
+                        <td className="px-6 py-4">
+                            <span className={`px-3 py-1 ${isDarkMode ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border-cyan-500/30' : 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-600 border-blue-500/30'} text-xs font-medium rounded-full border`}>
+                            {payments.find(p => String(p.memberId._id) === String(member._id))?.plan || member.plan || '-'}
+                            </span>
+                        </td>
+                        <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>{member.gender}</td>
+                        <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>{formatDate(member.renewalDate)}</td>
+                        <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>{formatDate(member.expiryDate)}</td>
+                        <td className="px-6 py-4">
+                            <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                                member.status === 'Active'
+                                ? 'bg-green-900/50 text-green-300 border-green-500/30'
+                                : member.status === 'Inactive'
+                                ? 'bg-red-900/50 text-red-300 border-red-500/30'
+                                : 'bg-yellow-900/50 text-yellow-300 border-yellow-500/30'
                             }`}
-                          >
+                            >
                             {member.status}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                            </span>
+                        </td>
+
+                        {/* Attendance Button / Status */}
+                        <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                            {member.status === "Active" ? (
+                            <button
+                                disabled={marked[member._id] || attendanceLoading[member._id]}
+                                className={`group px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 transform ${
+                                marked[member._id]
+                                    ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white cursor-not-allowed shadow-lg shadow-green-500/25"
+                                    : attendanceLoading[member._id]
+                                    ? `${isDarkMode ? 'bg-slate-600 text-slate-300' : 'bg-gray-400 text-gray-600'} cursor-not-allowed`
+                                    : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white cursor-pointer hover:scale-105 shadow-lg shadow-blue-500/25"
+                                }`}
+                                onClick={(e) => markAttendance(member._id, e)}
+                            >
+                                {attendanceLoading[member._id] ? (
+                                <div className="flex items-center gap-2">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Marking...
+                                </div>
+                                ) : marked[member._id] ? (
+                                <div className="flex items-center gap-2">
+                                    <Check className="w-4 h-4" />
+                                    Marked
+                                </div>
+                                ) : (
+                                "Mark!"
+                                )}
+                            </button>
+                            ) : (
+                            <span
+                                className={`px-3 py-2 rounded-lg text-xs font-medium border ${
+                                member.status === "Inactive"
+                                    ? "bg-red-900/50 text-red-300 border-red-500/30"
+                                    : "bg-yellow-900/50 text-yellow-300 border-yellow-500/30"
+                                }`}
+                            >
+                                {member.status}
+                            </span>
+                            )}
+                        </td>
+                        </tr>
+                    );
+                })}
                 </tbody>
               </table>
+              {loading && (
+                   <div className="flex items-center justify-center p-4">
+                        <div className={`animate-spin rounded-full h-8 w-8 border-2 ${themeClasses.loadingSpinner} border-t-transparent`}></div>
+                   </div>
+              )}
             </div>
           </div>
         )}
       </div>
 
-      {/* Additional Visual Elements */}
-      <div className={`fixed -top-10 -left-10 w-20 h-20 ${isDarkMode ? 'bg-cyan-400/10' : 'bg-blue-400/20'} rounded-full blur-xl animate-pulse z-0`}></div>
-      <div className={`fixed -bottom-10 -right-10 w-24 h-24 ${isDarkMode ? 'bg-green-400/10' : 'bg-green-400/20'} rounded-full blur-xl animate-pulse delay-1000 z-0`}></div>
     </div>
   );
 }

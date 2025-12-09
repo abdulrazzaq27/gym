@@ -1,22 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ChevronRight, Activity, Users, CreditCard, BarChart3, Check, Star, Sun, Moon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function EnergeticFitZoneLanding() {
-  const [scrollY, setScrollY] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    const timer = setTimeout(() => setIsVisible(true), 500);
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      clearTimeout(timer);
-    };
-  }, []);
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
@@ -74,7 +61,7 @@ export default function EnergeticFitZoneLanding() {
     backgroundGradient: isDarkMode 
       ? 'from-slate-900 via-blue-900/20 to-purple-900/20' 
       : 'from-white via-blue-50/20 to-purple-50/20',
-    navBackground: isDarkMode ? 'bg-slate-900/80' : 'bg-white/80',
+    navBackground: isDarkMode ? 'bg-slate-900/95' : 'bg-white/95',
     navBorder: isDarkMode ? 'border-slate-800' : 'border-gray-200',
     text: isDarkMode ? 'text-white' : 'text-gray-900',
     textSecondary: isDarkMode ? 'text-slate-300' : 'text-gray-600',
@@ -108,16 +95,16 @@ export default function EnergeticFitZoneLanding() {
 
   return (
     <div className={`min-h-screen ${themeClasses.background} overflow-hidden`}>
-      {/* Animated Background */}
+      {/* Background - Static */}
       <div className="fixed inset-0 z-0">
         <div className={`absolute inset-0 bg-gradient-to-br ${themeClasses.backgroundGradient}`}></div>
-        <div className={`absolute top-1/4 -left-40 w-80 h-80 ${isDarkMode ? 'bg-blue-500/10' : 'bg-blue-200/10'} rounded-full blur-3xl animate-pulse`}></div>
-        <div className={`absolute bottom-1/4 -right-40 w-96 h-96 ${isDarkMode ? 'bg-green-500/10' : 'bg-green-200/10'} rounded-full blur-3xl animate-pulse delay-1000`}></div>
-        <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 ${isDarkMode ? 'bg-purple-500/10' : 'bg-purple-200/10'} rounded-full blur-3xl animate-pulse delay-2000`}></div>
+        <div className={`absolute top-1/4 -left-40 w-80 h-80 ${isDarkMode ? 'bg-blue-500/10' : 'bg-blue-200/10'} rounded-full blur-3xl`}></div>
+        <div className={`absolute bottom-1/4 -right-40 w-96 h-96 ${isDarkMode ? 'bg-green-500/10' : 'bg-green-200/10'} rounded-full blur-3xl`}></div>
+        <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 ${isDarkMode ? 'bg-purple-500/10' : 'bg-purple-200/10'} rounded-full blur-3xl`}></div>
       </div>
 
       {/* Navigation */}
-      <nav className={`fixed top-0 left-0 w-full z-50 ${themeClasses.navBackground} backdrop-blur-xl border-b ${themeClasses.navBorder}`}>
+      <nav className={`fixed top-0 left-0 w-full z-50 ${themeClasses.navBackground} backdrop-blur-sm border-b ${themeClasses.navBorder}`}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="text-2xl font-bold">
             <span className="relative inline-block">
@@ -129,7 +116,7 @@ export default function EnergeticFitZoneLanding() {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className={`p-2 rounded-lg transition-all duration-300 ${isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100'}`}
+              className={`p-2 rounded-lg transition-colors duration-200 ${isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100'}`}
               aria-label="Toggle theme"
             >
               {isDarkMode ? (
@@ -140,11 +127,11 @@ export default function EnergeticFitZoneLanding() {
             </button>
             <Link
               to="/login"
-              className={`px-6 py-2 ${themeClasses.loginButton} transition-colors duration-300`}
+              className={`px-6 py-2 ${themeClasses.loginButton} transition-colors duration-200`}
             >
               Login
             </Link>
-            <button className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg hover:from-cyan-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-500/25 text-white">
+            <button className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg hover:from-cyan-600 hover:to-blue-700 transition-colors duration-200 shadow-md text-white">
               Start Free Trial
             </button>
           </div>
@@ -158,6 +145,7 @@ export default function EnergeticFitZoneLanding() {
           <img 
             src="./background.jpg"
             alt="Fitness background"
+            loading="lazy"
             className={`w-full h-full object-cover ${isDarkMode ? 'opacity-30' : 'opacity-50'}`}
           />
           <div className={`absolute inset-0 bg-gradient-to-r ${themeClasses.overlayGradient}`}></div>
@@ -167,12 +155,12 @@ export default function EnergeticFitZoneLanding() {
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
-            <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-10 opacity-0'}`}>
+            <div>
               <h1 className="text-5xl lg:text-7xl font-extrabold leading-tight mb-6">
                 MANAGE YOUR{' '}
                 <span className="relative inline-block">
-                  <span className={`absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 blur-sm ${isDarkMode ? 'opacity-50' : 'opacity-20'} animate-pulse`}></span>
-                  <span className={`relative bg-gradient-to-r ${isDarkMode ? 'from-cyan-400 to-blue-500' : 'from-cyan-600 to-blue-700'} bg-clip-text text-transparent font-extrabold animate-pulse`}>GYM SMARTER</span>
+                  <span className={`absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 blur-sm ${isDarkMode ? 'opacity-50' : 'opacity-20'}`}></span>
+                  <span className={`relative bg-gradient-to-r ${isDarkMode ? 'from-cyan-400 to-blue-500' : 'from-cyan-600 to-blue-700'} bg-clip-text text-transparent font-extrabold`}>GYM SMARTER</span>
                 </span>{' '}
                 WITH FITZONE
               </h1>
@@ -182,11 +170,11 @@ export default function EnergeticFitZoneLanding() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                <button className="group px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:from-green-600 hover:to-emerald-700 shadow-xl shadow-green-500/25 text-white">
+                <button className="group px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg font-semibold text-lg transition-transform duration-200 hover:scale-105 hover:from-green-600 hover:to-emerald-700 shadow-lg text-white">
                   START FREE TRIAL
                   <ChevronRight className="inline ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
-                <button className={`px-8 py-4 border ${themeClasses.demoButton} rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105 ${themeClasses.text}`}>
+                <button className={`px-8 py-4 border ${themeClasses.demoButton} rounded-lg font-semibold text-lg transition-colors duration-200 ${themeClasses.text}`}>
                   BOOK A DEMO
                 </button>
               </div>
@@ -211,14 +199,13 @@ export default function EnergeticFitZoneLanding() {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className={`group p-8 bg-gradient-to-br ${themeClasses.cardBackground} rounded-2xl border ${themeClasses.cardBorder} backdrop-blur-sm ${themeClasses.cardHover} transition-all duration-500 transform hover:scale-105 hover:shadow-2xl ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-                style={{ transitionDelay: `${index * 100}ms` }}
+                className={`group p-8 bg-gradient-to-br ${themeClasses.cardBackground} rounded-2xl border ${themeClasses.cardBorder} backdrop-blur-sm ${themeClasses.cardHover} transition-all duration-300 hover:scale-105 hover:shadow-xl`}
               >
-                <div className={`w-16 h-16 rounded-xl bg-gradient-to-r ${feature.color} p-4 mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                <div className={`w-16 h-16 rounded-xl bg-gradient-to-r ${feature.color} p-4 mb-6 transition-transform duration-300 shadow-md`}>
                   <feature.icon className={`w-full h-full ${isDarkMode ? 'text-white' : 'text-gray-900'}`} />
                 </div>
                 <h3 className={`text-xl font-bold mb-3 ${themeClasses.text}`}>{feature.title}</h3>
-                <p className={`${themeClasses.textMuted} group-hover:${isDarkMode ? 'text-slate-300' : 'text-gray-800'} transition-colors duration-300`}>
+                <p className={`${themeClasses.textMuted} transition-colors duration-200`}>
                   {feature.description}
                 </p>
               </div>
@@ -233,7 +220,7 @@ export default function EnergeticFitZoneLanding() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Analytics Dashboard Mockup */}
             <div className="relative">
-              <div className={`bg-gradient-to-br ${themeClasses.dashboardBackground} rounded-2xl p-8 backdrop-blur-sm border ${themeClasses.cardBorder} shadow-2xl`}>
+              <div className={`bg-gradient-to-br ${themeClasses.dashboardBackground} rounded-2xl p-8 backdrop-blur-sm border ${themeClasses.cardBorder} shadow-xl`}>
                 {/* Dashboard Header */}
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
@@ -261,11 +248,10 @@ export default function EnergeticFitZoneLanding() {
                   {[40, 65, 45, 80, 55, 90, 70].map((height, i) => (
                     <div
                       key={i}
-                      className="bg-gradient-to-t from-cyan-500 to-blue-500 rounded-t animate-pulse"
+                      className="bg-gradient-to-t from-cyan-500 to-blue-500 rounded-t"
                       style={{ 
                         height: `${height}%`, 
                         width: '12px',
-                        animationDelay: `${i * 200}ms`
                       }}
                     ></div>
                   ))}
@@ -313,7 +299,7 @@ export default function EnergeticFitZoneLanding() {
             {pricingPlans.map((plan, index) => (
               <div
                 key={index}
-                className={`relative bg-gradient-to-br ${themeClasses.cardBackground} rounded-2xl p-8 backdrop-blur-sm border transition-all duration-300 transform hover:scale-105 hover:shadow-2xl ${
+                className={`relative bg-gradient-to-br ${themeClasses.cardBackground} rounded-2xl p-8 backdrop-blur-sm border transition-all duration-300 hover:scale-105 hover:shadow-xl ${
                   plan.popular 
                     ? `${isDarkMode ? 'border-cyan-400 shadow-cyan-400/25 ring-1 ring-cyan-400/50' : 'border-cyan-300 shadow-cyan-300/25 ring-1 ring-cyan-300/50'}` 
                     : `${themeClasses.cardBorder} hover:${isDarkMode ? 'border-slate-600' : 'border-gray-300'}`
@@ -344,7 +330,7 @@ export default function EnergeticFitZoneLanding() {
                   ))}
                 </ul>
                 
-                <button className={`w-full py-4 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-105 ${
+                <button className={`w-full py-4 rounded-lg font-bold text-lg transition-all duration-300 ${
                   plan.popular
                     ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/25'
                     : `border ${themeClasses.cardBorder} ${themeClasses.cardHover} ${themeClasses.text}`
@@ -363,8 +349,8 @@ export default function EnergeticFitZoneLanding() {
           <h2 className="text-4xl lg:text-6xl font-extrabold mb-6">
             TAKE YOUR{' '}
             <span className="relative inline-block">
-              <span className={`absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 blur-sm ${isDarkMode ? 'opacity-50' : 'opacity-20'} animate-pulse`}></span>
-              <span className={`relative bg-gradient-to-r ${isDarkMode ? 'from-cyan-400 to-blue-500' : 'from-cyan-600 to-blue-700'} bg-clip-text text-transparent font-extrabold animate-pulse`}>GYM</span>
+              <span className={`absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 blur-sm ${isDarkMode ? 'opacity-50' : 'opacity-20'}`}></span>
+              <span className={`relative bg-gradient-to-r ${isDarkMode ? 'from-cyan-400 to-blue-500' : 'from-cyan-600 to-blue-700'} bg-clip-text text-transparent font-extrabold`}>GYM</span>
             </span>
             <br />
             TO THE NEXT LEVEL
@@ -374,9 +360,9 @@ export default function EnergeticFitZoneLanding() {
             Join thousands of gym owners who have already transformed their business with FitZone.
           </p>
           
-          <button className="group px-12 py-6 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl font-bold text-xl transition-all duration-300 transform hover:scale-110 hover:from-green-600 hover:to-emerald-700 shadow-2xl shadow-green-500/25 text-white">
+          <button className="group px-12 py-6 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl font-bold text-xl transition-transform duration-200 hover:scale-105 hover:from-green-600 hover:to-emerald-700 shadow-xl text-white">
             START YOUR FREE TRIAL
-            <ChevronRight className="inline ml-3 w-6 h-6 group-hover:translate-x-2 transition-transform" />
+            <ChevronRight className="inline ml-3 w-6 h-6 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
       </section>

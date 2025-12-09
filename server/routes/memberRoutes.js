@@ -5,11 +5,63 @@ const Payment = require('../models/Payment');
 
 // 🔐 Middleware should already decode JWT and set req.user.id = adminId
 
-// GET all members of logged-in admin
+// GET all members of logged-in admin (supports pagination, search, sort, filter)
 router.get('/', async (req, res) => {
   try {
-    const members = await Member.find({ adminId: req.user.id });
-    res.json(members);
+    const { page, limit, search, status, sortBy, sortOrder } = req.query;
+    console.log("DEBUG: GET /api/members", req.query);
+
+    const query = { adminId: req.user.id };
+
+    // Search
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Filter by Status
+    if (status && status !== 'All') {
+      query.status = status;
+    }
+
+    // Sorting
+    let sort = {};
+    if (sortBy) {
+      sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    } else {
+      sort.createdAt = -1;
+    }
+    // Secondary sort for stable pagination
+    sort._id = -1;
+
+    // Determine pagination
+    const isPaginationRequest = page || limit;
+    
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 10000; 
+    const skip = (pageNum - 1) * limitNum;
+
+    const totalMembers = await Member.countDocuments(query);
+    const members = await Member.find(query)
+      .sort(sort)
+      .skip(skip)
+      .limit(limitNum);
+
+    console.log(`DEBUG: Found ${members.length} members out of ${totalMembers}`);
+
+    if (isPaginationRequest) {
+      res.json({
+          members,
+          totalMembers,
+          totalPages: Math.ceil(totalMembers / limitNum),
+          currentPage: pageNum
+      });
+    } else {
+      res.json(members);
+    }
+
   } catch (err) {
     console.error("Error retrieving Members:", err);
     res.status(500).json({ message: "Internal server error" });
@@ -48,9 +100,7 @@ router.post('/', async (req, res) => {
       gender,
       dob,
       notes,
-      dob,
-      notes,
-      plan, // Fix: Save plan to Member model
+      plan,
       adminId: req.user.id
     });
 
@@ -58,7 +108,6 @@ router.post('/', async (req, res) => {
 
     const payment = new Payment({
       memberId: savedMember._id,
-      
       amount,
       plan,
       method: paymentMethod,
@@ -78,7 +127,6 @@ router.post('/', async (req, res) => {
 router.put('/renew/:id', async (req, res) => {
   const id = req.params.id;
 
-  console.log(req.body)
   try {
     const { renewalDate, expiryDate, status, plan, amount, paymentMethod } = req.body;
 

@@ -16,6 +16,7 @@ import {
     XCircle, 
     Clock,
     DollarSign,
+    IndianRupee,
     RefreshCw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -409,7 +410,7 @@ const RenewMember = () => {
                         {formData.amount && (
                             <div className={`${themeClasses.cardBackground} rounded-2xl p-6 border shadow-lg mt-6`}>
                                 <div className="flex items-center justify-center gap-3">
-                                    <DollarSign className={`w-8 h-8 ${themeClasses.amountDisplay}`} />
+                                    <IndianRupee className={`w-8 h-8 ${themeClasses.amountDisplay}`} />
                                     <h1 className={`text-4xl font-bold ${themeClasses.amountDisplay}`}>
                                         Total Amount: ₹{formData.amount}
                                     </h1>

@@ -5,8 +5,37 @@ require('./cron/updateMemberStatus');
 const connectDB = require('./config/db');
 const cors = require('cors');
 
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
+const rateLimit = require('express-rate-limit');
+
 connectDB();
 const app = express();
+
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
+// Security Headers
+app.use(helmet());
+
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // Limit each IP to 1000 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+});
+app.use('/api', limiter); // Apply to API routes
+
+// Body Parser
+app.use(express.json());
+
+// Prevent Parameter Pollution
+app.use(hpp());
 
 const memberRoutes = require('./routes/memberRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
@@ -18,14 +47,6 @@ const authRoutes = require("./routes/authRoutes");
 const memberAuthRoutes = require("./routes/memberAuthRoutes");
 const qrRoutes = require('./routes/qrRoutes');
 const { adminAuth, memberAuth } = require("./middlewares/authMiddleware"); // include memberAuth
-
-app.use(cors({
-  origin: 'http://localhost:5173',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));
-
-app.use(express.json());
 
 app.get('/', (req, res) => {
   res.json({ message: 'GYM API is running!!!' });
