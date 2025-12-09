@@ -31,16 +31,14 @@ app.get('/', (req, res) => {
   res.json({ message: 'GYM API is running!!!' });
 });
 
+// Admin routes (using adminAuth)
+app.use('/api/members', adminAuth, memberRoutes);
+app.use('/api/dashboard', adminAuth, dashboardRoutes);
+app.use('/api/payments', adminAuth, paymentRoutes);
+app.use('/api/attendance', adminAuth, attendanceRoutes);
+app.use('/api/settings', adminAuth, settingsRoutes);
+app.use('/api/reports', adminAuth, reportRoutes);
 
-app.use('/api/members',auth, memberRoutes);
-app.use('/api/dashboard',auth, dashboardRoutes);
-
-app.use('/api/payments',auth, paymentRoutes);
-app.use('/api/attendance',auth, attendanceRoutes);
-app.use('/api/settings', auth, settingsRoutes);
-app.use('/api/reports', auth, reportRoutes);
-
-// Auth routes (no auth middleware needed as they handle login)
 app.use("/api/auth", authRoutes);
 app.use("/api/member-auth", memberAuthRoutes);
 
