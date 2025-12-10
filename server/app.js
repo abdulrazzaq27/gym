@@ -60,7 +60,7 @@ app.use(helmet());
 // ===== RATE LIMITING =====
 // Reduced to production-appropriate levels
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 35 minutes
+  windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'production' ? 100 : 2000,
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
