@@ -169,4 +169,43 @@ router.put('/renew/:id', async (req, res) => {
   }
 });
 
+// EXPORT members as CSV
+router.get('/export', async (req, res) => {
+  try {
+    const members = await Member.find({ adminId: req.user.id })
+      .sort({ createdAt: -1 });
+
+    // CSV headers
+    const headers = ['Name', 'Email', 'Phone', 'Gender', 'DOB', 'Join Date', 'Expiry Date', 'Renewal Date', 'Status', 'Plan', 'Notes'];
+    
+    // CSV rows
+    const rows = members.map(m => [
+      m.name || '',
+      m.email || '',
+      m.phone || '',
+      m.gender || '',
+      m.dob ? new Date(m.dob).toLocaleDateString('en-US') : '',
+      m.joinDate ? new Date(m.joinDate).toLocaleDateString('en-US') : '',
+      m.expiryDate ? new Date(m.expiryDate).toLocaleDateString('en-US') : '',
+      m.renewalDate ? new Date(m.renewalDate).toLocaleDateString('en-US') : '',
+      m.status || '',
+      m.plan || '',
+      m.notes || ''
+    ]);
+
+    // Create CSV content
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    // Set headers for file download
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=members_${new Date().toISOString().slice(0, 10)}.csv`);
+    res.send(csvContent);
+  } catch (err) {
+    console.error("Error exporting members:", err);
+    res.status(500).json({ message: 'Failed to export members' });
+  }
+});
+
 module.exports = router;

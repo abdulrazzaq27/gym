@@ -9,6 +9,7 @@ import ProtectedRoute from './components/utils/ProtectedRoute.jsx';
 import GuestRoute from './components/utils/GuestRoute.jsx';
 import ProtectedLayout from './components/ProtectedLayout.jsx';
 import { ThemeProvider } from "./components/utils/ThemeContext.jsx";
+import { Toaster } from 'react-hot-toast';
 
 // Lazy loading pages
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
@@ -27,6 +28,7 @@ const CreateMemberLight = lazy(() => import('./pages/CreateMemberLight.jsx'));
 const Register = lazy(() => import('./pages/Register.jsx'));
 const Login = lazy(() => import('./pages/Login.jsx'));
 const LandingPage = lazy(() => import('./pages/LandingPage.jsx'));
+const Profile = lazy(() => import('./pages/Profile.jsx'));
 
 // Loading Fallback Component
 const LoadingFallback = () => (
@@ -49,6 +51,30 @@ function App() {
   return (
     <div className="min-h-screen ">
       <ThemeProvider>
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+            success: {
+              duration: 3000,
+              iconTheme: {
+                primary: '#10b981',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              duration: 4000,
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
         <ScrollToTop />
         <main >
           <Suspense fallback={<LoadingFallback />}>
@@ -72,6 +98,7 @@ function App() {
                   <Route path="/payments" element={<PaymentsPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/reports" element={<Reports />} />
+                  <Route path="/profile" element={<Profile />} />
                   <Route path='/members2' element={< Members2 />} />
                   <Route path='/member/new/light' element={<CreateMemberLight />} />
                 </Route>

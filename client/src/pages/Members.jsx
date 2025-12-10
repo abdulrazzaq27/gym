@@ -3,6 +3,7 @@ import { ArrowLeft, Search, Filter, SortAsc, SortDesc, AlertTriangle, Check, Loa
 import axios from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../components/utils/ThemeContext.jsx';
+import toast from 'react-hot-toast';
 
 function Members() {
   const navigate = useNavigate();
@@ -201,14 +202,16 @@ function Members() {
   
         // ✅ also update marked state
         setMarked((prev) => ({ ...prev, [memberId]: true }));
+        
+        // ✅ Show success toast
+        const memberName = members.find(m => m._id === memberId)?.name || 'Member';
+        toast.success(`Attendance marked for ${memberName}`);
       } else {
-        setError(data.message || "Failed to mark attendance");
-        setTimeout(() => setError(""), 3000);
+        toast.error(data.message || "Failed to mark attendance");
       }
     } catch (err) {
       console.error("Error marking attendance:", err);
-      setError("Failed to mark attendance. Please try again.");
-      setTimeout(() => setError(""), 3000);
+      toast.error("Failed to mark attendance. Please try again.");
     } finally {
       setAttendanceLoading((prev) => ({ ...prev, [memberId]: false }));
     }

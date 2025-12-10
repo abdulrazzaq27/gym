@@ -290,8 +290,8 @@ function Dashboard() {
         </button>
       </div> */}
 
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-8">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Link
             to="/revenue"
             className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer block"
@@ -342,7 +342,7 @@ function Dashboard() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className={`${themeClasses.cardBackground} backdrop-blur-sm rounded-2xl p-6 border border-white/2 shadow-xl`}>
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -423,7 +423,7 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           <div className={`${themeClasses.cardBackground} backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl`}>
             <div className="flex items-center justify-between mb-6">
               <div>

@@ -99,4 +99,38 @@ router.get('/history/:id', async (req, res) => {
   }
 });
 
+// EXPORT payments as CSV
+router.get('/export', async (req, res) => {
+  try {
+    const payments = await Payment.find({ adminId: req.user.id })
+      .populate("memberId", "name")
+      .sort({ date: -1 });
+
+    // CSV headers
+    const headers = ['Member Name', 'Amount', 'Plan', 'Payment Method', 'Date'];
+    
+    // CSV rows
+    const rows = payments.map(p => [
+      p.memberId?.name || 'N/A',
+      p.amount || 0,
+      p.plan || '',
+      p.method || '',
+      p.date ? new Date(p.date).toLocaleDateString('en-US') : ''
+    ]);
+
+    // Create CSV content
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    // Set headers for file download
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=payments_${new Date().toISOString().slice(0, 10)}.csv`);
+    res.send(csvContent);
+  } catch (err) {
+    console.error("Error exporting payments:", err);
+    res.status(500).json({ message: 'Failed to export payments' });
+  }
+});
+
 module.exports = router;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Sun, Moon } from 'lucide-react';
 import axios from "../api/axios";
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 export default function EnergeticLogin() {
   const [email, setEmail] = useState("");
@@ -61,9 +62,12 @@ export default function EnergeticLogin() {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user || res.data.admin));
 
+      toast.success('Login successful! Welcome back.');
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Please try again.");
+      const errorMsg = err.response?.data?.message || "Login failed. Please try again.";
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

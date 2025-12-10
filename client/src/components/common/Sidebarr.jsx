@@ -161,7 +161,7 @@ export default function Drawer() {
                                 <Menu className="h-5 w-5" />
                             </button>
 
-                            <button onClick={() => handleNavigation('/dashboard')} className="flex items-center space-x-3 group">
+                            <button onClick={() => handleNavigation('/dashboard')} className="flex items-center space-x-3 group hover:cursor-pointer">
                                 <div className="relative">
                                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-200">
                                         <Activity className="w-6 h-6 text-white" />
@@ -180,14 +180,17 @@ export default function Drawer() {
                         {/* Right: Actions */}
                         <div className="flex items-center space-x-3">
                             {/* Profile Button */}
-                            <button className={`relative p-2.5 rounded-xl ${themeClasses.button} cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border group`}>
+                            <button 
+                                onClick={() => handleNavigation('/profile')}
+                                className={`relative p-2.5 rounded-xl ${themeClasses.button} hover:cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border group`}
+                            >
                                 <User className="w-5 h-5" />
                             </button>
 
                             {/* Theme Toggle Button */}
                             <button
                                 onClick={toggleTheme}
-                                className={`p-2.5 rounded-xl ${themeClasses.button} transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border`}
+                                className={`p-2.5 rounded-xl ${themeClasses.button} hover:cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border`}
                                 aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
                             >
                                 {isDarkMode ? (
@@ -201,7 +204,7 @@ export default function Drawer() {
                             {token ? (
                                 <button
                                     onClick={logout}
-                                    className={`hidden sm:flex items-center gap-2 bg-gradient-to-r ${themeClasses.authButton} text-white px-4 py-2.5 rounded-xl font-medium cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl`}
+                                    className={`hidden sm:flex items-center gap-2 bg-gradient-to-r ${themeClasses.authButton} text-white px-4 py-2.5 rounded-xl font-medium hover:cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl`}
                                 >
                                     <LogOut className="w-4 h-4" />
                                     <span>Logout</span>
@@ -209,7 +212,7 @@ export default function Drawer() {
                             ) : (
                                 <button
                                     onClick={() => navigate("/login")}
-                                    className={`hidden sm:flex items-center gap-2 bg-gradient-to-r ${themeClasses.loginButton} text-white px-4 py-2.5 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl`}
+                                    className={`hidden sm:flex items-center gap-2 bg-gradient-to-r ${themeClasses.loginButton} text-white px-4 py-2.5 rounded-xl font-medium hover:cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl`}
                                 >
                                     <LogIn className="w-4 h-4" />
                                     <span>Login</span>
@@ -237,7 +240,7 @@ export default function Drawer() {
                                         <button
                                             key={item.path}
                                             onClick={() => handleNavigation(item.path)}
-                                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${active
+                                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium hover:cursor-pointer transition-all duration-200 ${active
                                                 ? `${themeClasses.mobileNavActive} shadow-lg border backdrop-blur-sm`
                                                 : themeClasses.mobileNavItem
                                                 }`}
@@ -253,7 +256,7 @@ export default function Drawer() {
                                     {token ? (
                                         <button
                                             onClick={logout}
-                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200"
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 hover:cursor-pointer transition-all duration-200"
                                         >
                                             <LogOut className="w-5 h-5" />
                                             Logout
@@ -261,7 +264,7 @@ export default function Drawer() {
                                     ) : (
                                         <button
                                             onClick={() => navigate("/login")}
-                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 transition-all duration-200"
+                                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 hover:cursor-pointer transition-all duration-200"
                                         >
                                             <LogIn className="w-5 h-5" />
                                             Login
@@ -327,7 +330,7 @@ export default function Drawer() {
                                 <button
                                     key={item.path}
                                     onClick={() => handleNavigation(item.path)}
-                                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${active
+                                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium hover:cursor-pointer transition-all duration-200 group ${active
                                         ? `${themeClasses.drawerNavActive} shadow-lg border`
                                         : `${themeClasses.drawerNavItem} hover:shadow-lg`
                                         }`}

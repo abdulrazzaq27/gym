@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, BarChart3, Users, Calendar, Loader2 } from 'lucide-react';
 import axios from '../api/axios';
+import toast from 'react-hot-toast';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -19,9 +20,10 @@ const LandingPage = () => {
       localStorage.setItem("user", JSON.stringify(res.data.user || res.data.admin));
 
       navigate("/dashboard");
+      toast.success("Demo login successful.");
     } catch (err) {
       console.error("Demo login failed:", err);
-      alert("Demo login failed. Please try again later.");
+      toast.error("Demo login failed. Please try again later.");
     } finally {
       setLoadingDemo(false);
     }
@@ -50,28 +52,43 @@ const LandingPage = () => {
       <section className="pt-24 pb-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-gray-900 mb-6 leading-tight">
-            Stop Functioning. <br className="hidden md:block" />
-            <span className="text-blue-600">Start Thriving.</span>
+            Professional Gym Management. <br className="hidden md:block" />
+            <span className="text-blue-600">Zero Complexity.</span>
           </h1>
           <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-            The minimal, professional dashboard for modern gym owners who want to focus on fitness, not spreadsheets.
+            The all-in-one platform trusted by modern gym owners to manage members, track revenue, and scale their business—without the spreadsheet chaos.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/login" className="w-full sm:w-auto px-8 py-3.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
-              Login
+              Start Your Journey
             </Link>
             <button 
               onClick={handleDemoLogin}
               disabled={loadingDemo}
-              className="w-full sm:w-auto px-8 py-3.5 bg-white text-gray-700 border border-gray-200 rounded-xl font-semibold hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+              className="group relative w-full sm:w-auto px-8 py-3.5 bg-white text-gray-700 border border-gray-200 rounded-xl font-semibold hover:bg-gray-50 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-100 transition-all duration-300 flex items-center justify-center gap-2 hover:cursor-pointer"
             >
-              {loadingDemo ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Logging in...
-                </>
-              ) : (
-                "View Demo"
+              {/* Animated background gradient on hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div>
+              
+              {/* Shimmer effect */}
+              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/40 to-transparent overflow-hidden rounded-xl"></div>
+              
+              <span className="relative z-10">
+                {loadingDemo ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Logging in...
+                  </>
+                ) : (
+                  "Interactive Demo"
+                )}
+              </span>
+              
+              {/* Tooltip - moved outside to prevent clipping */}
+              {!loadingDemo && (
+                <span className="absolute -bottom-12 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none z-50 shadow-lg">
+                  Test drive every feature risk-free
+                </span>
               )}
             </button>
           </div>

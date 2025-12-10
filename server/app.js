@@ -15,7 +15,7 @@ connectDB();
 const app = express();
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: "*", // Allow all origins in development
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
@@ -25,7 +25,7 @@ app.use(helmet());
 
 // Rate Limiting
 const limiter = rateLimit({
-  windowMs: 25 * 60 * 1000,
+  windowMs: 35 * 60 * 1000,
   max: 1000,
   message: 'Too many requests from this IP, please try again later.'
 });

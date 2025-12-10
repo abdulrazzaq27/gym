@@ -154,7 +154,7 @@ function MemberDetails() {
                 </button>
             </div> */}
 
-            <div className="w-full py-4 px-6">
+            <div className="w-full py-4 px-4 sm:px-6">
                 {/* Header */}
                 <div className="mb-8">
                     <button
@@ -165,31 +165,30 @@ function MemberDetails() {
                         Back to Members
                     </button>
 
-                    <div className="flex justify-center gap-4 mb-2">
-                        <div className={`w-16 h-16 ${themeClasses.profileAvatar} rounded-full flex items-center justify-center`}>
+                    <div className="flex flex-col sm:flex-row items-center gap-4 mb-2">
+                        <div className={`w-16 h-16 ${themeClasses.profileAvatar} rounded-full flex items-center justify-center flex-shrink-0`}>
                             <User className="w-8 h-8 text-white" />
                         </div>
-                        <div>
-                            <h1 className={`text-4xl font-bold ${themeClasses.nameText} mb-1`}>{member.name}</h1>
+                        <div className="text-center sm:text-left flex-grow">
+                            <h1 className={`text-2xl sm:text-4xl font-bold ${themeClasses.nameText} mb-2`}>{member.name}</h1>
                             <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(member.status)}`}>
                                 {getStatusIcon(member.status)}
                                 {member.status || 'Unknown'}
                             </div>
                         </div>
                         {/*******************  Renew button *****************/}
-                        {member.status.toLowerCase() === 'inactive' ?
-                            (<button
+                        {member.status.toLowerCase() === 'inactive' &&
+                            <button
                                 onClick={handleSubmit}
-                                className={`${themeClasses.renewButton} z-10 mt-3 ml-16 text-white py-3 h-12 px-6 hover:cursor-pointer rounded-lg focus:outline-none focus:ring-4 transition-all font-semibold text-lg`}>
+                                className={`${themeClasses.renewButton} w-full sm:w-auto text-white py-3 px-6 hover:cursor-pointer rounded-lg focus:outline-none focus:ring-4 transition-all font-semibold text-lg`}>
                                 Renew
                             </button>
-                            ) : ('')
                         }
                     </div>
                 </div>
 
                 {/* Main Content */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Contact Information */}
                     <div className="lg:col-span-2 space-y-6">
                         <div className={`${themeClasses.cardBackground} rounded-2xl p-6 border shadow-lg`}>
@@ -275,7 +274,7 @@ function MemberDetails() {
                     </div>
 
                     {/* Quick Stats Sidebar */}
-                    <div className="space-y-6 w-100">
+                    <div className="space-y-6 lg:col-span-1">
                         <div className={`${themeClasses.sidebarCard1} rounded-2xl p-6 border shadow-lg`}>
                             <h3 className={`text-lg font-semibold ${themeClasses.sidebarTitle} mb-4`}>Quick Stats</h3>
                             <div className="space-y-3">
@@ -319,8 +318,8 @@ function MemberDetails() {
                 </div>
 
                 <h2 className={`text-xl ${themeClasses.tableTitle} font-bold mt-6 mb-2`}>Payment History</h2>
-                <div className="overflow-hidden rounded-lg shadow-lg">
-                    <table className={`w-full text-sm text-left border ${themeClasses.tableContainer} table-auto`}>
+                <div className="overflow-x-auto rounded-lg shadow-lg">
+                    <table className={`w-full text-sm text-left border ${themeClasses.tableContainer} table-auto min-w-[500px]`}>
                         <thead className={themeClasses.tableHeader}>
                             <tr>
                                 <th className={`px-6 py-3 ${themeClasses.tableHeaderText} font-semibold`}>Date</th>

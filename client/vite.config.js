@@ -7,8 +7,12 @@ export default defineConfig({
   plugins: [react(),
   ],
   server: {
+    host: true, // Expose on local network
     proxy: {
-      '/api': 'http://localhost:3000'
+      '/api': {
+        target: 'http://192.168.10.110:3000',
+        changeOrigin: true
+      }
     }
   }
 })

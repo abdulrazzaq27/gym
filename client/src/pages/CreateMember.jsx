@@ -3,6 +3,7 @@ import { ArrowLeft, User, Mail, Phone, Calendar, Users, CreditCard, DollarSign, 
 import axios from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../components/utils/ThemeContext.jsx';
+import toast from 'react-hot-toast';
 
 function CreateMember() {
   const [isVisible, setIsVisible] = useState(false);
@@ -133,9 +134,11 @@ function CreateMember() {
         renewalDate: formData.joinDate,
         expiryDate,
       });
+      toast.success(`${formData.name} added successfully!`);
       navigate('/members');
     } catch (err) {
       console.error("Create member failed", err);
+      toast.error(err.response?.data?.message || 'Failed to add member');
     }
     finally {
       setLoading(false);

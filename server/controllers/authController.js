@@ -59,4 +59,45 @@ const login = async (req, res) => {
     }
 };
 
-module.exports = { register, login };
+// CHANGE PASSWORD
+const changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const adminId = req.user.id; // From auth middleware
+
+        // Validate input
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ message: "Current password and new password are required" });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({ message: "New password must be at least 8 characters" });
+        }
+
+        // Find admin
+        const admin = await Admin.findById(adminId);
+        if (!admin) {
+            return res.status(404).json({ message: "Admin not found" });
+        }
+
+        // Verify current password
+        const isMatch = await bcrypt.compare(currentPassword, admin.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Current password is incorrect" });
+        }
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update password
+        admin.password = hashedPassword;
+        await admin.save();
+
+        res.json({ message: "Password changed successfully" });
+    } catch (err) {
+        console.error("Error changing password:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+module.exports = { register, login, changePassword };

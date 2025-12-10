@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: 'http://localhost:3000', // <-- adjust to your backend prefix
+  baseURL: 'http://localhost:3000',
+  // baseURL: "http://192.168.10.110:3000",
 });
 
 // attach token before every request

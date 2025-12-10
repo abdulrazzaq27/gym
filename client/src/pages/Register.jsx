@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, CheckCircle, Sun, Moon, Building, Code } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from "../api/axios";
+import toast from 'react-hot-toast';
 
 export default function EnergeticRegister() {
   const [name, setName] = useState("");
@@ -33,22 +34,29 @@ export default function EnergeticRegister() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      const errorMsg = "Passwords do not match";
+      setError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
     if (!gymName || !gymCode) {
-      setError("Gym name and code are required");
+      const errorMsg = "Gym name and code are required";
+      setError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
     setLoading(true);
     try {
       await axios.post("/api/auth/register", { name, email, password, role: "admin", gymName, gymCode });
+      toast.success('Registration successful! Please login.');
       // After successful registration → go to login
       navigate("/login");
     } catch (err) {
-      setError(err.response?.data?.msg || "Registration failed");
+      const errorMsg = err.response?.data?.msg || "Registration failed";
+      setError(errorMsg);
+      toast.error(errorMsg);
     }
     finally {
       setLoading(false);

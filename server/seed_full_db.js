@@ -16,7 +16,8 @@ const PLANS = [
 const METHODS = ['UPI', 'Cash', 'Card'];
 const GENDERS = ['Male', 'Female', 'Other'];
 
-const STATUSES = ['Active', 'Active', 'Active', 'Inactive']; // Removed 'Expired' as it's not in schema enum
+// 75% active members: 3 Active for every 1 Inactive
+const STATUSES = ['Active', 'Active', 'Active', 'Inactive'];
 
 const connectDB = async () => {
   try {
@@ -62,10 +63,18 @@ const seed = async () => {
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - 4); // Start from 4 months ago
 
+    // Create array with exactly 75 Active and 25 Inactive, then shuffle
+    const memberStatuses = [
+        ...Array(75).fill('Active'),
+        ...Array(25).fill('Inactive')
+    ].sort(() => Math.random() - 0.5); // Shuffle randomly
+
     for (let i = 1; i <= 100; i++) {
         const plan = PLANS[Math.floor(Math.random() * PLANS.length)];
         const gender = GENDERS[Math.floor(Math.random() * GENDERS.length)];
-        const status = STATUSES[Math.floor(Math.random() * STATUSES.length)];
+        
+        // Get status from shuffled array
+        const status = memberStatuses[i - 1];
         
         // Random join date within last 4 months
         const joinDate = new Date(startDate.getTime() + Math.random() * (new Date().getTime() - startDate.getTime()));
@@ -89,14 +98,8 @@ const seed = async () => {
             notes: "Seed data member"
         });
 
-        // Ensure status reflects mostly active/expired correctly
-        if (member.expiryDate < new Date()) {
-            member.status = 'Inactive';
-        } else if (status === 'Inactive') {
-            member.status = 'Inactive';
-        } else {
-            member.status = 'Active';
-        }
+        // Keep the status as assigned (Active for first 75, Inactive for rest)
+        // No need to check expiry date since we want exactly 75 active
 
         members.push(member);
 
@@ -110,10 +113,25 @@ const seed = async () => {
             method: METHODS[Math.floor(Math.random() * METHODS.length)]
         });
 
-        // 4. Generate Attendance
+        // 4. Generate Attendance with tiered patterns
         // If active, generate random attendance from join date to today
         if (member.status === 'Active' || member.status === 'Expired') {
             const daysToGenerate = Math.floor((new Date() - joinDate) / (1000 * 60 * 60 * 24));
+            
+            // Determine attendance tier based on member index
+            // First 30 active members: High attendance (5+ days/week = ~71%)
+            // Next 25 active members: Medium attendance (3-4 days/week = ~50%)
+            // Remaining active members: Low attendance (1-3 days/week = ~29%)
+            let attendanceRate;
+            const activeMemberIndex = members.filter(m => m.status === 'Active').length;
+            
+            if (activeMemberIndex <= 30) {
+                attendanceRate = 0.71; // ~5 days per week
+            } else if (activeMemberIndex <= 55) {
+                attendanceRate = 0.50; // ~3.5 days per week
+            } else {
+                attendanceRate = 0.29; // ~2 days per week
+            }
             
             for (let d = 0; d <= daysToGenerate; d++) {
                 const currentDate = new Date(joinDate);
@@ -122,8 +140,8 @@ const seed = async () => {
                 // Skip future days
                 if (currentDate > new Date()) break;
 
-                // 70% chance to attend
-                if (Math.random() > 0.3) {
+                // Apply tiered attendance rate
+                if (Math.random() < attendanceRate) {
                     attendanceRecords.push({
                         adminId: admin._id,
                         memberId: member._id,

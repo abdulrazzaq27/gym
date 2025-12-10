@@ -20,6 +20,7 @@ import {
     RefreshCw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const RenewMember = () => {
     const navigate = useNavigate();
@@ -173,11 +174,12 @@ const RenewMember = () => {
                 paymentMethod: formData.paymentMethod,
             });
 
+            toast.success(`${member.name}'s membership renewed successfully!`);
             navigate(`/members/${id}`, { replace: true });
         }
         catch (e) {
             console.log("Error renewing member ", e);
-            alert('Error Renewing Member...');
+            toast.error(e.response?.data?.message || 'Error renewing membership');
         } finally {
             setLoading(false);
         }

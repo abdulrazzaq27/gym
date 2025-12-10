@@ -292,7 +292,7 @@ export default function RevenueRevamp() {
   );
 
   return (
-    <div className={`w-full p-6 ${themeClasses.background} min-h-screen relative`}>
+    <div className={`w-full p-4 sm:p-6 ${themeClasses.background} min-h-screen relative`}>
       {/* Theme Toggle Button - Fixed Position */}
       {/* <div className="fixed top-6 right-6 z-50">
         <button
@@ -309,7 +309,8 @@ export default function RevenueRevamp() {
       </div> */}
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6">
+        {/* Title and Back Button */}
         <div className="flex items-center gap-4 mb-4">
           <button
             onClick={() => navigate('/dashboard')}
@@ -320,39 +321,49 @@ export default function RevenueRevamp() {
             </svg>
           </button>
 
-          <h2 className={`text-2xl font-bold ${themeClasses.primaryText}`}>
-            Revenue DashBoard
+          <h2 className={`text-xl sm:text-2xl font-bold ${themeClasses.primaryText}`}>
+            Revenue Dashboard
           </h2>
         </div>
-        <div className="flex items-center space-x-3">
-          <div className={`text-sm ${themeClasses.mutedText}`}>Timeframe</div>
-          <div className={`flex items-center space-x-2 ${themeClasses.buttonGroup} p-1 rounded-md border`}>
-            <button onClick={() => setTimeframe('12m')} className={`px-3 py-1 rounded transition-colors ${timeframe === '12m' ? themeClasses.activeButton : themeClasses.inactiveButton}`}>Last 12m</button>
-            <button onClick={() => setTimeframe('ytd')} className={`px-3 py-1 rounded transition-colors ${timeframe === 'ytd' ? themeClasses.activeButton : themeClasses.inactiveButton}`}>YTD</button>
-            <button onClick={() => setTimeframe('all')} className={`px-3 py-1 rounded transition-colors ${timeframe === 'all' ? themeClasses.activeButton : themeClasses.inactiveButton}`}>All</button>
+
+        {/* Controls - Stack on mobile */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          {/* Timeframe */}
+          <div className="flex items-center gap-2">
+            <div className={`text-xs sm:text-sm ${themeClasses.mutedText} whitespace-nowrap`}>Timeframe</div>
+            <div className={`flex items-center ${themeClasses.buttonGroup} p-1 rounded-md border flex-1 sm:flex-initial`}>
+              <button onClick={() => setTimeframe('12m')} className={`px-2 sm:px-3 py-1 rounded transition-colors text-xs sm:text-sm ${timeframe === '12m' ? themeClasses.activeButton : themeClasses.inactiveButton}`}>12m</button>
+              <button onClick={() => setTimeframe('ytd')} className={`px-2 sm:px-3 py-1 rounded transition-colors text-xs sm:text-sm ${timeframe === 'ytd' ? themeClasses.activeButton : themeClasses.inactiveButton}`}>YTD</button>
+              <button onClick={() => setTimeframe('all')} className={`px-2 sm:px-3 py-1 rounded transition-colors text-xs sm:text-sm ${timeframe === 'all' ? themeClasses.activeButton : themeClasses.inactiveButton}`}>All</button>
+            </div>
           </div>
 
-          <div className={`flex items-center space-x-2 ${themeClasses.buttonGroup} p-1 rounded-md border`}>
-            <button onClick={() => setChartMode('composed')} className={`px-2 py-1 rounded transition-colors ${chartMode === 'composed' ? themeClasses.chartModeActive : themeClasses.inactiveButton}`}>Overview</button>
-            <button onClick={() => setChartMode('bar')} className={`px-2 py-1 rounded transition-colors ${chartMode === 'bar' ? themeClasses.chartModeActive : themeClasses.inactiveButton}`}>Bar</button>
-            <button onClick={() => setChartMode('area')} className={`px-2 py-1 rounded transition-colors ${chartMode === 'area' ? themeClasses.chartModeActive : themeClasses.inactiveButton}`}>Area</button>
-            <button onClick={() => setChartMode('line')} className={`px-2 py-1 rounded transition-colors ${chartMode === 'line' ? themeClasses.chartModeActive : themeClasses.inactiveButton}`}>Line</button>
+          {/* Chart Mode */}
+          <div className="flex items-center gap-2">
+            <div className={`text-xs sm:text-sm ${themeClasses.mutedText} whitespace-nowrap`}>Chart</div>
+            <div className={`flex items-center ${themeClasses.buttonGroup} p-1 rounded-md border flex-1 sm:flex-initial`}>
+              <button onClick={() => setChartMode('composed')} className={`px-2 py-1 rounded transition-colors text-xs sm:text-sm ${chartMode === 'composed' ? themeClasses.chartModeActive : themeClasses.inactiveButton}`}>Mix</button>
+              <button onClick={() => setChartMode('bar')} className={`px-2 py-1 rounded transition-colors text-xs sm:text-sm ${chartMode === 'bar' ? themeClasses.chartModeActive : themeClasses.inactiveButton}`}>Bar</button>
+              <button onClick={() => setChartMode('area')} className={`px-2 py-1 rounded transition-colors text-xs sm:text-sm ${chartMode === 'area' ? themeClasses.chartModeActive : themeClasses.inactiveButton}`}>Area</button>
+              <button onClick={() => setChartMode('line')} className={`px-2 py-1 rounded transition-colors text-xs sm:text-sm ${chartMode === 'line' ? themeClasses.chartModeActive : themeClasses.inactiveButton}`}>Line</button>
+            </div>
           </div>
 
-          <button onClick={() => downloadCSV(visibleMonthly.map(m => ({ month: m.label, revenue: m.revenue, transactions: m.transactions })), 'monthly.csv')} className={`${themeClasses.exportButton} px-3 py-2 rounded text-white transition-colors`}>Export CSV</button>
+          {/* Export Button */}
+          <button onClick={() => downloadCSV(visibleMonthly.map(m => ({ month: m.label, revenue: m.revenue, transactions: m.transactions })), 'monthly.csv')} className={`${themeClasses.exportButton} px-3 py-2 rounded text-white transition-colors text-xs sm:text-sm w-full sm:w-auto sm:ml-auto`}>Export CSV</button>
         </div>
       </div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
         {renderKPI({ title: 'Total Revenue', value: totalRevenue, sub: `${totalTransactions} transactions`, delta: yearDelta, sparkData: sparkRevenue, color: PALETTE.revenue })}
         {renderKPI({ title: 'This Year', value: currentYearRevenue, sub: 'YTD', delta: yearDelta, sparkData: sparkRevenue, color: PALETTE.revenueAccent })}
         {renderKPI({ title: 'This Month', value: currentMonthRevenue, sub: `${monthlySeries[monthlySeries.length - 1]?.label || ''}`, delta: monthDelta, sparkData: sparkTx, color: PALETTE.transactions })}
       </div>
 
       {/* Main Charts grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className={`col-span-2 ${themeClasses.cardBackground} border rounded-2xl p-4 shadow-xl`}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className={`lg:col-span-2 ${themeClasses.cardBackground} border rounded-2xl p-4 shadow-xl`}>
           <div className="flex items-center justify-between mb-3">
             <h2 className={`text-lg font-semibold ${themeClasses.primaryText}`}>Overview</h2>
             <div className={`text-sm ${themeClasses.mutedText}`}>Revenue & Transactions</div>
@@ -469,7 +480,7 @@ export default function RevenueRevamp() {
       </div>
 
       {/* Tables: Monthly & Annual */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-6">
         <div className={`${themeClasses.cardBackground} border rounded-2xl p-4 shadow-xl overflow-x-auto`}>
           <div className="flex items-center justify-between mb-3">
             <h3 className={`text-lg font-semibold ${themeClasses.primaryText}`}>Monthly Revenue</h3>
