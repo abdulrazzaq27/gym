@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import axios from '../api/axios';
 import { useTheme } from '../components/utils/ThemeContext.jsx';
 import { 
@@ -13,15 +13,22 @@ import {
   Filter,
   Search,
   TrendingUp,
-  IndianRupee
+  IndianRupee,
+  Loader2
 } from 'lucide-react';
 
 function PaymentsPage() {
   const [payments, setPayments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [stats, setStats] = useState({ totalAmount: 0, count: 0 });
+  
+  const observer = useRef();
   const { isDarkMode } = useTheme();
 
   // Theme-based classes
@@ -71,14 +78,61 @@ function PaymentsPage() {
       : 'bg-blue-500 hover:bg-blue-600',
   };
 
+  // Search Debounce
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchTerm !== debouncedSearch) {
+        setDebouncedSearch(searchTerm);
+        setPage(1);
+        setPayments([]);
+      }
+    }, 500);
+
+    return () => clearTimeout(handler);
+  }, [searchTerm, debouncedSearch]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+    setPayments([]);
+  }, [statusFilter]);
+
+  // Fetch Payments
   useEffect(() => {
     async function fetchPayments() {
       try {
-        const res = await axios.get("/api/payments", {
-          withCredentials: true,
+        setLoading(true);
+        setError(null);
+
+        const params = {
+          page,
+          limit: 15,
+          search: debouncedSearch,
+          status: statusFilter
+        };
+
+        const res = await axios.get("/api/payments", { 
+          params,
+          withCredentials: true 
         });
+
         if (res.data.success) {
-          setPayments(res.data.data);
+          const newPayments = res.data.data;
+          const pagination = res.data.pagination;
+
+          setPayments(prev => {
+            if (page === 1) return newPayments;
+            const existingIds = new Set(prev.map(p => p._id));
+            const uniqueNew = newPayments.filter(p => !existingIds.has(p._id));
+            return [...prev, ...uniqueNew];
+          });
+
+          setHasMore(page < pagination.pages);
+
+          // Update stats (only on first page or when filters change)
+          if (res.data.stats) {
+            setStats(res.data.stats);
+          }
         } else {
           setError("Failed to fetch payments");
         }
@@ -91,23 +145,21 @@ function PaymentsPage() {
     }
 
     fetchPayments();
-  }, []);
+  }, [page, debouncedSearch, statusFilter]);
 
-  // Filter payments based on search term and status
-  const filteredPayments = payments.filter(payment => {
-    const matchesSearch = payment.memberId?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || payment.status?.toLowerCase() === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  // Calculate statistics
-  const stats = {
-    total: payments.length,
-    totalAmount: payments.reduce((sum, p) => sum + (p.amount || 0), 0),
-    successful: payments.filter(p => p.status?.toLowerCase() === 'completed').length,
-    pending: payments.filter(p => p.status?.toLowerCase() === 'pending').length,
-    failed: payments.filter(p => p.status?.toLowerCase() === 'failed').length,
-  };
+  // Infinite Scroll Observer
+  const lastPaymentElementRef = useCallback(node => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prevPage => prevPage + 1);
+      }
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore]);
 
   const getStatusIcon = (status) => {
     switch ((status || '').toLowerCase()) {
@@ -141,10 +193,10 @@ function PaymentsPage() {
 
   const exportCSV = () => {
     const headers = ['Member', 'Amount', 'Status', 'Date'];
-    const rows = filteredPayments.map(p => [
-      p.memberId.name,
+    const rows = payments.map(p => [
+      p.memberId?.name || 'N/A',
       p.amount,
-      p.status,
+      p.status || 'completed',
       new Date(p.date).toLocaleDateString("en-US")
     ]);
 
@@ -162,18 +214,7 @@ function PaymentsPage() {
     document.body.removeChild(link);
   };
 
-  if (loading) {
-    return (
-      <div className={`min-h-screen ${themeClasses.background} flex items-center justify-center`}>
-        <div className="text-center">
-          <div className={`animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 ${themeClasses.loadingSpinner} mx-auto mb-4`}></div>
-          <p className={`text-lg ${themeClasses.primaryText}`}>Loading payments...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
+  if (error && payments.length === 0) {
     return (
       <div className={`min-h-screen ${themeClasses.background} flex items-center justify-center p-6`}>
         <div className={`${themeClasses.errorCard} border rounded-2xl p-6 text-center max-w-md`}>
@@ -220,24 +261,8 @@ function PaymentsPage() {
               <TrendingUp className={`w-6 h-6 ${themeClasses.primaryText}`} />
               <h3 className={`text-sm font-medium ${themeClasses.secondaryText}`}>Total Payments</h3>
             </div>
-            <p className={`text-2xl font-bold ${themeClasses.primaryText}`}>{stats.total}</p>
+            <p className={`text-2xl font-bold ${themeClasses.primaryText}`}>{stats.count}</p>
           </div>
-{/* 
-          <div className={`${themeClasses.cardBackground} rounded-2xl p-4 border shadow-lg`}>
-            <div className="flex items-center gap-3 mb-2">
-              <CheckCircle className="w-6 h-6 text-green-500" />
-              <h3 className={`text-sm font-medium ${themeClasses.secondaryText}`}>Successful</h3>
-            </div>
-            <p className="text-2xl font-bold text-green-500">{stats.successful}</p>
-          </div>
-
-          <div className={`${themeClasses.cardBackground} rounded-2xl p-4 border shadow-lg`}>
-            <div className="flex items-center gap-3 mb-2">
-              <Clock className="w-6 h-6 text-yellow-500" />
-              <h3 className={`text-sm font-medium ${themeClasses.secondaryText}`}>Pending</h3>
-            </div>
-            <p className="text-2xl font-bold text-yellow-500">{stats.pending}</p>
-          </div> */}
         </div>
 
         {/* Filters and Search */}
@@ -292,18 +317,15 @@ function PaymentsPage() {
                   <th className={`px-6 py-4 text-left ${themeClasses.tableHeaderText} font-semibold`}>
                     Amount
                   </th>
-                  {/* <th className={`px-6 py-4 text-left ${themeClasses.tableHeaderText} font-semibold`}>
-                    Status
-                  </th> */}
                   <th className={`px-6 py-4 text-left ${themeClasses.tableHeaderText} font-semibold`}>
                     Date
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {filteredPayments.length === 0 ? (
+                {payments.length === 0 && !loading ? (
                   <tr>
-                    <td colSpan="4" className="px-6 py-8 text-center">
+                    <td colSpan="3" className="px-6 py-8 text-center">
                       <div className={`${themeClasses.mutedText}`}>
                         <CreditCard className="w-12 h-12 mx-auto mb-2 opacity-50" />
                         <p>No payments found</p>
@@ -311,55 +333,59 @@ function PaymentsPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredPayments.map((payment) => (
-                    <tr 
-                      key={payment._id} 
-                      className={`border-b ${themeClasses.tableRow} transition-colors`}
-                    >
-                      <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                            <User className="w-4 h-4 text-white" />
+                  payments.map((payment, index) => {
+                    const isLast = payments.length === index + 1;
+                    
+                    return (
+                      <tr 
+                        ref={isLast ? lastPaymentElementRef : null}
+                        key={payment._id} 
+                        className={`border-b ${themeClasses.tableRow} transition-colors`}
+                      >
+                        <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                              <User className="w-4 h-4 text-white" />
+                            </div>
+                            <span className="font-medium">{payment.memberId?.name || 'N/A'}</span>
                           </div>
-                          <span className="font-medium">{payment.memberId.name}</span>
-                        </div>
-                      </td>
-                      <td className={`px-6 py-4 ${themeClasses.tableCellText} font-semibold`}>
-                        ₹{payment.amount.toLocaleString()}
-                      </td>
-                      {/* <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(payment.status)}`}>
-                          {getStatusIcon(payment.status)}
-                          {payment.status}
-                        </span>
-                      </td> */}
-                      <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>
-                        <div className="flex items-center gap-2">
-                          <Calendar className={`w-4 h-4 ${themeClasses.mutedText}`} />
-                          {new Date(payment.date).toLocaleDateString("en-US", {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+                        <td className={`px-6 py-4 ${themeClasses.tableCellText} font-semibold`}>
+                          ₹{payment.amount.toLocaleString()}
+                        </td>
+                        <td className={`px-6 py-4 ${themeClasses.tableCellText}`}>
+                          <div className="flex items-center gap-2">
+                            <Calendar className={`w-4 h-4 ${themeClasses.mutedText}`} />
+                            {new Date(payment.date).toLocaleDateString("en-US", {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
+            {loading && (
+              <div className="flex items-center justify-center p-4">
+                <div className={`animate-spin rounded-full h-8 w-8 border-2 ${themeClasses.loadingSpinner} border-t-transparent`}></div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Summary Footer */}
-        {filteredPayments.length > 0 && (
+        {payments.length > 0 && (
           <div className={`${themeClasses.cardBackground} rounded-2xl p-4 border shadow-lg mt-6`}>
             <div className="flex items-center justify-between text-sm">
               <span className={themeClasses.mutedText}>
-                Showing {filteredPayments.length} of {payments.length} payments
+                Showing {payments.length} of {stats.count} payments
               </span>
               <span className={`font-medium ${themeClasses.primaryText}`}>
-                Total: ${filteredPayments.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                Filtered Total: ₹{stats.totalAmount.toLocaleString()}
               </span>
             </div>
           </div>

@@ -1,18 +1,84 @@
 const express = require('express');
 const router = express.Router();
 const Payment = require('../models/Payment');
+const Member = require('../models/Member');
 
 router.get("/", async (req, res) => {
   try {
+    const { page, limit, search, status } = req.query;
+    console.log("DEBUG: GET /api/payments", req.query);
 
-    // const id = req.params.id;
-    // const payments = await Payment.find({ adminId: req.user.id }).sort({ date: -1 });
-    const payments = await Payment.find({ adminId: req.user.id })
-      .populate("memberId", "name")  // only get member name
-      .sort({ date: -1 });
+    const query = { adminId: req.user.id };
 
+    // Search by member name
+    if (search) {
+      const matchingMembers = await Member.find({
+        adminId: req.user.id,
+        name: { $regex: search, $options: 'i' }
+      }).select('_id');
+      
+      const memberIds = matchingMembers.map(m => m._id);
+      query.memberId = { $in: memberIds };
+    }
 
-    res.json({ success: true, data: payments });
+    // Filter by status (if needed in future)
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+
+    // Determine pagination
+    const isPaginationRequest = page || limit;
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 15;
+    const skip = (pageNum - 1) * limitNum;
+
+    // Get total count and stats for the filtered query
+    const totalPayments = await Payment.countDocuments(query);
+    console.log(`DEBUG: Total payments count: ${totalPayments}`);
+    console.log(`DEBUG: Query:`, JSON.stringify(query));
+    
+    // Calculate total amount for stats (for the entire filtered dataset)
+    // Use manual calculation as it's more reliable with complex queries
+    let stats = { totalAmount: 0, count: 0 };
+    
+    const allPayments = await Payment.find(query).select('amount');
+    console.log(`DEBUG: Found ${allPayments.length} payments for stats calculation`);
+    
+    stats = {
+      totalAmount: allPayments.reduce((sum, p) => sum + (p.amount || 0), 0),
+      count: allPayments.length
+    };
+    
+    console.log(`DEBUG: Stats calculated:`, stats);
+
+    // Fetch paginated payments
+    const payments = await Payment.find(query)
+      .populate("memberId", "name")
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    console.log(`DEBUG: Found ${payments.length} payments out of ${totalPayments}`);
+
+    if (isPaginationRequest) {
+      res.json({
+        success: true,
+        data: payments,
+        pagination: {
+          total: totalPayments,
+          pages: Math.ceil(totalPayments / limitNum),
+          currentPage: pageNum
+        },
+        stats
+      });
+    } else {
+      // Legacy support: return all payments if no pagination params
+      const allPayments = await Payment.find({ adminId: req.user.id })
+        .populate("memberId", "name")
+        .sort({ date: -1 });
+      res.json({ success: true, data: allPayments });
+    }
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: `Server error : ${err}` });

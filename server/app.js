@@ -25,11 +25,11 @@ app.use(helmet());
 
 // Rate Limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // Limit each IP to 1000 requests per windowMs
+  windowMs: 25 * 60 * 1000,
+  max: 1000,
   message: 'Too many requests from this IP, please try again later.'
 });
-app.use('/api', limiter); // Apply to API routes
+app.use('/api', limiter);
 
 // Body Parser
 app.use(express.json());
