@@ -68,8 +68,17 @@ router.get('/', async (req, res) => {
   }
 });
 
+const { 
+  createMemberValidation, 
+  mongoIdParamValidation,
+  handleValidationErrors 
+} = require('../middlewares/validationMiddleware');
+const { body } = require('express-validator');
+
+// ... (GET / remains same but I should probably add validation for query params if I want to be strict, but skipping for now)
+
 // GET one member (only if belongs to this admin)
-router.get('/:id', async (req, res) => {
+router.get('/:id', mongoIdParamValidation, async (req, res) => {
   try {
     const member = await Member.findOne({ _id: req.params.id, adminId: req.user.id });
     if (!member) return res.status(404).json({ message: 'Member not found' });
@@ -81,7 +90,14 @@ router.get('/:id', async (req, res) => {
 });
 
 // CREATE new member (auto-assign to logged-in admin)
-router.post('/', async (req, res) => {
+router.post('/', [
+  ...createMemberValidation.slice(0, -1), // Use all rules except the final error handler
+  // Add payment specific validation inline since it's a combined action
+  body('amount').isFloat({ min: 0 }).withMessage('Amount must be a positive number'),
+  body('paymentMethod').isIn(['UPI', 'Cash', 'Card']).withMessage('Invalid payment method'),
+  body('joinDate').isISO8601().withMessage('Join date must be valid'),
+  handleValidationErrors
+], async (req, res) => {
   const {
     name, email, phone, plan, joinDate, expiryDate, status,
     gender, dob, notes,
@@ -124,7 +140,15 @@ router.post('/', async (req, res) => {
 });
 
 // RENEW membership (only admin’s member)
-router.put('/renew/:id', async (req, res) => {
+router.put('/renew/:id', [
+  ...mongoIdParamValidation.slice(0, -1),
+  body('renewalDate').isISO8601().withMessage('Renewal date must be valid'),
+  body('expiryDate').isISO8601().withMessage('Expiry date must be valid'),
+  body('plan').isIn(['Monthly', 'Quarterly', 'Half-Yearly', 'Yearly']).withMessage('Invalid plan type'),
+  body('amount').isFloat({ min: 0 }).withMessage('Amount must be a positive number'),
+  body('paymentMethod').isIn(['UPI', 'Cash', 'Card']).withMessage('Invalid payment method'),
+  handleValidationErrors
+], async (req, res) => {
   const id = req.params.id;
 
   try {

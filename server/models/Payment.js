@@ -29,6 +29,10 @@ const paymentSchema = new mongoose.Schema({
         enum: ['UPI', 'Cash', 'Card'],
         required: true,
     }
-})
+});
+
+// ===== DATABASE INDEXES FOR PERFORMANCE =====
+// Compound index for admin-specific payment queries sorted by date
+paymentSchema.index({ adminId: 1, date: -1 });
 
 module.exports = mongoose.model('Payment', paymentSchema);

@@ -2,11 +2,13 @@ const express = require("express");
 const router = express.Router();
 const Attendance = require("../models/Attendance");
 const { adminAuth, memberAuth } = require("../middlewares/authMiddleware");
+const { mongoIdParamValidation, dateQueryValidation, handleValidationErrors } = require('../middlewares/validationMiddleware');
+const { query, param } = require('express-validator');
 
 // ---------------------------------------------
 // ADMIN: Get monthly attendance overview for all members
 // ---------------------------------------------
-router.get("/", adminAuth, async (req, res) => {
+router.get("/", adminAuth, dateQueryValidation, async (req, res) => {
   try {
     let { month } = req.query;
 
@@ -61,7 +63,10 @@ router.get("/", adminAuth, async (req, res) => {
 // ---------------------------------------------
 // ADMIN: Mark attendance manually
 // ---------------------------------------------
-router.post("/mark/:memberId", adminAuth, async (req, res) => {
+router.post("/mark/:memberId", adminAuth, [
+  param('memberId').isMongoId().withMessage('Invalid member ID'),
+  handleValidationErrors
+], async (req, res) => {
   const { memberId } = req.params;
 
   const today = new Date();
@@ -138,7 +143,12 @@ router.get("/today", adminAuth, async (req, res) => {
 // ---------------------------------------------
 // MEMBER: Get personal attendance with absent days
 // ---------------------------------------------
-router.get("/:memberId", memberAuth, async (req, res) => {
+router.get("/:memberId", memberAuth, [
+  ...mongoIdParamValidation,
+  query('month').optional().isInt({ min: 1, max: 12 }),
+  query('year').optional().isInt({ min: 2000, max: 2100 }),
+  handleValidationErrors
+], async (req, res) => {
   try {
     const { memberId } = req.params;
     const { month, year } = req.query;

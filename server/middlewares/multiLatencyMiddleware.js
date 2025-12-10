@@ -7,7 +7,7 @@ const adminAuth = (req, res, next) => {
   if (!token) return res.status(401).json({ msg: "No token, authorization denied" });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbacksecret");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     // Check if it's an admin token (you might want to add role checking)
     if (!decoded.id) {
@@ -27,7 +27,7 @@ const memberAuth = (req, res, next) => {
   if (!token) return res.status(401).json({ msg: "No token, authorization denied" });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallbacksecret");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     // Check if it's a member token (you might want to add role checking)
     if (!decoded.id) {

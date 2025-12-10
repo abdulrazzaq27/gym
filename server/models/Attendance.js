@@ -33,4 +33,8 @@ const attendanceSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+// ===== DATABASE INDEXES FOR PERFORMANCE =====
+// Compound index for admin-specific attendance queries by date
+attendanceSchema.index({ adminId: 1, date: 1 });
+
 module.exports = mongoose.model("Attendance", attendanceSchema);

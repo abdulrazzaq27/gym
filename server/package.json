@@ -19,6 +19,7 @@
     "express": "^5.1.0",
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^8.2.1",
+    "express-validator": "^7.3.1",
     "flowbite": "^3.1.2",
     "flowbite-react": "^0.11.9",
     "helmet": "^8.1.0",
@@ -30,6 +31,7 @@
     "nodemailer": "^7.0.6",
     "nodemon": "^3.1.11",
     "react-router-dom": "^7.6.3",
+    "winston": "^3.19.0",
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {

@@ -85,7 +85,9 @@ router.get("/", async (req, res) => {
   }
 })
 
-router.get('/history/:id', async (req, res) => {
+const { mongoIdParamValidation } = require('../middlewares/validationMiddleware');
+
+router.get('/history/:id', mongoIdParamValidation, async (req, res) => {
   try {
     // const payments = await Payment.find({ memberId: req.params.id }).sort({ date: -1 });
     const payments = await Payment.find({ memberId: req.params.id })

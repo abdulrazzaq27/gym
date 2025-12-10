@@ -64,9 +64,14 @@ const memberSchema = new mongoose.Schema({
   otpExpiry: {
     type: Date,
   },
-  adminId: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", required: true },
 }, 
 { timestamps: true });
+
+// ===== DATABASE INDEXES FOR PERFORMANCE =====
+// Compound index for admin-specific member queries
+memberSchema.index({ adminId: 1, email: 1 });
+// Index for filtering members by status
+memberSchema.index({ adminId: 1, status: 1 });
 
 const Member = mongoose.model('Member', memberSchema);
 module.exports = Member;

@@ -3,12 +3,19 @@ const { register, login, changePassword } = require("../controllers/authControll
 const { adminAuth } = require("../middlewares/authMiddleware");
 const bcrypt = require('bcryptjs');
 const Admin = require('../models/Admin');
+const { 
+  registerValidation, 
+  loginValidation, 
+  changePasswordValidation,
+  handleValidationErrors 
+} = require('../middlewares/validationMiddleware');
+const { body } = require('express-validator');
 
 const router = express.Router();
 
-router.post("/register", register);
-router.post("/login", login);
-router.post("/change-password", adminAuth, changePassword);
+router.post("/register", registerValidation, register);
+router.post("/login", loginValidation, login);
+router.put("/change-password", adminAuth, changePasswordValidation, changePassword);
 
 // Profile routes
 router.get("/profile", adminAuth, async (req, res) => {
@@ -24,7 +31,11 @@ router.get("/profile", adminAuth, async (req, res) => {
   }
 });
 
-router.put("/profile", adminAuth, async (req, res) => {
+router.put("/profile", adminAuth, [
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
+  handleValidationErrors
+], async (req, res) => {
   try {
     const { name, email } = req.body;
 

@@ -16,9 +16,11 @@
     },
     "dependencies": {
         "@tailwindcss/vite": "^4.1.13",
+        "bcryptjs": "^3.0.3",
         "date-fns": "^4.1.0",
         "dotenv": "^17.0.0",
         "lucide-react": "^0.525.0",
+        "mongoose": "^9.0.1",
         "node-cron": "^4.2.1",
         "recharts": "^3.1.0",
         "tailwindcss": "^4.1.13"

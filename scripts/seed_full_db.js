@@ -1,10 +1,17 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const Admin = require('./models/Admin');
-const Member = require('./models/Member');
-const Payment = require('./models/Payment');
-const Attendance = require('./models/Attendance');
-require('dotenv').config();
+const mongoose = require('../server/node_modules/mongoose');
+const bcrypt = require('../server/node_modules/bcryptjs');
+const Admin = require('../server/models/Admin');
+const Member = require('../server/models/Member');
+const Payment = require('../server/models/Payment');
+const Attendance = require('../server/models/Attendance');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../server/.env') });
+
+// SAFETY CHECK: Prevent running in production
+if (process.env.NODE_ENV === 'production') {
+  console.error('❌ FATAL: Cannot run seed script in production environment!');
+  process.exit(1);
+}
 
 const PLANS = [
   { name: 'Monthly', amount: 1000, months: 1 },
@@ -21,7 +28,10 @@ const STATUSES = ['Active', 'Active', 'Active', 'Inactive'];
 
 const connectDB = async () => {
   try {
-    await mongoose.connect('mongodb://127.0.0.1:27017/gym');
+    if (!process.env.MONGO_URI) {
+      throw new Error('MONGO_URI not defined in .env');
+    }
+    await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB Connected for Seeding');
   } catch (err) {
     console.error(err.message);
@@ -41,17 +51,19 @@ const seed = async () => {
     console.log("✅ Data cleared.");
 
     // 1. Create Default Admin
-    const hashedPassword = await bcrypt.hash('password', 10);
+    const hashedPassword = await bcrypt.hash(process.env.SEED_ADMIN_PASSWORD || 'demopassword', 10);
+    const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@demo.com';
+    
     const admin = new Admin({
         name: "Owner",
-        email: "owner@owner.com",
+        email: adminEmail,
         password: hashedPassword,
         role: "admin",
         gymName: "FitZone Pro",
         gymCode: "FIT001"
     });
     await admin.save();
-    console.log(`✅ Admin created: ${admin.email} / password`);
+    console.log(`✅ Admin created: ${admin.email}`);
 
     const members = [];
     const payments = [];

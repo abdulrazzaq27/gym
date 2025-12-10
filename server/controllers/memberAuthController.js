@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
+const { validatePassword } = require("../utils/passwordValidator");
+const logger = require("../utils/logger");
 
 // Email transporter
 const transporter = nodemailer.createTransport({
@@ -22,10 +24,10 @@ const requestOtp = async (req, res) => {
     const admin = await Admin.findOne({
       $or: [{ gymCode: gymIdentifier }, { gymName: gymIdentifier }],
     });
-    if (!admin) return res.status(404).json({ msg: "Gym not found" });
+    if (!admin) return res.status(404).json({ msg: "Invalid credentials" });
 
     const member = await Member.findOne({ email, adminId: admin._id });
-    if (!member) return res.status(404).json({ msg: "Member not found" });
+    if (!member) return res.status(404).json({ msg: "Invalid credentials" });
 
     const otp = crypto.randomInt(100000, 999999).toString();
 
@@ -40,11 +42,14 @@ const requestOtp = async (req, res) => {
       text: `Your OTP is ${otp}. It will expire in 5 minutes.`,
     });
 
+    logger.info(`OTP sent to member: ${email}`);
     res.json({ msg: "OTP sent to your email" });
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    logger.error('Error requesting OTP:', err);
+    res.status(500).json({ msg: 'Server error' });
   }
 };
+
 // STEP 2: Verify OTP (issue temp token for password setup)
 const verifyOtp = async (req, res) => {
   try {
@@ -53,10 +58,10 @@ const verifyOtp = async (req, res) => {
     const admin = await Admin.findOne({
       $or: [{ gymCode: gymIdentifier }, { gymName: gymIdentifier }],
     });
-    if (!admin) return res.status(404).json({ msg: "Gym not found" });
+    if (!admin) return res.status(404).json({ msg: "Invalid credentials" });
 
     const member = await Member.findOne({ email, adminId: admin._id });
-    if (!member) return res.status(404).json({ msg: "Member not found" });
+    if (!member) return res.status(404).json({ msg: "Invalid credentials" });
 
     if (!member.otp || !member.otpExpiry) {
       return res.status(400).json({ msg: "No OTP requested" });
@@ -84,13 +89,15 @@ const verifyOtp = async (req, res) => {
       { expiresIn: "5m" }
     );
 
+    logger.info(`OTP verified for member: ${email}`);
     res.json({
       msg: "OTP verified. Please set your password.",
       token: tempToken,
       memberId: member._id,
     });
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    logger.error('Error verifying OTP:', err);
+    res.status(500).json({ msg: 'Server error' });
   }
 };
 
@@ -105,6 +112,16 @@ const setPassword = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const { password } = req.body;
+    
+    // Validate password strength
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({ 
+        msg: "Password does not meet requirements",
+        errors: passwordValidation.errors 
+      });
+    }
+
     const member = await Member.findById(decoded.id);
     if (!member) return res.status(404).json({ msg: "Member not found" });
 
@@ -112,9 +129,11 @@ const setPassword = async (req, res) => {
     member.password = await bcrypt.hash(password, salt);
     await member.save();
 
+    logger.info(`Password set for member: ${member.email}`);
     res.json({ msg: "Password set successfully. You can now log in." });
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    logger.error('Error setting password:', err);
+    res.status(500).json({ msg: 'Server error' });
   }
 };
 
@@ -126,11 +145,11 @@ const loginWithPassword = async (req, res) => {
     const admin = await Admin.findOne({
       $or: [{ gymCode: gymIdentifier }, { gymName: gymIdentifier }],
     });
-    if (!admin) return res.status(404).json({ msg: "Gym not found" });
+    if (!admin) return res.status(404).json({ msg: "Invalid credentials" });
 
     const member = await Member.findOne({ email, adminId: admin._id });
     if (!member || !member.password) {
-      return res.status(404).json({ msg: "Member not found or password not set" });
+      return res.status(404).json({ msg: "Invalid credentials" });
     }
 
     const isMatch = await bcrypt.compare(password, member.password);
@@ -142,12 +161,14 @@ const loginWithPassword = async (req, res) => {
       { expiresIn: "7d" }
     );
 
+    logger.info(`Member logged in: ${email}`);
     res.json({
       token,
       member: { id: member._id, name: member.name, email: member.email },
     });
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    logger.error('Error during member login:', err);
+    res.status(500).json({ msg: 'Server error' });
   }
 };
 
