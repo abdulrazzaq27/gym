@@ -51,8 +51,8 @@ const seed = async () => {
     console.log("✅ Data cleared.");
 
     // 1. Create Default Admin
-    const hashedPassword = await bcrypt.hash(process.env.SEED_ADMIN_PASSWORD || 'demopassword', 10);
-    const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@demo.com';
+    const hashedPassword = await bcrypt.hash(process.env.SEED_ADMIN_PASSWORD || 'password', 10);
+    const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@admin.com';
     
     const admin = new Admin({
         name: "Owner",
@@ -77,11 +77,11 @@ const seed = async () => {
 
     // Create array with exactly 75 Active and 25 Inactive, then shuffle
     const memberStatuses = [
-        ...Array(75).fill('Active'),
-        ...Array(25).fill('Inactive')
+        ...Array(375).fill('Active'),
+        ...Array(125).fill('Inactive')
     ].sort(() => Math.random() - 0.5); // Shuffle randomly
 
-    for (let i = 1; i <= 100; i++) {
+    for (let i = 1; i <= 500; i++) {
         const plan = PLANS[Math.floor(Math.random() * PLANS.length)];
         const gender = GENDERS[Math.floor(Math.random() * GENDERS.length)];
         

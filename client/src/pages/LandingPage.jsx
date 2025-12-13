@@ -12,8 +12,8 @@ const LandingPage = () => {
     setLoadingDemo(true);
     try {
       const res = await axios.post("/api/auth/login", { 
-        email: "admin@demo.com", 
-        password: "demopassword" 
+        email: "admin@admin.com", 
+        password: "password" 
       });
 
       localStorage.setItem("token", res.data.token);

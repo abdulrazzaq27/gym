@@ -21,6 +21,14 @@ router.get("/", async (req, res) => {
       query.memberId = { $in: memberIds };
     }
 
+    // Filter by Month (YYYY-MM)
+    if (req.query.month) {
+      const [year, month] = req.query.month.split('-');
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+      query.date = { $gte: startDate, $lte: endDate };
+    }
+
     // Filter by status (if needed in future)
     if (status && status !== 'all') {
       query.status = status;
@@ -72,11 +80,17 @@ router.get("/", async (req, res) => {
         stats
       });
     } else {
-      // Legacy support: return all payments if no pagination params
-      const allPayments = await Payment.find({ adminId: req.user.id })
+      // Return all payments matching the query (including month filter)
+      const allPayments = await Payment.find(query)
         .populate("memberId", "name")
         .sort({ date: -1 });
-      res.json({ success: true, data: allPayments });
+
+      const stats = {
+        totalAmount: allPayments.reduce((sum, p) => sum + (p.amount || 0), 0),
+        count: allPayments.length
+      };
+
+      res.json({ success: true, data: allPayments, stats });
     }
 
   } catch (err) {

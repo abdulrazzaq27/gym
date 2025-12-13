@@ -61,7 +61,8 @@ function Dashboard() {
     return today.toISOString().slice(0, 7);
   });
   const [data, setData] = useState([]);
-  const [monthlySeries, setMonthlySeries] = useState([]);
+  const [recentLimit, setRecentLimit] = useState(10);
+  const [expiringLimit, setExpiringLimit] = useState(10);
 
   // Theme-based classes
   const themeClasses = {
@@ -105,8 +106,7 @@ function Dashboard() {
         const inactiveMembers = members.filter(m => m.status?.toLowerCase() === 'inactive').length;
 
         const recentMembers = members
-          .sort((a, b) => new Date(b.joinDate) - new Date(a.joinDate))
-          .slice(0, 5);
+          .sort((a, b) => new Date(b.joinDate) - new Date(a.joinDate));
 
         const today = new Date();
         const expiringMembers = members.filter(m => {
@@ -115,20 +115,10 @@ function Dashboard() {
           return diffDays >= 0 && diffDays <= 7;
         });
 
-        const paymentPromises = members.map(member =>
-          axios.get(`/api/payments/history/${member._id}`).catch(() => ({ data: [] }))
-        );
-        const paymentResponses = await Promise.all(paymentPromises);
-        const allPayments = paymentResponses
-          .flatMap(res => res.data)
-          .filter(p => {
-            const paymentDate = new Date(p.date);
-            return (
-              paymentDate.getFullYear() === parseInt(year) &&
-              paymentDate.getMonth() + 1 === parseInt(month)
-            );
-          });
-        const currentRevenue = allPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+        const paymentRes = await axios.get('/api/payments', {
+          params: { month: currentMonth }
+        });
+        const currentRevenue = paymentRes.data?.stats?.totalAmount || 0;
 
         const attendanceRes = await axios.get(`/api/attendance?month=${currentMonth}`);
         const attendanceData = attendanceRes?.data || { days: [], result: [] };
@@ -175,7 +165,7 @@ function Dashboard() {
             transactions: found ? found.count : 0,
           };
         });
-        setMonthlySeries(monthlySeriesData);
+        setRecentLimit(monthlySeriesData);
 
         setDashboardData({
           totalMembers,
@@ -355,7 +345,7 @@ function Dashboard() {
             </div>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={monthlySeries}>
+                <AreaChart data={recentLimit}>
                   <defs>
                     <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
@@ -435,7 +425,7 @@ function Dashboard() {
               </div>
             </div>
             <div className="space-y-4">
-              {dashboardData.recentMembers.slice(0, 5).map((member, index) => (
+              {dashboardData.recentMembers.slice(0, recentLimit).map((member, index) => (
                 <div key={index} className={`flex items-center justify-between p-4 ${themeClasses.memberCardBg} rounded-xl border ${themeClasses.memberCardBorder}`}>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
@@ -453,6 +443,14 @@ function Dashboard() {
                   </div>
                 </div>
               ))}
+              {recentLimit < dashboardData.recentMembers.length && (
+                <button
+                  onClick={() => setRecentLimit(prev => prev + 10)}
+                  className={`w-full py-2 mt-2 text-sm font-medium ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} transition-colors`}
+                >
+                  Load More
+                </button>
+              )}
             </div>
           </div>
 
@@ -467,7 +465,7 @@ function Dashboard() {
               </div>
             </div>
             <div className="space-y-4">
-              {dashboardData.expiringMembers.map((member, index) => (
+              {dashboardData.expiringMembers.slice(0, expiringLimit).map((member, index) => (
                 <div key={index} className={`flex items-center justify-between p-4 ${themeClasses.memberCardBg} rounded-xl border ${themeClasses.memberCardBorder}`}>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white font-semibold">
@@ -485,6 +483,14 @@ function Dashboard() {
                   </div>
                 </div>
               ))}
+              {expiringLimit < dashboardData.expiringMembers.length && (
+                <button
+                  onClick={() => setExpiringLimit(prev => prev + 10)}
+                  className={`w-full py-2 mt-2 text-sm font-medium ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} transition-colors`}
+                >
+                  Load More
+                </button>
+              )}
             </div>
             {dashboardData.expiringMembers.length === 0 && (
               <div className="text-center py-8">
