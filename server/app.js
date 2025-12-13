@@ -1,5 +1,5 @@
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '.env') }); 
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 // ===== ENVIRONMENT VARIABLES VALIDATION =====
 // Fail fast if required environment variables are missing
@@ -20,9 +20,9 @@ require('./cron/updateMemberStatus');
 const connectDB = require('./config/db');
 const cors = require('cors');
 const helmet = require('helmet');
-// const mongoSanitize = require('express-mongo-sanitize');
-// const xss = require('xss-clean');
-// const hpp = require('hpp');
+// const mongoSanitize = require('express-mongo-sanitize'); // Incompatible with Express 5
+// const xss = require('xss-clean'); // Incompatible with Express 5
+// const hpp = require('hpp'); // Incompatible with Express 5
 const rateLimit = require('express-rate-limit');
 const logger = require('./utils/logger');
 
@@ -32,7 +32,7 @@ const app = express();
 // ===== CORS CONFIGURATION =====
 // Restrictive in production, permissive in development
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
+  origin: process.env.NODE_ENV === 'production'
     ? (process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
     : true, // Reflect request origin in development (required for credentials: true)
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -48,15 +48,6 @@ if (process.env.NODE_ENV === 'production' && (!process.env.ALLOWED_ORIGINS || pr
 // ===== SECURITY MIDDLEWARE =====
 app.use(helmet());
 
-// Data Sanitization against NoSQL query injection
-// app.use(mongoSanitize());
-
-// Data Sanitization against XSS
-// app.use(xss()); // DISABLED: Incompatible with Express 5
-
-// Prevent Parameter Pollution
-// app.use(hpp()); // DISABLED: Incompatible with Express 5
-
 // ===== RATE LIMITING =====
 // Reduced to production-appropriate levels
 const limiter = rateLimit({
@@ -71,6 +62,43 @@ app.use('/api', limiter);
 // ===== BODY PARSER WITH SIZE LIMITS =====
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Data Sanitization against NoSQL query injection
+app.use((req, res, next) => {
+  const sanitize = (obj) => {
+    for (const key in obj) {
+      if (key.startsWith('$')) {
+        delete obj[key];
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+        sanitize(obj[key]);
+      }
+    }
+  };
+  if (req.body) sanitize(req.body);
+  if (req.query) sanitize(req.query);
+  if (req.params) sanitize(req.params);
+  next();
+});
+
+// Data Sanitization against XSS
+app.use((req, res, next) => {
+  const sanitizeXss = (obj) => {
+    for (const key in obj) {
+      if (typeof obj[key] === 'string') {
+        obj[key] = obj[key].replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+        sanitizeXss(obj[key]);
+      }
+    }
+  };
+  if (req.body) sanitizeXss(req.body);
+  if (req.query) sanitizeXss(req.query);
+  if (req.params) sanitizeXss(req.params);
+  next();
+});
+
+// Prevent Parameter Pollution
+// app.use(hpp()); // DISABLED: Incompatible with Express 5 read-only req.query
 
 // ===== REQUEST TIMEOUT MIDDLEWARE =====
 app.use((req, res, next) => {
@@ -90,7 +118,7 @@ app.use((req, res, next) => {
 
 // ===== HEALTH CHECK ENDPOINT =====
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
+  res.status(200).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
@@ -153,13 +181,13 @@ app.get("/api/member/attendance", memberAuth, async (req, res) => {
 // ===== ERROR HANDLING MIDDLEWARE =====
 app.use((err, req, res, next) => {
   logger.error('Unhandled error:', err);
-  
+
   // Don't leak error details in production
-  const message = process.env.NODE_ENV === 'production' 
-    ? 'An error occurred' 
+  const message = process.env.NODE_ENV === 'production'
+    ? 'An error occurred'
     : err.message;
-  
-  res.status(err.status || 500).json({ 
+
+  res.status(err.status || 500).json({
     msg: message,
     ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
   });
