@@ -31,55 +31,55 @@ export default function Drawer() {
     const { isDarkMode, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const location = useLocation(); // Add this to get current location
-    
+
     // Get current path from location instead of state
     const currentPath = location.pathname;
 
     // Theme-based classes
     const themeClasses = {
-        navbar: isDarkMode 
-            ? 'bg-gray-800/95 border-gray-700/50 backdrop-blur-sm' 
+        navbar: isDarkMode
+            ? 'bg-gray-800/95 border-gray-700/50 backdrop-blur-sm'
             : 'bg-white/95 border-gray-200/50 backdrop-blur-sm',
         navbarText: isDarkMode ? 'text-white' : 'text-gray-900',
         navbarSecondary: isDarkMode ? 'text-gray-300' : 'text-gray-600',
-        logoGradient: isDarkMode 
-            ? 'from-white to-blue-300' 
+        logoGradient: isDarkMode
+            ? 'from-white to-blue-300'
             : 'from-gray-900 to-blue-600',
-        button: isDarkMode 
-            ? 'bg-gray-700/50 text-white hover:bg-gray-600/50 border-gray-600/30' 
+        button: isDarkMode
+            ? 'bg-gray-700/50 text-white hover:bg-gray-600/50 border-gray-600/30'
             : 'bg-gray-100/50 text-gray-900 hover:bg-gray-200/50 border-gray-300/30',
-        authButton: isDarkMode 
-            ? 'from-red-600 to-red-700 hover:from-red-700 hover:to-red-800' 
+        authButton: isDarkMode
+            ? 'from-red-600 to-red-700 hover:from-red-700 hover:to-red-800'
             : 'from-red-500 to-red-600 hover:from-red-600 hover:to-red-700',
-        loginButton: isDarkMode 
-            ? 'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800' 
+        loginButton: isDarkMode
+            ? 'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
             : 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
-        mobileMenu: isDarkMode 
-            ? 'bg-gray-800/95 border-gray-700/30' 
+        mobileMenu: isDarkMode
+            ? 'bg-gray-800/95 border-gray-700/30'
             : 'bg-white/95 border-gray-200/30',
-        mobileNavItem: isDarkMode 
-            ? 'text-gray-300 hover:text-white hover:bg-gray-700/50' 
+        mobileNavItem: isDarkMode
+            ? 'text-gray-300 hover:text-white hover:bg-gray-700/50'
             : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50',
-        mobileNavActive: isDarkMode 
-            ? 'bg-gray-700/70 text-white border-gray-600/30' 
+        mobileNavActive: isDarkMode
+            ? 'bg-gray-700/70 text-white border-gray-600/30'
             : 'bg-gray-200/50 text-gray-900 border-gray-300/30',
         overlay: 'bg-black/30 backdrop-blur-sm',
-        drawer: isDarkMode 
-            ? 'bg-gray-900/95 border-gray-700/50' 
+        drawer: isDarkMode
+            ? 'bg-gray-900/95 border-gray-700/50'
             : 'bg-white/95 border-gray-200/50',
         drawerHeader: isDarkMode ? 'bg-gray-800/50 border-gray-700/30' : 'bg-gray-50/50 border-gray-200/30',
         drawerContent: isDarkMode ? 'bg-gray-800/30' : 'bg-gray-50/30',
         drawerText: isDarkMode ? 'text-white' : 'text-gray-900',
         drawerSecondary: isDarkMode ? 'text-gray-300' : 'text-gray-600',
-        drawerNavItem: isDarkMode 
-            ? 'text-gray-300 hover:text-white hover:bg-gray-700/50' 
+        drawerNavItem: isDarkMode
+            ? 'text-gray-300 hover:text-white hover:bg-gray-700/50'
             : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50',
-        drawerNavActive: isDarkMode 
-            ? 'bg-gray-700/70 text-white border-gray-600/30' 
+        drawerNavActive: isDarkMode
+            ? 'bg-gray-700/70 text-white border-gray-600/30'
             : 'bg-gray-200/50 text-gray-900 border-gray-300/30',
         drawerFooter: isDarkMode ? 'bg-gray-800/50 border-gray-700/30' : 'bg-gray-50/50 border-gray-200/30',
-        closeButton: isDarkMode 
-            ? 'bg-gray-700/50 text-white hover:bg-gray-600/50' 
+        closeButton: isDarkMode
+            ? 'bg-gray-700/50 text-white hover:bg-gray-600/50'
             : 'bg-gray-200/50 text-gray-900 hover:bg-gray-300/50',
     };
 
@@ -148,7 +148,7 @@ export default function Drawer() {
         <>
             {/* NAVBAR */}
             <nav className={`${themeClasses.navbar} border-b shadow-2xl sticky top-0 z-40 transition-colors duration-300`}>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="w-full px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         {/* Left: Logo and Nav Links */}
                         <div className="flex items-center gap-8">
@@ -180,7 +180,7 @@ export default function Drawer() {
                         {/* Right: Actions */}
                         <div className="flex items-center space-x-3">
                             {/* Profile Button */}
-                            <button 
+                            <button
                                 onClick={() => handleNavigation('/profile')}
                                 className={`relative p-2.5 rounded-xl ${themeClasses.button} hover:cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl backdrop-blur-sm border group`}
                             >

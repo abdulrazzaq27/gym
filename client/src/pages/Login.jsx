@@ -107,7 +107,7 @@ export default function EnergeticLogin() {
     <div className={`min-h-screen ${themeClasses.background} overflow-hidden flex flex-col`}>
       {/* Navigation */}
       <nav className={`w-full ${themeClasses.navBackground} backdrop-blur-xl border-b ${themeClasses.navBorder} flex-shrink-0 z-20`}>
-        <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+        <div className="w-full px-6 py-3 flex justify-between items-center">
           <div className={`text-2xl font-bold ${themeClasses.brandColor}`}>FitZone</div>
           <div className="flex gap-4 items-center">
             {/* Theme Toggle */}
@@ -122,7 +122,7 @@ export default function EnergeticLogin() {
                 <Moon className={`w-5 h-5 ${themeClasses.moonColor}`} />
               )}
             </button>
-            <button 
+            <button
               onClick={() => navigate("/register")}
               className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg hover:from-cyan-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-500/25"
             >
@@ -134,7 +134,7 @@ export default function EnergeticLogin() {
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4 relative z-10">
-        <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8">
+        <div className="w-full flex flex-col lg:flex-row items-center justify-between gap-8">
           {/* Motivational Section (Visible on larger screens) */}
           <div className={`hidden lg:block w-full lg:w-1/2 transform transition-all duration-1000 ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-10 opacity-0'}`}>
             <div className={`p-8 rounded-xl bg-gradient-to-br ${themeClasses.motivationalBackground} backdrop-blur-md border ${themeClasses.motivationalBorder} shadow-xl`}>
@@ -149,12 +149,12 @@ export default function EnergeticLogin() {
           </div>
 
           {/* Login Form */}
-          <form 
-            onSubmit={handleSubmit} 
+          <form
+            onSubmit={handleSubmit}
             className={`w-full max-w-md transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
           >
             <div className={`bg-gradient-to-br ${themeClasses.formBackground} backdrop-blur-xl rounded-xl p-8 shadow-2xl border ${themeClasses.formBorder} relative overflow-hidden`}>
-              
+
               {/* Header */}
               <h2 className={`text-2xl font-bold mb-6 text-center ${themeClasses.brandColor}`}>Welcome Back</h2>
 
@@ -215,9 +215,9 @@ export default function EnergeticLogin() {
 
               {/* Forgot Password */}
               <p className="text-right mb-6">
-                <button 
-                  type="button" 
-                  onClick={() => navigate("/forgot-password")} 
+                <button
+                  type="button"
+                  onClick={() => navigate("/forgot-password")}
                   className={`text-xs ${themeClasses.forgotLink} hover:underline`}
                 >
                   Forgot password?
@@ -245,9 +245,9 @@ export default function EnergeticLogin() {
               {/* Register link */}
               <p className={`text-xs text-center mt-6 ${themeClasses.registerText}`}>
                 Don’t have an account?{" "}
-                <button 
-                  type="button" 
-                  onClick={() => navigate("/register")} 
+                <button
+                  type="button"
+                  onClick={() => navigate("/register")}
                   className={`${themeClasses.registerLink} hover:underline font-medium`}
                 >
                   Create one

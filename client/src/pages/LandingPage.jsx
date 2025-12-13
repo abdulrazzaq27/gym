@@ -11,9 +11,9 @@ const LandingPage = () => {
   const handleDemoLogin = async () => {
     setLoadingDemo(true);
     try {
-      const res = await axios.post("/api/auth/login", { 
-        email: "admin@admin.com", 
-        password: "password" 
+      const res = await axios.post("/api/auth/login", {
+        email: "admin@admin.com",
+        password: "password"
       });
 
       localStorage.setItem("token", res.data.token);
@@ -33,7 +33,7 @@ const LandingPage = () => {
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="w-full px-6 h-16 flex items-center justify-between">
           <div className="text-xl font-bold tracking-tight text-blue-900">
             FitZone<span className="text-blue-600">Admin</span>
           </div>
@@ -50,7 +50,7 @@ const LandingPage = () => {
 
       {/* Hero Section */}
       <section className="pt-24 pb-20 px-6">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="w-full text-center">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-gray-900 mb-6 leading-tight">
             Professional Gym Management. <br className="hidden md:block" />
             <span className="text-blue-600">Zero Complexity.</span>
@@ -62,17 +62,17 @@ const LandingPage = () => {
             <Link to="/login" className="w-full sm:w-auto px-8 py-3.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
               Start Your Journey
             </Link>
-            <button 
+            <button
               onClick={handleDemoLogin}
               disabled={loadingDemo}
               className="group relative w-full sm:w-auto px-8 py-3.5 bg-white text-gray-700 border border-gray-200 rounded-xl font-semibold hover:bg-gray-50 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-100 transition-all duration-300 flex items-center justify-center gap-2 hover:cursor-pointer"
             >
               {/* Animated background gradient on hover */}
               <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div>
-              
+
               {/* Shimmer effect */}
               <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/40 to-transparent overflow-hidden rounded-xl"></div>
-              
+
               <span className="relative z-10">
                 {loadingDemo ? (
                   <>
@@ -83,7 +83,7 @@ const LandingPage = () => {
                   "Interactive Demo"
                 )}
               </span>
-              
+
               {/* Tooltip - moved outside to prevent clipping */}
               {!loadingDemo && (
                 <span className="absolute -bottom-12 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none z-50 shadow-lg">
@@ -97,9 +97,9 @@ const LandingPage = () => {
 
       {/* The Problem vs Solution Section */}
       <section className="py-20 bg-white border-y border-gray-100">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="w-full px-6">
           <div className="grid md:grid-cols-2 gap-16 items-center">
-            
+
             {/* The Problem */}
             <div className="space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 text-red-600 text-sm font-medium">
@@ -127,7 +127,7 @@ const LandingPage = () => {
 
             {/* The Solution */}
             <div className="space-y-6 relative">
-             <div className="absolute inset-0 bg-blue-50 rounded-3xl -rotate-2 scale-105 z-0" />
+              <div className="absolute inset-0 bg-blue-50 rounded-3xl -rotate-2 scale-105 z-0" />
               <div className="relative z-10 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-sm font-medium mb-4">
                   <CheckCircle size={16} />
@@ -159,24 +159,24 @@ const LandingPage = () => {
 
       {/* Feature Highlights - Minimal Grid */}
       <section className="py-24 px-6 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900">Essentials only. No clutter.</h2>
             <p className="text-gray-600 mt-4">Everything you need to manage your facility effectively.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <FeatureCard 
+            <FeatureCard
               icon={<Users className="w-6 h-6 text-blue-600" />}
               title="Member Management"
               description="Add, edit, and track members with ease. View history, plan details, and personal goals in one tap."
             />
-             <FeatureCard 
+            <FeatureCard
               icon={<BarChart3 className="w-6 h-6 text-blue-600" />}
               title="Financial Insights"
               description="Visual reports for monthly revenue, growth trends, and projected income. Know your numbers."
             />
-             <FeatureCard 
+            <FeatureCard
               icon={<Calendar className="w-6 h-6 text-blue-600" />}
               title="Smart Attendance"
               description="Track daily footfall. Identify peak hours and loyal members. Optimise your staffing."
@@ -187,13 +187,13 @@ const LandingPage = () => {
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-12 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="text-gray-900 font-bold text-lg">FitZone<span className="text-blue-600">Admin</span></div>
-            <p className="text-gray-500 text-sm">© {new Date().getFullYear()} FitZone Inc. Focused on your growth.</p>
-            <div className="flex gap-6">
-              <a href="#" className="text-gray-400 hover:text-gray-600 transition-colors">Privacy</a>
-              <a href="#" className="text-gray-400 hover:text-gray-600 transition-colors">Terms</a>
-            </div>
+        <div className="w-full mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="text-gray-900 font-bold text-lg">FitZone<span className="text-blue-600">Admin</span></div>
+          <p className="text-gray-500 text-sm">© {new Date().getFullYear()} FitZone Inc. Focused on your growth.</p>
+          <div className="flex gap-6">
+            <a href="#" className="text-gray-400 hover:text-gray-600 transition-colors">Privacy</a>
+            <a href="#" className="text-gray-400 hover:text-gray-600 transition-colors">Terms</a>
+          </div>
         </div>
       </footer>
     </div>

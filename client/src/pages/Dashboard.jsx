@@ -97,7 +97,7 @@ function Dashboard() {
 
       try {
         const [year, month] = currentMonth.split('-');
-        
+
         const membersRes = await axios.get('/api/members');
         const members = membersRes?.data || [];
 
@@ -131,7 +131,7 @@ function Dashboard() {
           });
           return { ...dayMap, memberId: member._id, name: member.name };
         });
-        
+
         const dailyCount = attendanceData.days.map(day => {
           let present = 0;
           attendanceData.result.forEach(member => {
@@ -280,7 +280,7 @@ function Dashboard() {
         </button>
       </div> */}
 
-      <div className="max-w-7xl mx-auto p-4 sm:p-6">
+      <div className="w-full p-4 sm:p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Link
             to="/revenue"
@@ -392,7 +392,7 @@ function Dashboard() {
                 <LineChart data={data}>
                   <XAxis dataKey="day" tick={{ fill: isDarkMode ? '#ffffff' : '#000000', fontSize: 12 }} />
                   <YAxis allowDecimals={false} tick={{ fill: isDarkMode ? '#ffffff' : '#000000', fontSize: 12 }} />
-                  <Tooltip 
+                  <Tooltip
                     contentStyle={{
                       background: isDarkMode ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)',
                       border: isDarkMode ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.2)',

@@ -40,38 +40,38 @@ function CreateMember() {
   // Theme-based classes
   const themeClasses = {
     background: isDarkMode ? 'bg-slate-900 text-white' : 'bg-gray-50 text-gray-900',
-    backgroundGradient: isDarkMode 
-      ? 'bg-gradient-to-br from-slate-900 via-blue-900/10 to-purple-900/10' 
+    backgroundGradient: isDarkMode
+      ? 'bg-gradient-to-br from-slate-900 via-blue-900/10 to-purple-900/10'
       : 'bg-gradient-to-br from-gray-50 via-blue-50/10 to-purple-50/10',
     overlay: isDarkMode ? 'bg-slate-900/20' : 'bg-gray-100/20',
-    headerButton: isDarkMode 
-      ? 'bg-slate-800/90 border-slate-700/50 hover:bg-slate-700/90 text-white' 
+    headerButton: isDarkMode
+      ? 'bg-slate-800/90 border-slate-700/50 hover:bg-slate-700/90 text-white'
       : 'bg-white/90 border-gray-200/50 hover:bg-gray-100/90 text-gray-900',
     titleText: isDarkMode ? 'text-white' : 'text-gray-900',
     subtitleText: isDarkMode ? 'text-slate-400' : 'text-gray-600',
-    formContainer: isDarkMode 
-      ? 'bg-slate-800/70 backdrop-blur-sm border-slate-700/50' 
+    formContainer: isDarkMode
+      ? 'bg-slate-800/70 backdrop-blur-sm border-slate-700/50'
       : 'bg-white/70 backdrop-blur-sm border-gray-200/50',
     sectionHeaderBg: isDarkMode ? 'bg-cyan-500' : 'bg-blue-500',
     sectionHeaderText: isDarkMode ? 'text-white' : 'text-gray-900',
     sectionBorder: isDarkMode ? 'border-slate-700/50' : 'border-gray-200/50',
     label: isDarkMode ? 'text-slate-300' : 'text-gray-700',
-    input: isDarkMode 
-      ? 'bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20' 
+    input: isDarkMode
+      ? 'bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20'
       : 'bg-gray-100/50 border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/20',
     inputIcon: isDarkMode ? 'text-slate-400 group-focus-within:text-cyan-400' : 'text-gray-400 group-focus-within:text-blue-500',
-    inputDisabled: isDarkMode 
-      ? 'bg-slate-600/50 border-slate-600/50 text-slate-400' 
+    inputDisabled: isDarkMode
+      ? 'bg-slate-600/50 border-slate-600/50 text-slate-400'
       : 'bg-gray-200/50 border-gray-300/50 text-gray-500',
     inputDisabledIcon: isDarkMode ? 'text-slate-500' : 'text-gray-400',
-    amountDisplayBg: isDarkMode 
-      ? 'bg-green-900/30 border-green-600/30' 
+    amountDisplayBg: isDarkMode
+      ? 'bg-green-900/30 border-green-600/30'
       : 'bg-green-100/50 border-green-300/50',
     amountDisplayIcon: isDarkMode ? 'text-green-400' : 'text-green-600',
     amountDisplayText: isDarkMode ? 'text-green-400' : 'text-green-600',
     amountDisplaySubtext: isDarkMode ? 'text-green-300' : 'text-green-700',
-    submitButton: isDarkMode 
-      ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700' 
+    submitButton: isDarkMode
+      ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
       : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
     toggleHover: isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100',
     sunColor: isDarkMode ? 'text-yellow-400' : 'text-yellow-500',
@@ -184,7 +184,7 @@ function CreateMember() {
         </div>
 
         {/* Form Container */}
-        <div className={`${themeClasses.formContainer} rounded-2xl border shadow-xl max-w-7xl mx-auto`}>
+        <div className={`${themeClasses.formContainer} rounded-2xl border shadow-xl w-full mx-auto`}>
           <div className="p-8">
             <form onSubmit={handleSubmit} className="space-y-8">
 

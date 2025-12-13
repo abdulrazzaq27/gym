@@ -66,8 +66,8 @@ export default function EnergeticRegister() {
   // Theme-based classes
   const themeClasses = {
     background: isDarkMode ? 'bg-slate-900 text-white' : 'bg-white text-gray-900',
-    backgroundGradient: isDarkMode 
-      ? 'from-slate-900 via-blue-900/20 to-purple-900/20' 
+    backgroundGradient: isDarkMode
+      ? 'from-slate-900 via-blue-900/20 to-purple-900/20'
       : 'from-white via-blue-50/20 to-purple-50/20',
     blob1: isDarkMode ? 'bg-blue-500/10' : 'bg-blue-200/10',
     blob2: isDarkMode ? 'bg-green-500/10' : 'bg-green-200/10',
@@ -77,8 +77,8 @@ export default function EnergeticRegister() {
     brandColor: isDarkMode ? 'text-cyan-400' : 'text-cyan-500',
     loginButton: isDarkMode ? 'text-slate-300 hover:text-white' : 'text-gray-600 hover:text-gray-900',
     bgImageOpacity: isDarkMode ? 'opacity-20' : 'opacity-40',
-    overlayGradient: isDarkMode 
-      ? 'from-slate-900/95 via-slate-900/90 to-slate-900/95' 
+    overlayGradient: isDarkMode
+      ? 'from-slate-900/95 via-slate-900/90 to-slate-900/95'
       : 'from-white/95 via-white/90 to-white/95',
     formBackground: isDarkMode ? 'from-slate-800/80 to-slate-900/80' : 'from-gray-100/80 to-white/80',
     formBorder: isDarkMode ? 'border-slate-700/50' : 'border-gray-200/50',
@@ -127,7 +127,7 @@ export default function EnergeticRegister() {
 
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img 
+        <img
           src="/background.jpg"
           alt="Fitness background"
           className={`w-full h-full object-cover ${themeClasses.bgImageOpacity}`}
@@ -137,7 +137,7 @@ export default function EnergeticRegister() {
 
       {/* Navigation */}
       <nav className={`w-full ${themeClasses.navBackground} backdrop-blur-xl border-b ${themeClasses.navBorder} flex-shrink-0`}>
-        <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+        <div className="w-full px-6 py-3 flex justify-between items-center">
           <div className="text-2xl font-bold">
             <span className="relative inline-block">
               <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 blur-sm opacity-30"></span>
@@ -157,7 +157,7 @@ export default function EnergeticRegister() {
                 <Moon className={`w-5 h-5 ${themeClasses.moonColor}`} />
               )}
             </button>
-            <button 
+            <button
               onClick={() => navigate("/login")}
               className={`px-6 py-2 ${themeClasses.loginButton} transition-colors duration-300`}
             >
@@ -177,7 +177,7 @@ export default function EnergeticRegister() {
           <div className={`bg-gradient-to-br ${themeClasses.formBackground} backdrop-blur-xl rounded-xl p-4 shadow-2xl border ${themeClasses.formBorder} relative overflow-hidden`}>
             {/* Glowing border effect */}
             <div className={`absolute inset-0 bg-gradient-to-r ${themeClasses.glowingBorder} rounded-xl blur-xl opacity-50`}></div>
-            
+
             <div className="relative z-10">
               {/* Header */}
               <div className="text-center mb-4">
@@ -352,7 +352,7 @@ export default function EnergeticRegister() {
                       </>
                     )}
                   </div>
-                  
+
                   {/* Button shine effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 </button>

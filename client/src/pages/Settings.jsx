@@ -104,9 +104,9 @@ export default function SettingsPage() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ 
-      ...prev, 
-      [name]: type === 'checkbox' ? checked : value 
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -125,9 +125,9 @@ export default function SettingsPage() {
   const handlePlanChange = (index, field, value) => {
     setForm((prev) => {
       const plans = [...prev.membershipPlans];
-      plans[index] = { 
-        ...plans[index], 
-        [field]: field === "price" || field === "durationInMonths" ? Number(value) : value 
+      plans[index] = {
+        ...plans[index],
+        [field]: field === "price" || field === "durationInMonths" ? Number(value) : value
       };
       return { ...prev, membershipPlans: plans };
     });
@@ -193,7 +193,7 @@ export default function SettingsPage() {
     try {
       const endpoint = type === 'members' ? '/api/members/export' : '/api/payments/export';
       const response = await axios.get(endpoint, { responseType: 'blob' });
-      
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -201,7 +201,7 @@ export default function SettingsPage() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      
+
       setSuccess(`${type.charAt(0).toUpperCase() + type.slice(1)} data exported successfully`);
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
@@ -254,7 +254,7 @@ export default function SettingsPage() {
 
   return (
     <div className={`min-h-screen ${themeClasses.background} p-6`}>
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -291,11 +291,10 @@ export default function SettingsPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                    activeTab === tab.id
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${activeTab === tab.id
                       ? `${themeClasses.activeTab} bg-blue-500/10`
                       : themeClasses.tab
-                  }`}
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   {tab.label}
@@ -422,11 +421,10 @@ export default function SettingsPage() {
                           key={day}
                           type="button"
                           onClick={() => toggleWorkingDay(day)}
-                          className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${
-                            active
+                          className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${active
                               ? "bg-blue-500 text-white border-blue-500"
                               : "bg-transparent text-gray-400 border-gray-600 hover:border-blue-400 hover:text-blue-400"
-                          }`}
+                            }`}
                         >
                           {day}
                         </button>
