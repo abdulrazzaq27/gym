@@ -70,7 +70,7 @@ const seed = async () => {
     const attendanceRecords = [];
 
     // 2. Create 100 Members
-    console.log("🌱 Generating 100 members...");
+    console.log("🌱 Generating 500 members...");
 
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - 4); // Start from 4 months ago

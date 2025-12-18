@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import axios from "../api/axios";
 import { useNavigate } from "react-router-dom";
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Loader2 } from 'lucide-react';
 import { useTheme } from '../components/utils/ThemeContext.jsx';
 
 function AttendanceOverview() {
   const [days, setDays] = useState([]);
   const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [displayLimit, setDisplayLimit] = useState(20);
   const navigate = useNavigate();
   const [month, setMonth] = useState(() => {
     const today = new Date();
@@ -41,6 +43,9 @@ function AttendanceOverview() {
     trendsButton: isDarkMode 
       ? 'bg-blue-600 hover:bg-blue-700' 
       : 'bg-blue-500 hover:bg-blue-600',
+    loadMoreButton: isDarkMode
+      ? 'bg-gray-700 hover:bg-gray-600 text-white'
+      : 'bg-gray-200 hover:bg-gray-300 text-gray-800',
     tableContainer: isDarkMode 
       ? 'border-gray-600' 
       : 'border-gray-300',
@@ -61,11 +66,14 @@ function AttendanceOverview() {
     cardBackground: isDarkMode 
       ? 'bg-gray-800/50 backdrop-blur-sm border-gray-700/50' 
       : 'bg-white/70 backdrop-blur-sm border-gray-200/50',
+    skeletonBase: isDarkMode ? 'bg-gray-700' : 'bg-gray-200',
+    skeletonHighlight: isDarkMode ? 'bg-gray-600' : 'bg-gray-300',
   };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         // 1. fetch all members
         const membersRes = await axios.get("/api/members");
         const allMembers = membersRes.data;
@@ -103,10 +111,17 @@ function AttendanceOverview() {
         setMembers(overview);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
+  }, [month]);
+
+  // Reset display limit when month changes
+  useEffect(() => {
+    setDisplayLimit(20);
   }, [month]);
 
   const exportCSV = () => {
@@ -158,6 +173,28 @@ function AttendanceOverview() {
     link.click();
     document.body.removeChild(link);
   };
+
+  const visibleMembers = members.slice(0, displayLimit);
+
+  // Skeleton Row Component
+  const SkeletonRow = () => (
+    <tr className={`${themeClasses.tableRow} border-b ${themeClasses.tableCell} animate-pulse`}>
+      <td className={`border ${themeClasses.tableCell} px-3 py-2`}>
+        <div className={`h-4 w-32 rounded ${themeClasses.skeletonBase}`}></div>
+      </td>
+      {days.map((day) => (
+        <td key={day} className={`border ${themeClasses.tableCell} px-2 py-2`}>
+          <div className={`h-4 w-4 mx-auto rounded ${themeClasses.skeletonBase}`}></div>
+        </td>
+      ))}
+      <td className={`border ${themeClasses.tableCell} px-3 py-2 text-center`}>
+         <div className={`h-4 w-8 mx-auto rounded ${themeClasses.skeletonBase}`}></div>
+      </td>
+      <td className={`border ${themeClasses.tableCell} px-3 py-2 text-center`}>
+         <div className={`h-4 w-8 mx-auto rounded ${themeClasses.skeletonBase}`}></div>
+      </td>
+    </tr>
+  );
 
   return (
     <div className={`min-h-screen ${themeClasses.background} relative`}>
@@ -271,68 +308,86 @@ function AttendanceOverview() {
                 </tr>
               </thead>
               <tbody>
-                {members.map((member) => {
-                  const today = new Date();
-                  const [year, monthNum] = month.split("-");
+                {loading ? (
+                  Array.from({ length: 10 }).map((_, index) => (
+                    <SkeletonRow key={index} />
+                  ))
+                ) : (
+                  visibleMembers.map((member) => {
+                    const today = new Date();
+                    const [year, monthNum] = month.split("-");
 
-                  const validDays = days.filter((day) => {
-                    const cellDate = new Date(year, monthNum - 1, day);
-                    return cellDate <= today;
-                  });
+                    const validDays = days.filter((day) => {
+                      const cellDate = new Date(year, monthNum - 1, day);
+                      return cellDate <= today;
+                    });
 
-                  const totalPresent = validDays.reduce(
-                    (sum, day) => sum + (member[day] || 0),
-                    0
-                  );
-                  const percentage =
-                    validDays.length > 0
-                      ? ((totalPresent / validDays.length) * 100).toFixed(0)
-                      : 0;
+                    const totalPresent = validDays.reduce(
+                      (sum, day) => sum + (member[day] || 0),
+                      0
+                    );
+                    const percentage =
+                      validDays.length > 0
+                        ? ((totalPresent / validDays.length) * 100).toFixed(0)
+                        : 0;
 
-                  return (
-                    <tr key={member.memberId} className={`${themeClasses.tableRow} transition-colors border-b ${themeClasses.tableCell}`}>
-                      <td className={`border ${themeClasses.tableCell} px-3 py-2 font-medium ${themeClasses.tableCellText}`}>
-                        {member.name}
-                      </td>
-                      {days.map((day) => {
-                        const cellDate = new Date(year, monthNum - 1, day);
-                        const isFuture = cellDate > today;
-                        return (
-                          <td
-                            key={day}
-                            className={`border ${themeClasses.tableCell} text-center font-bold px-2 py-2`}
-                            style={{
-                              color: isFuture
-                                ? themeClasses.futureColor
-                                : member[day]
-                                  ? themeClasses.presentColor
-                                  : themeClasses.absentColor,
-                            }}
-                          >
-                            {isFuture ? "-" : member[day] ? "✓" : "✗"}
-                          </td>
-                        );
-                      })}
-                      <td className={`border ${themeClasses.tableCell} text-center ${themeClasses.tableCellText} font-semibold px-3 py-2`}>
-                        {totalPresent}
-                      </td>
-                      <td className={`border ${themeClasses.tableCell} text-center px-3 py-2 font-semibold`}
-                        style={{ 
-                          color: percentage >= 80 
-                            ? themeClasses.presentColor 
-                            : percentage >= 60 
-                              ? '#F59E0B' 
-                              : themeClasses.absentColor 
-                        }}
-                      >
-                        {percentage}%
-                      </td>
-                    </tr>
-                  );
-                })}
+                    return (
+                      <tr key={member.memberId} className={`${themeClasses.tableRow} transition-colors border-b ${themeClasses.tableCell}`}>
+                        <td className={`border ${themeClasses.tableCell} px-3 py-2 font-medium ${themeClasses.tableCellText}`}>
+                          {member.name}
+                        </td>
+                        {days.map((day) => {
+                          const cellDate = new Date(year, monthNum - 1, day);
+                          const isFuture = cellDate > today;
+                          return (
+                            <td
+                              key={day}
+                              className={`border ${themeClasses.tableCell} text-center font-bold px-2 py-2`}
+                              style={{
+                                color: isFuture
+                                  ? themeClasses.futureColor
+                                  : member[day]
+                                    ? themeClasses.presentColor
+                                    : themeClasses.absentColor,
+                              }}
+                            >
+                              {isFuture ? "-" : member[day] ? "✓" : "✗"}
+                            </td>
+                          );
+                        })}
+                        <td className={`border ${themeClasses.tableCell} text-center ${themeClasses.tableCellText} font-semibold px-3 py-2`}>
+                          {totalPresent}
+                        </td>
+                        <td className={`border ${themeClasses.tableCell} text-center px-3 py-2 font-semibold`}
+                          style={{ 
+                            color: percentage >= 80 
+                              ? themeClasses.presentColor 
+                              : percentage >= 60 
+                                ? '#F59E0B' 
+                                : themeClasses.absentColor 
+                          }}
+                        >
+                          {percentage}%
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
+
+          {/* Load More Button */}
+          {!loading && visibleMembers.length < members.length && (
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={() => setDisplayLimit((prev) => prev + 50)}
+                className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all shadow-md hover:shadow-lg ${themeClasses.loadMoreButton}`}
+              >
+                Load More
+              </button>
+            </div>
+          )}
 
           {/* Legend */}
           <div className="mt-4 flex items-center gap-6 text-sm">
