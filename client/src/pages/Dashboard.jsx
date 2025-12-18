@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from '../components/utils/ThemeContext.jsx';
 import {
@@ -12,23 +12,15 @@ import {
   YAxis,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
 } from 'recharts';
 import {
   Users,
-  TrendingUp,
-  Calendar,
   IndianRupee,
   UserPlus,
   UserCheck,
   AlertTriangle,
   Activity,
-  Target,
-  Award,
   Clock,
-  Sun,
-  Moon
 } from 'lucide-react';
 import axios from '../api/axios';
 import React from 'react';
@@ -50,8 +42,9 @@ function Dashboard() {
     totalRevenue: 0,
     recentMembers: [],
     expiringMembers: [],
-    attendanceData: { days: [], members: [] },
     attendanceTrend: [],
+    attendanceRate: 0,
+    monthlyRevenueData: [] // For chart
   });
 
   const [loading, setLoading] = useState(false);
@@ -60,8 +53,8 @@ function Dashboard() {
     const today = new Date();
     return today.toISOString().slice(0, 7);
   });
-  const [data, setData] = useState([]);
-  const [recentLimit, setRecentLimit] = useState(10);
+  
+  const [recentLimit, setRecentLimit] = useState(10); // client-side limit for now, can be server-side later if needed
   const [expiringLimit, setExpiringLimit] = useState(10);
 
   // Theme-based classes
@@ -98,52 +91,32 @@ function Dashboard() {
       try {
         const [year, month] = currentMonth.split('-');
 
-        const membersRes = await axios.get('/api/members');
-        const members = membersRes?.data || [];
+        // Parallel Fetching for optimized performance
+        const [
+          statsRes, 
+          recentRes, 
+          expiringRes, 
+          revenueRes, 
+          attendanceStatsRes
+        ] = await Promise.all([
+          axios.get('/api/dashboard/stats'),
+          axios.get('/api/dashboard/recent-members?limit=20'),
+          axios.get('/api/dashboard/expiring-members?days=7'),
+          axios.get('/api/dashboard/revenue'),
+          axios.get(`/api/attendance/stats?month=${currentMonth}`)
+        ]);
 
-        const totalMembers = members.length;
-        const activeMembers = members.filter(m => m.status?.toLowerCase() === 'active').length;
-        const inactiveMembers = members.filter(m => m.status?.toLowerCase() === 'inactive').length;
+        // 1. Stats
+        const { totalMembers, activeMembers, inactiveMembers } = statsRes.data;
 
-        const recentMembers = members
-          .sort((a, b) => new Date(b.joinDate) - new Date(a.joinDate));
+        // 2. Recent & Expiring
+        const recentMembers = recentRes.data.recentMembers || [];
+        const expiringMembers = expiringRes.data.expiringMembers || [];
 
-        const today = new Date();
-        const expiringMembers = members.filter(m => {
-          const expiryDate = new Date(m.expiryDate);
-          const diffDays = (expiryDate - today) / (1000 * 60 * 60 * 24);
-          return diffDays >= 0 && diffDays <= 7;
-        });
-
-        const paymentRes = await axios.get('/api/payments', {
-          params: { month: currentMonth }
-        });
-        const currentRevenue = paymentRes.data?.stats?.totalAmount || 0;
-
-        const attendanceRes = await axios.get(`/api/attendance?month=${currentMonth}`);
-        const attendanceData = attendanceRes?.data || { days: [], result: [] };
-
-        const attendanceMembers = members.map(member => {
-          const record = attendanceData.result.find(r => r.memberId === member._id) || {};
-          const dayMap = {};
-          (attendanceData.days || []).forEach(day => {
-            dayMap[day] = record[day] === 1 ? 1 : 0;
-          });
-          return { ...dayMap, memberId: member._id, name: member.name };
-        });
-
-        const dailyCount = attendanceData.days.map(day => {
-          let present = 0;
-          attendanceData.result.forEach(member => {
-            if (member[day] === 1) present++;
-          });
-          return { day, present };
-        });
-        setData(dailyCount);
-
-        const revenueRes = await axios.get('/api/dashboard/revenue');
-        const dataRaw = revenueRes.data || { monthlyRevenue: [], annualRevenue: [], totalRevenue: { total: 0, count: 0 } };
-
+        // 3. Revenue
+        const revenueData = revenueRes.data || { monthlyRevenue: [], totalRevenue: { total: 0 } };
+        
+        // Match revenue graph data
         const now = new Date();
         const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         const last12Months = Array.from({ length: 12 }).map((_, i) => {
@@ -156,7 +129,7 @@ function Dashboard() {
         });
 
         const monthlySeriesData = last12Months.map(m => {
-          const found = dataRaw.monthlyRevenue.find(
+          const found = revenueData.monthlyRevenue.find(
             d => d._id.year === m.year && d._id.month === m.month
           );
           return {
@@ -165,7 +138,15 @@ function Dashboard() {
             transactions: found ? found.count : 0,
           };
         });
-        setRecentLimit(monthlySeriesData);
+
+        // Find current month revenue from aggregation or fallback to 0
+        const currentMonthRevenueObj = revenueData.monthlyRevenue.find(
+          d => d._id.year === parseInt(year) && d._id.month === parseInt(month)
+        );
+        const currentRevenue = currentMonthRevenueObj ? currentMonthRevenueObj.total : 0;
+
+        // 4. Attendance
+        const { trend = [], rate = 0 } = attendanceStatsRes.data;
 
         setDashboardData({
           totalMembers,
@@ -174,12 +155,15 @@ function Dashboard() {
           totalRevenue: currentRevenue,
           recentMembers,
           expiringMembers,
-          attendanceData: { days: attendanceData.days, members: attendanceMembers },
+          attendanceTrend: trend,
+          attendanceRate: rate,
+          monthlyRevenueData: monthlySeriesData
         });
 
-        setLoading(false);
       } catch (err) {
+        console.error('Error loading dashboard:', err);
         setError(`Failed to load dashboard data: ${err.message}`);
+      } finally {
         setLoading(false);
       }
     };
@@ -187,57 +171,28 @@ function Dashboard() {
     fetchData();
   }, [currentMonth, navigate]);
 
-  const prepareWeeklyAttendanceData = () => {
-    const { days = [], members = [] } = dashboardData.attendanceData;
-    const [year, month] = currentMonth.split("-");
-    const today = new Date();
-
-    const weekData = {};
-
-    days.filter(day => new Date(year, month - 1, day) <= today).forEach(day => {
-      const presentCount = members.reduce((count, member) => {
-        return member[day] === 1 ? count + 1 : count;
-      }, 0);
-
-      const weekNum = Math.ceil(day / 7);
-
-      if (!weekData[weekNum]) {
-        weekData[weekNum] = { week: `Week ${weekNum}`, present: 0, totalDays: 0 };
-      }
-
-      weekData[weekNum].present += presentCount;
-      weekData[weekNum].totalDays += members.length;
-    });
-
-    return Object.values(weekData).map(w => ({
-      week: w.week,
-      attendanceRate: w.totalDays > 0 ? Math.round((w.present / w.totalDays) * 100) : 0,
-    }));
-  };
-
-  const calculateAttendanceRate = () => {
-    const { days = [], members = [] } = dashboardData.attendanceData;
-    if (!days.length || !members.length) return 0;
-
-    let total = 0;
-    let present = 0;
-
-    days.forEach(day => {
-      members.forEach(member => {
-        total++;
-        if (member[day] === 1) present++;
-      });
-    });
-
-    return total > 0 ? Math.round((present / total) * 100) : 0;
-  };
-
   if (loading) {
     return (
-      <div className={`w-full min-h-screen flex items-center justify-center ${themeClasses.background}`}>
-        <div className="flex flex-col items-center">
-          <div className={`animate-spin rounded-full h-16 w-16 border-4 ${themeClasses.loadingBorder} border-t-transparent`}></div>
-          <p className={`${themeClasses.loadingText} mt-4 text-lg`}>Loading Dashboard...</p>
+      <div className={`min-h-screen ${themeClasses.background} relative`}>
+        <div className="w-full p-4 sm:p-6 animate-pulse">
+          {/* Header Stats Skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className={`h-32 rounded-2xl ${isDarkMode ? 'bg-slate-800' : 'bg-gray-200'}`}></div>
+            ))}
+          </div>
+
+          {/* Charts Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div className={`h-80 rounded-2xl ${isDarkMode ? 'bg-slate-800' : 'bg-gray-200'}`}></div>
+            <div className={`h-80 rounded-2xl ${isDarkMode ? 'bg-slate-800' : 'bg-gray-200'}`}></div>
+          </div>
+
+          {/* Bottom Lists Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <div className={`h-96 rounded-2xl ${isDarkMode ? 'bg-slate-800' : 'bg-gray-200'}`}></div>
+            <div className={`h-96 rounded-2xl ${isDarkMode ? 'bg-slate-800' : 'bg-gray-200'}`}></div>
+          </div>
         </div>
       </div>
     );
@@ -260,26 +215,8 @@ function Dashboard() {
     );
   }
 
-  const attendanceRate = calculateAttendanceRate();
-  const growthRate = ((dashboardData.activeMembers - 180) / 180 * 100).toFixed(1);
-
   return (
     <div className={`min-h-screen ${themeClasses.background} relative`}>
-      {/* Theme Toggle Button - Fixed Position */}
-      {/* <div className="fixed top-6 right-6 z-50">
-        <button
-          onClick={toggleTheme}
-          className={`p-3 rounded-xl transition-all duration-300 ${themeClasses.toggleHover} shadow-lg backdrop-blur-sm border ${isDarkMode ? 'border-slate-700 bg-slate-800/80' : 'border-gray-200 bg-white/80'}`}
-          aria-label="Toggle theme"
-        >
-          {isDarkMode ? (
-            <Sun className={`w-6 h-6 ${themeClasses.sunColor}`} />
-          ) : (
-            <Moon className={`w-6 h-6 ${themeClasses.moonColor}`} />
-          )}
-        </button>
-      </div> */}
-
       <div className="w-full p-4 sm:p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Link
@@ -326,7 +263,7 @@ function Dashboard() {
               </div>
               <div className="text-right">
                 <div className="text-purple-100 text-sm font-medium">Attendance Rate</div>
-                <div className="text-2xl font-bold">{attendanceRate}%</div>
+                <div className="text-2xl font-bold">{dashboardData.attendanceRate}%</div>
               </div>
             </div>
           </Link>
@@ -345,7 +282,7 @@ function Dashboard() {
             </div>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={recentLimit}>
+                <AreaChart data={dashboardData.monthlyRevenueData}>
                   <defs>
                     <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
@@ -389,7 +326,7 @@ function Dashboard() {
             </div>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data}>
+                <LineChart data={dashboardData.attendanceTrend}>
                   <XAxis dataKey="day" tick={{ fill: isDarkMode ? '#ffffff' : '#000000', fontSize: 12 }} />
                   <YAxis allowDecimals={false} tick={{ fill: isDarkMode ? '#ffffff' : '#000000', fontSize: 12 }} />
                   <Tooltip

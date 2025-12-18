@@ -5,6 +5,74 @@ const { adminAuth, memberAuth } = require("../middlewares/authMiddleware");
 const { mongoIdParamValidation, dateQueryValidation, handleValidationErrors } = require('../middlewares/validationMiddleware');
 const { query, param } = require('express-validator');
 
+router.get("/stats", adminAuth, dateQueryValidation, async (req, res) => {
+  try {
+    let { month } = req.query;
+    if (!month) {
+      const today = new Date();
+      month = today.toISOString().slice(0, 7);
+    }
+
+    const [year, m] = month.split("-");
+    const start = new Date(year, m - 1, 1);
+    const end = new Date(year, m, 0, 23, 59, 59);
+
+    // 1. Daily Trend
+    const dailyStats = await Attendance.aggregate([
+      {
+        $match: {
+          adminId: req.user.id,
+          date: { $gte: start, $lte: end }
+        }
+      },
+      {
+        $project: {
+          day: { $dayOfMonth: "$date" }
+        }
+      },
+      {
+        $group: {
+          _id: "$day",
+          present: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const daysInMonth = new Date(year, m, 0).getDate();
+    const trend = Array.from({ length: daysInMonth }, (_, i) => {
+      const day = i + 1;
+      const found = dailyStats.find(s => s._id === day);
+      return { day, present: found ? found.present : 0 };
+    });
+
+    // 2. Attendance Rate
+    // Approximation: Rate = Total Present / (DaysPassed * TotalMembers)
+    // We'll use the Members count as of now.
+    const Member = require("../models/Member");
+    const totalMembers = await Member.countDocuments({ 
+      adminId: req.user.id,
+      status: 'Active' 
+    });
+
+    const totalPresent = dailyStats.reduce((acc, curr) => acc + curr.present, 0);
+    
+    // Calculate days passed up to today (if current month) or full month (if past)
+    const today = new Date();
+    let daysPassed = daysInMonth;
+    if (today.getFullYear() === parseInt(year) && today.getMonth() === parseInt(m) - 1) {
+      daysPassed = today.getDate();
+    }
+
+    const totalPotential = Math.max(1, daysPassed * totalMembers); // Avoid div/0
+    const rate = Math.round((totalPresent / totalPotential) * 100) || 0;
+
+    res.json({ trend, rate });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ---------------------------------------------
 // ADMIN: Get monthly attendance overview for all members
 // ---------------------------------------------
